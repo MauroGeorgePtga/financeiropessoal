@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { Plus, Edit2, Trash2, Search, Check, X, Calendar, Banknote } from 'lucide-react'
+import { Plus, Edit2, Trash2, Search, Check, X, Calendar, Banknote, Landmark } from 'lucide-react'
 import './Transacoes.css'
 
 export default function Transacoes() {
@@ -101,12 +101,10 @@ export default function Transacoes() {
     }
   }
 
-  // Função para atualizar saldo da conta
   const atualizarSaldoConta = async (contaId, valor, tipo, operacao) => {
-    if (!contaId) return // Se for dinheiro, não atualiza conta
+    if (!contaId) return
 
     try {
-      // Buscar conta atual
       const { data: conta, error: contaError } = await supabase
         .from('contas_bancarias')
         .select('saldo_atual')
@@ -117,7 +115,6 @@ export default function Transacoes() {
 
       let novoSaldo = conta.saldo_atual
 
-      // Calcular novo saldo baseado na operação
       if (operacao === 'adicionar') {
         if (tipo === 'receita') {
           novoSaldo += valor
@@ -132,15 +129,12 @@ export default function Transacoes() {
         }
       }
 
-      // Atualizar saldo
       const { error: updateError } = await supabase
         .from('contas_bancarias')
         .update({ saldo_atual: novoSaldo })
         .eq('id', contaId)
 
       if (updateError) throw updateError
-
-      console.log(`Saldo atualizado: Conta ${contaId}, Novo saldo: R$ ${novoSaldo}`)
     } catch (error) {
       console.error('Erro ao atualizar saldo:', error)
       throw error
@@ -182,9 +176,6 @@ export default function Transacoes() {
       }
 
       if (editingTransacao) {
-        // EDITAR TRANSAÇÃO
-        
-        // 1. Se a transação antiga estava paga, reverter o saldo
         if (editingTransacao.pago && editingTransacao.conta_id) {
           await atualizarSaldoConta(
             editingTransacao.conta_id,
@@ -194,7 +185,6 @@ export default function Transacoes() {
           )
         }
 
-        // 2. Atualizar a transação
         const { error } = await supabase
           .from('transacoes')
           .update(dadosTransacao)
@@ -202,7 +192,6 @@ export default function Transacoes() {
 
         if (error) throw error
 
-        // 3. Se a nova transação está paga, adicionar ao saldo
         if (pago && dadosTransacao.conta_id) {
           await atualizarSaldoConta(
             dadosTransacao.conta_id,
@@ -214,16 +203,12 @@ export default function Transacoes() {
 
         setSuccess('Transação atualizada com sucesso!')
       } else {
-        // CRIAR NOVA TRANSAÇÃO
-        
-        // 1. Inserir a transação
         const { error } = await supabase
           .from('transacoes')
           .insert([dadosTransacao])
 
         if (error) throw error
 
-        // 2. Se estiver paga, atualizar o saldo
         if (pago && dadosTransacao.conta_id) {
           await atualizarSaldoConta(
             dadosTransacao.conta_id,
@@ -267,7 +252,6 @@ export default function Transacoes() {
     if (!confirm('Tem certeza que deseja excluir esta transação?')) return
 
     try {
-      // 1. Se a transação estava paga, reverter o saldo
       if (transacao.pago && transacao.conta_id) {
         await atualizarSaldoConta(
           transacao.conta_id,
@@ -277,7 +261,6 @@ export default function Transacoes() {
         )
       }
 
-      // 2. Excluir a transação
       const { error } = await supabase
         .from('transacoes')
         .delete()
@@ -297,7 +280,6 @@ export default function Transacoes() {
     try {
       const dataPagamento = new Date().toISOString().split('T')[0]
 
-      // 1. Atualizar transação como paga
       const { error } = await supabase
         .from('transacoes')
         .update({
@@ -308,7 +290,6 @@ export default function Transacoes() {
 
       if (error) throw error
 
-      // 2. Se tiver conta vinculada, atualizar o saldo
       if (transacao.conta_id) {
         await atualizarSaldoConta(
           transacao.conta_id,
@@ -385,6 +366,21 @@ export default function Transacoes() {
 
   const saldo = totalReceitas - totalDespesas
 
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value)
+  }
+
+  const formatDate = (date) => {
+    return new Date(date + 'T00:00:00').toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    })
+  }
+
   if (loading) {
     return (
       <div className="page-container">
@@ -425,10 +421,7 @@ export default function Transacoes() {
           <div className="resumo-info">
             <span className="resumo-label">Receitas</span>
             <span className="resumo-valor">
-              {new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format(totalReceitas)}
+              {formatCurrency(totalReceitas)}
             </span>
           </div>
         </div>
@@ -438,10 +431,7 @@ export default function Transacoes() {
           <div className="resumo-info">
             <span className="resumo-label">Despesas</span>
             <span className="resumo-valor">
-              {new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format(totalDespesas)}
+              {formatCurrency(totalDespesas)}
             </span>
           </div>
         </div>
@@ -451,10 +441,7 @@ export default function Transacoes() {
           <div className="resumo-info">
             <span className="resumo-label">Saldo</span>
             <span className={`resumo-valor ${saldo >= 0 ? 'positivo' : 'negativo'}`}>
-              {new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format(saldo)}
+              {formatCurrency(saldo)}
             </span>
           </div>
         </div>
@@ -464,10 +451,7 @@ export default function Transacoes() {
           <div className="resumo-info">
             <span className="resumo-label">Pendentes</span>
             <span className="resumo-valor">
-              {new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format(Math.abs(totalPendente))}
+              {formatCurrency(Math.abs(totalPendente))}
             </span>
           </div>
         </div>
@@ -522,61 +506,30 @@ export default function Transacoes() {
           {transacoesFiltradas.map((trans) => (
             <div 
               key={trans.id} 
-              className={`transacao-item ${trans.tipo} ${trans.pago ? 'pago' : 'pendente'}`}
+              className={`transacao-card ${trans.tipo} ${trans.pago ? 'pago' : 'pendente'}`}
             >
-              <div className="transacao-header">
-                <div className="transacao-categoria">
-                  <div 
-                    className="categoria-icon"
-                    style={{ backgroundColor: trans.categorias?.cor }}
-                  >
-                    {trans.categorias?.icone}
-                  </div>
-                  <div className="categoria-info">
-                    <span className="categoria-nome">{trans.categorias?.nome}</span>
-                    {trans.subcategorias && (
-                      <span className="subcategoria-nome">{trans.subcategorias.nome}</span>
-                    )}
-                  </div>
+              <div className="transacao-left">
+                <div 
+                  className="transacao-icone"
+                  style={{ backgroundColor: trans.categorias?.cor }}
+                >
+                  {trans.categorias?.icone || '📦'}
                 </div>
 
-                <div className="transacao-actions">
-                  {!trans.pago && (
-                    <button
-                      className="btn-icon btn-check"
-                      onClick={() => handleDarBaixa(trans)}
-                      title="Dar Baixa"
-                    >
-                      <Check size={16} />
-                    </button>
-                  )}
-                  <button
-                    className="btn-icon"
-                    onClick={() => handleEditar(trans)}
-                    title="Editar"
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                  <button
-                    className="btn-icon btn-delete"
-                    onClick={() => handleExcluir(trans)}
-                    title="Excluir"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="transacao-body">
-                <div className="transacao-descricao">
-                  <h3>{trans.descricao}</h3>
+                <div className="transacao-info">
+                  <h3 className="transacao-titulo">{trans.descricao}</h3>
+                  
                   <div className="transacao-detalhes">
+                    <span className="transacao-categoria">
+                      {trans.categorias?.nome}
+                      {trans.subcategorias && ` • ${trans.subcategorias.nome}`}
+                    </span>
+
+                    <span className="transacao-separador">•</span>
+
                     {trans.conta_id ? (
                       <span className="transacao-conta">
-                        <div 
-                          className="conta-dot" 
-                          style={{ backgroundColor: trans.contas_bancarias?.cor }}
-                        />
+                        <Landmark size={14} />
                         {trans.contas_bancarias?.nome}
                       </span>
                     ) : (
@@ -585,32 +538,54 @@ export default function Transacoes() {
                         Dinheiro
                       </span>
                     )}
+
+                    <span className="transacao-separador">•</span>
+
                     <span className="transacao-data">
                       <Calendar size={14} />
-                      {new Date(trans.data_transacao + 'T00:00:00').toLocaleDateString('pt-BR')}
+                      {formatDate(trans.data_transacao)}
                     </span>
                   </div>
                 </div>
+              </div>
 
-                <div className="transacao-valor">
-                  <span className={`valor ${trans.tipo}`}>
+              <div className="transacao-right">
+                <div className="transacao-valor-container">
+                  <span className={`transacao-valor ${trans.tipo}`}>
                     {trans.tipo === 'receita' ? '+' : '-'}
-                    {new Intl.NumberFormat('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL'
-                    }).format(trans.valor)}
+                    {formatCurrency(trans.valor)}
                   </span>
-                  <span className={`status-badge ${trans.pago ? 'pago' : 'pendente'}`}>
+                  <span className={`transacao-status ${trans.pago ? 'pago' : 'pendente'}`}>
                     {trans.pago ? 'Pago' : 'Pendente'}
                   </span>
                 </div>
-              </div>
 
-              {trans.observacoes && (
-                <div className="transacao-obs">
-                  <small>{trans.observacoes}</small>
+                <div className="transacao-acoes">
+                  {!trans.pago && (
+                    <button
+                      className="btn-acao btn-check"
+                      onClick={() => handleDarBaixa(trans)}
+                      title="Dar Baixa"
+                    >
+                      <Check size={16} />
+                    </button>
+                  )}
+                  <button
+                    className="btn-acao btn-edit"
+                    onClick={() => handleEditar(trans)}
+                    title="Editar"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                  <button
+                    className="btn-acao btn-delete"
+                    onClick={() => handleExcluir(trans)}
+                    title="Excluir"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
           ))}
         </div>
