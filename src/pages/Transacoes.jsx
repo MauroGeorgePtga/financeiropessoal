@@ -1,39 +1,45 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { Plus, Edit2, Trash2, Search, Check, X, Calendar, Banknote } from 'lucide-react'
-import './Transacoes.css'
+import { Link } from 'react-router-dom'
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Wallet,
+  Calendar,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  Landmark,
+  Banknote
+} from 'lucide-react'
+import './Dashboard.css'
 
-export default function Transacoes() {
+export default function Dashboard() {
   const { user } = useAuth()
-  const [transacoes, setTransacoes] = useState([])
-  const [contas, setContas] = useState([])
-  const [categorias, setCategorias] = useState([])
-  const [subcategorias, setSubcategorias] = useState([])
   const [loading, setLoading] = useState(true)
-  const [showModal, setShowModal] = useState(false)
-  const [editingTransacao, setEditingTransacao] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filtroTipo, setFiltroTipo] = useState('todos')
-  const [filtroPago, setFiltroPago] = useState('todos')
-  
-  const [formData, setFormData] = useState({
-    tipo: 'despesa',
-    descricao: '',
-    valor: 0,
-    forma_pagamento: 'conta',
-    conta_id: '',
-    categoria_id: '',
-    subcategoria_id: '',
-    data_transacao: new Date().toISOString().split('T')[0],
-    data_vencimento: '',
-    pago: false,
-    data_pagamento: '',
-    observacoes: ''
+  const [dados, setDados] = useState({
+    contas: [],
+    transacoes: [],
+    categorias: [],
+    totalContas: 0,
+    saldoTotal: 0,
+    // Receitas
+    receitasMes: 0,
+    receitasBanco: 0,
+    receitasDinheiro: 0,
+    // Despesas
+    despesasMes: 0,
+    despesasBanco: 0,
+    despesasDinheiro: 0,
+    // Saldo
+    saldoMes: 0,
+    transacoesPendentes: 0,
+    valorPendente: 0,
+    proximosVencimentos: []
   })
-
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
 
   useEffect(() => {
     if (user) {
@@ -45,761 +51,445 @@ export default function Transacoes() {
     try {
       setLoading(true)
 
-      const { data: transData, error: transError } = await supabase
-        .from('transacoes')
-        .select(`
-          *,
-          contas_bancarias(nome, cor),
-          categorias(nome, cor, icone, tipo),
-          subcategorias(nome)
-        `)
-        .eq('user_id', user.id)
-        .order('data_transacao', { ascending: false })
+      // Data atual
+      const hoje = new Date()
+      const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0]
+      const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().split('T')[0]
+      const daquiA7Dias = new Date(hoje.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-      if (transError) throw transError
-
-      const { data: contasData, error: contasError } = await supabase
+      // Carregar contas
+      const { data: contasData } = await supabase
         .from('contas_bancarias')
         .select('*')
         .eq('user_id', user.id)
         .eq('ativo', true)
-        .order('nome')
 
-      if (contasError) throw contasError
+      // Carregar transações
+      const { data: transacoesData } = await supabase
+        .from('transacoes')
+        .select(`
+          *,
+          contas_bancarias(nome, cor),
+          categorias(nome, cor, icone)
+        `)
+        .eq('user_id', user.id)
 
-      const { data: catData, error: catError } = await supabase
+      // Carregar categorias
+      const { data: categoriasData } = await supabase
         .from('categorias')
         .select('*')
         .eq('user_id', user.id)
         .eq('ativo', true)
-        .order('tipo', { ascending: false })
-        .order('nome')
 
-      if (catError) throw catError
+      const contas = contasData || []
+      const transacoes = transacoesData || []
+      const categorias = categoriasData || []
 
-      const { data: subData, error: subError } = await supabase
-        .from('subcategorias')
-        .select(`
-          *,
-          categorias!inner(user_id)
-        `)
-        .eq('categorias.user_id', user.id)
-        .eq('ativo', true)
-        .order('nome')
+      // Calcular totais
+      const saldoTotal = contas.reduce((acc, conta) => acc + (conta.saldo_atual || 0), 0)
 
-      if (subError) throw subError
+      // Transações do mês atual PAGAS
+      const transacoesMes = transacoes.filter(t => 
+        t.data_transacao >= primeiroDiaMes && 
+        t.data_transacao <= ultimoDiaMes &&
+        t.pago
+      )
 
-      setTransacoes(transData || [])
-      setContas(contasData || [])
-      setCategorias(catData || [])
-      setSubcategorias(subData || [])
+      // RECEITAS do mês
+      const receitasMes = transacoesMes.filter(t => t.tipo === 'receita')
+      const receitasBanco = receitasMes
+        .filter(t => t.conta_id !== null)
+        .reduce((acc, t) => acc + t.valor, 0)
+      const receitasDinheiro = receitasMes
+        .filter(t => t.conta_id === null)
+        .reduce((acc, t) => acc + t.valor, 0)
+      const receitasTotal = receitasBanco + receitasDinheiro
+
+      // DESPESAS do mês
+      const despesasMes = transacoesMes.filter(t => t.tipo === 'despesa')
+      const despesasBanco = despesasMes
+        .filter(t => t.conta_id !== null)
+        .reduce((acc, t) => acc + t.valor, 0)
+      const despesasDinheiro = despesasMes
+        .filter(t => t.conta_id === null)
+        .reduce((acc, t) => acc + t.valor, 0)
+      const despesasTotal = despesasBanco + despesasDinheiro
+
+      const saldoMes = receitasTotal - despesasTotal
+
+      // Transações pendentes
+      const pendentes = transacoes.filter(t => !t.pago)
+      const transacoesPendentes = pendentes.length
+      const valorPendente = pendentes.reduce((acc, t) => {
+        return acc + (t.tipo === 'receita' ? t.valor : -t.valor)
+      }, 0)
+
+      // Próximos vencimentos (7 dias)
+      const proximosVencimentos = transacoes
+        .filter(t => 
+          !t.pago && 
+          t.data_vencimento && 
+          t.data_vencimento <= daquiA7Dias &&
+          t.data_vencimento >= hoje.toISOString().split('T')[0]
+        )
+        .sort((a, b) => new Date(a.data_vencimento) - new Date(b.data_vencimento))
+        .slice(0, 5)
+
+      setDados({
+        contas,
+        transacoes,
+        categorias,
+        totalContas: contas.length,
+        saldoTotal,
+        receitasMes: receitasTotal,
+        receitasBanco,
+        receitasDinheiro,
+        despesasMes: despesasTotal,
+        despesasBanco,
+        despesasDinheiro,
+        saldoMes,
+        transacoesPendentes,
+        valorPendente,
+        proximosVencimentos
+      })
     } catch (error) {
       console.error('Erro ao carregar dados:', error)
-      setError('Erro ao carregar transações')
     } finally {
       setLoading(false)
     }
   }
 
-  // Função para atualizar saldo da conta
-  const atualizarSaldoConta = async (contaId, valor, tipo, operacao) => {
-    if (!contaId) return // Se for dinheiro, não atualiza conta
+  // Top 5 categorias mais usadas no mês
+  const topCategorias = () => {
+    const hoje = new Date()
+    const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0]
+    const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().split('T')[0]
 
-    try {
-      // Buscar conta atual
-      const { data: conta, error: contaError } = await supabase
-        .from('contas_bancarias')
-        .select('saldo_atual')
-        .eq('id', contaId)
-        .single()
+    const transacoesMes = dados.transacoes.filter(t => 
+      t.data_transacao >= primeiroDiaMes && 
+      t.data_transacao <= ultimoDiaMes &&
+      t.pago &&
+      t.tipo === 'despesa'
+    )
 
-      if (contaError) throw contaError
-
-      let novoSaldo = conta.saldo_atual
-
-      // Calcular novo saldo baseado na operação
-      if (operacao === 'adicionar') {
-        if (tipo === 'receita') {
-          novoSaldo += valor
-        } else if (tipo === 'despesa') {
-          novoSaldo -= valor
-        }
-      } else if (operacao === 'remover') {
-        if (tipo === 'receita') {
-          novoSaldo -= valor
-        } else if (tipo === 'despesa') {
-          novoSaldo += valor
+    const categoriasSoma = {}
+    transacoesMes.forEach(t => {
+      const catNome = t.categorias?.nome || 'Sem categoria'
+      if (!categoriasSoma[catNome]) {
+        categoriasSoma[catNome] = {
+          nome: catNome,
+          valor: 0,
+          cor: t.categorias?.cor || '#999',
+          icone: t.categorias?.icone || '📦'
         }
       }
-
-      // Atualizar saldo
-      const { error: updateError } = await supabase
-        .from('contas_bancarias')
-        .update({ saldo_atual: novoSaldo })
-        .eq('id', contaId)
-
-      if (updateError) throw updateError
-
-      console.log(`Saldo atualizado: Conta ${contaId}, Novo saldo: R$ ${novoSaldo}`)
-    } catch (error) {
-      console.error('Erro ao atualizar saldo:', error)
-      throw error
-    }
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setSuccess('')
-
-    try {
-      if (formData.forma_pagamento === 'conta' && !formData.conta_id) {
-        setError('Selecione uma conta bancária')
-        return
-      }
-
-      if (!formData.categoria_id) {
-        setError('Selecione uma categoria')
-        return
-      }
-
-      const valor = parseFloat(formData.valor)
-      const pago = formData.pago
-
-      const dadosTransacao = {
-        tipo: formData.tipo,
-        descricao: formData.descricao,
-        valor: valor,
-        user_id: user.id,
-        conta_id: formData.forma_pagamento === 'dinheiro' ? null : formData.conta_id,
-        categoria_id: formData.categoria_id,
-        subcategoria_id: formData.subcategoria_id || null,
-        data_transacao: formData.data_transacao,
-        data_vencimento: formData.data_vencimento || null,
-        pago: pago,
-        data_pagamento: pago ? (formData.data_pagamento || formData.data_transacao) : null,
-        observacoes: formData.observacoes || null
-      }
-
-      if (editingTransacao) {
-        // EDITAR TRANSAÇÃO
-        
-        // 1. Se a transação antiga estava paga, reverter o saldo
-        if (editingTransacao.pago && editingTransacao.conta_id) {
-          await atualizarSaldoConta(
-            editingTransacao.conta_id,
-            editingTransacao.valor,
-            editingTransacao.tipo,
-            'remover'
-          )
-        }
-
-        // 2. Atualizar a transação
-        const { error } = await supabase
-          .from('transacoes')
-          .update(dadosTransacao)
-          .eq('id', editingTransacao.id)
-
-        if (error) throw error
-
-        // 3. Se a nova transação está paga, adicionar ao saldo
-        if (pago && dadosTransacao.conta_id) {
-          await atualizarSaldoConta(
-            dadosTransacao.conta_id,
-            valor,
-            dadosTransacao.tipo,
-            'adicionar'
-          )
-        }
-
-        setSuccess('Transação atualizada com sucesso!')
-      } else {
-        // CRIAR NOVA TRANSAÇÃO
-        
-        // 1. Inserir a transação
-        const { error } = await supabase
-          .from('transacoes')
-          .insert([dadosTransacao])
-
-        if (error) throw error
-
-        // 2. Se estiver paga, atualizar o saldo
-        if (pago && dadosTransacao.conta_id) {
-          await atualizarSaldoConta(
-            dadosTransacao.conta_id,
-            valor,
-            dadosTransacao.tipo,
-            'adicionar'
-          )
-        }
-
-        setSuccess('Transação cadastrada com sucesso!')
-      }
-
-      await carregarDados()
-      fecharModal()
-    } catch (error) {
-      console.error('Erro ao salvar transação:', error)
-      setError(error.message || 'Erro ao salvar transação')
-    }
-  }
-
-  const handleEditar = (transacao) => {
-    setEditingTransacao(transacao)
-    setFormData({
-      tipo: transacao.tipo,
-      descricao: transacao.descricao,
-      valor: transacao.valor,
-      forma_pagamento: transacao.conta_id ? 'conta' : 'dinheiro',
-      conta_id: transacao.conta_id || '',
-      categoria_id: transacao.categoria_id,
-      subcategoria_id: transacao.subcategoria_id || '',
-      data_transacao: transacao.data_transacao,
-      data_vencimento: transacao.data_vencimento || '',
-      pago: transacao.pago,
-      data_pagamento: transacao.data_pagamento || '',
-      observacoes: transacao.observacoes || ''
+      categoriasSoma[catNome].valor += t.valor
     })
-    setShowModal(true)
+
+    return Object.values(categoriasSoma)
+      .sort((a, b) => b.valor - a.valor)
+      .slice(0, 5)
   }
-
-  const handleExcluir = async (transacao) => {
-    if (!confirm('Tem certeza que deseja excluir esta transação?')) return
-
-    try {
-      // 1. Se a transação estava paga, reverter o saldo
-      if (transacao.pago && transacao.conta_id) {
-        await atualizarSaldoConta(
-          transacao.conta_id,
-          transacao.valor,
-          transacao.tipo,
-          'remover'
-        )
-      }
-
-      // 2. Excluir a transação
-      const { error } = await supabase
-        .from('transacoes')
-        .delete()
-        .eq('id', transacao.id)
-
-      if (error) throw error
-      
-      setSuccess('Transação excluída com sucesso!')
-      await carregarDados()
-    } catch (error) {
-      console.error('Erro ao excluir transação:', error)
-      setError('Erro ao excluir transação')
-    }
-  }
-
-  const handleDarBaixa = async (transacao) => {
-    try {
-      const dataPagamento = new Date().toISOString().split('T')[0]
-
-      // 1. Atualizar transação como paga
-      const { error } = await supabase
-        .from('transacoes')
-        .update({
-          pago: true,
-          data_pagamento: dataPagamento
-        })
-        .eq('id', transacao.id)
-
-      if (error) throw error
-
-      // 2. Se tiver conta vinculada, atualizar o saldo
-      if (transacao.conta_id) {
-        await atualizarSaldoConta(
-          transacao.conta_id,
-          transacao.valor,
-          transacao.tipo,
-          'adicionar'
-        )
-      }
-      
-      setSuccess('Baixa realizada com sucesso!')
-      await carregarDados()
-    } catch (error) {
-      console.error('Erro ao dar baixa:', error)
-      setError('Erro ao dar baixa na transação')
-    }
-  }
-
-  const abrirModal = () => {
-    setEditingTransacao(null)
-    setFormData({
-      tipo: 'despesa',
-      descricao: '',
-      valor: 0,
-      forma_pagamento: 'conta',
-      conta_id: contas.length > 0 ? contas[0].id : '',
-      categoria_id: '',
-      subcategoria_id: '',
-      data_transacao: new Date().toISOString().split('T')[0],
-      data_vencimento: '',
-      pago: false,
-      data_pagamento: '',
-      observacoes: ''
-    })
-    setError('')
-    setSuccess('')
-    setShowModal(true)
-  }
-
-  const fecharModal = () => {
-    setShowModal(false)
-    setEditingTransacao(null)
-    setError('')
-  }
-
-  const transacoesFiltradas = transacoes.filter(trans => {
-    const matchSearch = trans.descricao.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchTipo = filtroTipo === 'todos' || trans.tipo === filtroTipo
-    const matchPago = filtroPago === 'todos' || 
-                      (filtroPago === 'pago' && trans.pago) ||
-                      (filtroPago === 'pendente' && !trans.pago)
-    
-    return matchSearch && matchTipo && matchPago
-  })
-
-  const subcategoriasFiltradas = subcategorias.filter(
-    sub => sub.categoria_id === formData.categoria_id
-  )
-
-  const categoriasFiltradas = categorias.filter(
-    cat => cat.tipo === formData.tipo
-  )
-
-  const totalReceitas = transacoes
-    .filter(t => t.tipo === 'receita' && t.pago)
-    .reduce((acc, t) => acc + t.valor, 0)
-  
-  const totalDespesas = transacoes
-    .filter(t => t.tipo === 'despesa' && t.pago)
-    .reduce((acc, t) => acc + t.valor, 0)
-  
-  const totalPendente = transacoes
-    .filter(t => !t.pago)
-    .reduce((acc, t) => acc + (t.tipo === 'receita' ? t.valor : -t.valor), 0)
-
-  const saldo = totalReceitas - totalDespesas
 
   if (loading) {
     return (
       <div className="page-container">
-        <div className="loading">Carregando transações...</div>
+        <div className="loading">Carregando dashboard...</div>
       </div>
     )
   }
 
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value)
+  }
+
+  const formatDate = (date) => {
+    return new Date(date + 'T00:00:00').toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short'
+    })
+  }
+
   return (
     <div className="page-container">
-      <div className="page-header">
+      <div className="dashboard-header">
         <div>
-          <h1>Transações</h1>
-          <p>Gerencie suas receitas e despesas</p>
+          <h1>Dashboard</h1>
+          <p>Visão geral das suas finanças</p>
         </div>
-        <button className="btn-primary" onClick={abrirModal}>
-          <Plus size={20} />
-          Nova Transação
-        </button>
-      </div>
-
-      {error && (
-        <div className="alert alert-error">
-          {error}
-          <button onClick={() => setError('')}>×</button>
-        </div>
-      )}
-      {success && (
-        <div className="alert alert-success">
-          {success}
-          <button onClick={() => setSuccess('')}>×</button>
-        </div>
-      )}
-
-      <div className="resumo-cards">
-        <div className="resumo-card card-receita">
-          <div className="resumo-icon">💰</div>
-          <div className="resumo-info">
-            <span className="resumo-label">Receitas</span>
-            <span className="resumo-valor">
-              {new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format(totalReceitas)}
-            </span>
-          </div>
-        </div>
-
-        <div className="resumo-card card-despesa">
-          <div className="resumo-icon">💸</div>
-          <div className="resumo-info">
-            <span className="resumo-label">Despesas</span>
-            <span className="resumo-valor">
-              {new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format(totalDespesas)}
-            </span>
-          </div>
-        </div>
-
-        <div className="resumo-card card-saldo">
-          <div className="resumo-icon">💵</div>
-          <div className="resumo-info">
-            <span className="resumo-label">Saldo</span>
-            <span className={`resumo-valor ${saldo >= 0 ? 'positivo' : 'negativo'}`}>
-              {new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format(saldo)}
-            </span>
-          </div>
-        </div>
-
-        <div className="resumo-card card-pendente">
-          <div className="resumo-icon">⏳</div>
-          <div className="resumo-info">
-            <span className="resumo-label">Pendentes</span>
-            <span className="resumo-valor">
-              {new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format(Math.abs(totalPendente))}
-            </span>
-          </div>
+        <div className="dashboard-date">
+          <Calendar size={20} />
+          <span>{new Date().toLocaleDateString('pt-BR', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })}</span>
         </div>
       </div>
 
-      <div className="filtros-container">
-        <div className="search-box">
-          <Search size={20} />
-          <input
-            type="text"
-            placeholder="Buscar transações..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {/* Cards Principais */}
+      <div className="dashboard-cards">
+        <div className="dashboard-card card-saldo-total">
+          <div className="card-header">
+            <span className="card-title">Saldo Total em Contas</span>
+            <Wallet size={24} className="card-icon" />
+          </div>
+          <div className="card-value">
+            <span className={dados.saldoTotal >= 0 ? 'positivo' : 'negativo'}>
+              {formatCurrency(dados.saldoTotal)}
+            </span>
+          </div>
+          <div className="card-footer">
+            <span>{dados.totalContas} conta(s) ativa(s)</span>
+            <Link to="/contas" className="card-link">Ver contas →</Link>
+          </div>
         </div>
 
-        <div className="filtros-group">
-          <select 
-            value={filtroTipo} 
-            onChange={(e) => setFiltroTipo(e.target.value)}
-            className="filtro-select"
-          >
-            <option value="todos">Todos os tipos</option>
-            <option value="receita">Receitas</option>
-            <option value="despesa">Despesas</option>
-          </select>
+        <div className="dashboard-card card-receitas">
+          <div className="card-header">
+            <span className="card-title">Receitas do Mês</span>
+            <ArrowUpCircle size={24} className="card-icon" />
+          </div>
+          <div className="card-value">
+            <span className="positivo">{formatCurrency(dados.receitasMes)}</span>
+          </div>
+          <div className="card-footer-split">
+            <div className="footer-item">
+              <Landmark size={14} />
+              <span className="footer-label">Banco:</span>
+              <span className="footer-value">{formatCurrency(dados.receitasBanco)}</span>
+            </div>
+            <div className="footer-item">
+              <Banknote size={14} />
+              <span className="footer-label">Dinheiro:</span>
+              <span className="footer-value">{formatCurrency(dados.receitasDinheiro)}</span>
+            </div>
+          </div>
+        </div>
 
-          <select 
-            value={filtroPago} 
-            onChange={(e) => setFiltroPago(e.target.value)}
-            className="filtro-select"
-          >
-            <option value="todos">Todos os status</option>
-            <option value="pago">Pagos</option>
-            <option value="pendente">Pendentes</option>
-          </select>
+        <div className="dashboard-card card-despesas">
+          <div className="card-header">
+            <span className="card-title">Despesas do Mês</span>
+            <ArrowDownCircle size={24} className="card-icon" />
+          </div>
+          <div className="card-value">
+            <span className="negativo">{formatCurrency(dados.despesasMes)}</span>
+          </div>
+          <div className="card-footer-split">
+            <div className="footer-item">
+              <Landmark size={14} />
+              <span className="footer-label">Banco:</span>
+              <span className="footer-value">{formatCurrency(dados.despesasBanco)}</span>
+            </div>
+            <div className="footer-item">
+              <Banknote size={14} />
+              <span className="footer-label">Dinheiro:</span>
+              <span className="footer-value">{formatCurrency(dados.despesasDinheiro)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="dashboard-card card-saldo-mes">
+          <div className="card-header">
+            <span className="card-title">Saldo do Mês</span>
+            {dados.saldoMes >= 0 ? (
+              <TrendingUp size={24} className="card-icon" />
+            ) : (
+              <TrendingDown size={24} className="card-icon" />
+            )}
+          </div>
+          <div className="card-value">
+            <span className={dados.saldoMes >= 0 ? 'positivo' : 'negativo'}>
+              {formatCurrency(dados.saldoMes)}
+            </span>
+          </div>
+          <div className="card-footer">
+            <span>
+              {dados.saldoMes >= 0 ? 'Superávit' : 'Déficit'} mensal
+            </span>
+          </div>
         </div>
       </div>
 
-      {transacoesFiltradas.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">💰</div>
-          <h2>Nenhuma transação encontrada</h2>
-          <p>Comece lançando suas receitas e despesas</p>
-          <button className="btn-primary" onClick={abrirModal}>
-            <Plus size={20} />
-            Lançar Primeira Transação
-          </button>
+      {/* Cards Secundários */}
+      <div className="dashboard-secondary-cards">
+        <div className="secondary-card card-pendentes">
+          <div className="secondary-header">
+            <Clock size={20} />
+            <span>Transações Pendentes</span>
+          </div>
+          <div className="secondary-value">
+            <strong>{dados.transacoesPendentes}</strong>
+            <span className={dados.valorPendente >= 0 ? 'positivo' : 'negativo'}>
+              {formatCurrency(Math.abs(dados.valorPendente))}
+            </span>
+          </div>
+          <Link to="/transacoes" className="secondary-link">
+            Ver pendentes →
+          </Link>
         </div>
-      ) : (
-        <div className="transacoes-list">
-          {transacoesFiltradas.map((trans) => (
-            <div 
-              key={trans.id} 
-              className={`transacao-item ${trans.tipo} ${trans.pago ? 'pago' : 'pendente'}`}
-            >
-              <div className="transacao-header">
-                <div className="transacao-categoria">
-                  <div 
-                    className="categoria-icon"
-                    style={{ backgroundColor: trans.categorias?.cor }}
-                  >
-                    {trans.categorias?.icone}
-                  </div>
-                  <div className="categoria-info">
-                    <span className="categoria-nome">{trans.categorias?.nome}</span>
-                    {trans.subcategorias && (
-                      <span className="subcategoria-nome">{trans.subcategorias.nome}</span>
-                    )}
-                  </div>
-                </div>
 
-                <div className="transacao-actions">
-                  {!trans.pago && (
-                    <button
-                      className="btn-icon btn-check"
-                      onClick={() => handleDarBaixa(trans)}
-                      title="Dar Baixa"
-                    >
-                      <Check size={16} />
-                    </button>
-                  )}
-                  <button
-                    className="btn-icon"
-                    onClick={() => handleEditar(trans)}
-                    title="Editar"
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                  <button
-                    className="btn-icon btn-delete"
-                    onClick={() => handleExcluir(trans)}
-                    title="Excluir"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+        <div className="secondary-card card-categorias">
+          <div className="secondary-header">
+            <CheckCircle size={20} />
+            <span>Categorias Ativas</span>
+          </div>
+          <div className="secondary-value">
+            <strong>{dados.categorias.length}</strong>
+            <span className="subtitle">
+              {dados.categorias.filter(c => c.tipo === 'receita').length} receitas / {' '}
+              {dados.categorias.filter(c => c.tipo === 'despesa').length} despesas
+            </span>
+          </div>
+          <Link to="/categorias" className="secondary-link">
+            Gerenciar →
+          </Link>
+        </div>
+      </div>
+
+      {/* Conteúdo em Grid */}
+      <div className="dashboard-grid">
+        {/* Próximos Vencimentos */}
+        <div className="dashboard-widget">
+          <div className="widget-header">
+            <h3>
+              <AlertCircle size={20} />
+              Próximos Vencimentos (7 dias)
+            </h3>
+          </div>
+          <div className="widget-content">
+            {dados.proximosVencimentos.length === 0 ? (
+              <div className="widget-empty">
+                <span>Nenhum vencimento próximo</span>
               </div>
-
-              <div className="transacao-body">
-                <div className="transacao-descricao">
-                  <h3>{trans.descricao}</h3>
-                  <div className="transacao-detalhes">
-                    {trans.conta_id ? (
-                      <span className="transacao-conta">
-                        <div 
-                          className="conta-dot" 
-                          style={{ backgroundColor: trans.contas_bancarias?.cor }}
-                        />
-                        {trans.contas_bancarias?.nome}
-                      </span>
-                    ) : (
-                      <span className="transacao-dinheiro">
-                        <Banknote size={14} />
-                        Dinheiro
-                      </span>
-                    )}
-                    <span className="transacao-data">
-                      <Calendar size={14} />
-                      {new Date(trans.data_transacao + 'T00:00:00').toLocaleDateString('pt-BR')}
+            ) : (
+              <div className="vencimentos-list">
+                {dados.proximosVencimentos.map((trans) => (
+                  <div key={trans.id} className="vencimento-item">
+                    <div className="vencimento-info">
+                      <div 
+                        className="vencimento-icon"
+                        style={{ backgroundColor: trans.categorias?.cor }}
+                      >
+                        {trans.categorias?.icone}
+                      </div>
+                      <div className="vencimento-detalhes">
+                        <strong>{trans.descricao}</strong>
+                        <span className="vencimento-data">
+                          Vence em {formatDate(trans.data_vencimento)}
+                        </span>
+                      </div>
+                    </div>
+                    <span className={`vencimento-valor ${trans.tipo}`}>
+                      {formatCurrency(trans.valor)}
                     </span>
                   </div>
-                </div>
-
-                <div className="transacao-valor">
-                  <span className={`valor ${trans.tipo}`}>
-                    {trans.tipo === 'receita' ? '+' : '-'}
-                    {new Intl.NumberFormat('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL'
-                    }).format(trans.valor)}
-                  </span>
-                  <span className={`status-badge ${trans.pago ? 'pago' : 'pendente'}`}>
-                    {trans.pago ? 'Pago' : 'Pendente'}
-                  </span>
-                </div>
+                ))}
               </div>
-
-              {trans.observacoes && (
-                <div className="transacao-obs">
-                  <small>{trans.observacoes}</small>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {showModal && (
-        <div className="modal-overlay" onClick={fecharModal}>
-          <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{editingTransacao ? 'Editar Transação' : 'Nova Transação'}</h2>
-              <button className="btn-close" onClick={fecharModal}>
-                <X size={24} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit}>
-              <div className="form-grid">
-                <div className="form-group full-width">
-                  <label>Tipo *</label>
-                  <div className="radio-group">
-                    <label className="radio-label">
-                      <input
-                        type="radio"
-                        value="receita"
-                        checked={formData.tipo === 'receita'}
-                        onChange={(e) => setFormData({ ...formData, tipo: e.target.value, categoria_id: '', subcategoria_id: '' })}
-                      />
-                      <span>Receita</span>
-                    </label>
-                    <label className="radio-label">
-                      <input
-                        type="radio"
-                        value="despesa"
-                        checked={formData.tipo === 'despesa'}
-                        onChange={(e) => setFormData({ ...formData, tipo: e.target.value, categoria_id: '', subcategoria_id: '' })}
-                      />
-                      <span>Despesa</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="form-group full-width">
-                  <label>Descrição *</label>
-                  <input
-                    type="text"
-                    value={formData.descricao}
-                    onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                    placeholder="Ex: Compra no supermercado"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Valor *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.valor}
-                    onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Forma de Pagamento *</label>
-                  <select
-                    value={formData.forma_pagamento}
-                    onChange={(e) => setFormData({ ...formData, forma_pagamento: e.target.value, conta_id: '' })}
-                    required
-                  >
-                    <option value="conta">Conta Bancária</option>
-                    <option value="dinheiro">Dinheiro</option>
-                  </select>
-                </div>
-
-                {formData.forma_pagamento === 'conta' && (
-                  <div className="form-group">
-                    <label>Conta *</label>
-                    <select
-                      value={formData.conta_id}
-                      onChange={(e) => setFormData({ ...formData, conta_id: e.target.value })}
-                      required
-                    >
-                      <option value="">Selecione...</option>
-                      {contas.map(conta => (
-                        <option key={conta.id} value={conta.id}>
-                          {conta.nome}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                <div className="form-group">
-                  <label>Categoria *</label>
-                  <select
-                    value={formData.categoria_id}
-                    onChange={(e) => setFormData({ ...formData, categoria_id: e.target.value, subcategoria_id: '' })}
-                    required
-                  >
-                    <option value="">Selecione...</option>
-                    {categoriasFiltradas.map(cat => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.icone} {cat.nome}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Subcategoria</label>
-                  <select
-                    value={formData.subcategoria_id}
-                    onChange={(e) => setFormData({ ...formData, subcategoria_id: e.target.value })}
-                    disabled={!formData.categoria_id || subcategoriasFiltradas.length === 0}
-                  >
-                    <option value="">Nenhuma</option>
-                    {subcategoriasFiltradas.map(sub => (
-                      <option key={sub.id} value={sub.id}>
-                        {sub.nome}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Data da Transação *</label>
-                  <input
-                    type="date"
-                    value={formData.data_transacao}
-                    onChange={(e) => setFormData({ ...formData, data_transacao: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Data de Vencimento</label>
-                  <input
-                    type="date"
-                    value={formData.data_vencimento}
-                    onChange={(e) => setFormData({ ...formData, data_vencimento: e.target.value })}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={formData.pago}
-                      onChange={(e) => setFormData({ ...formData, pago: e.target.checked })}
-                    />
-                    <span>Pago</span>
-                  </label>
-                </div>
-
-                {formData.pago && (
-                  <div className="form-group">
-                    <label>Data de Pagamento</label>
-                    <input
-                      type="date"
-                      value={formData.data_pagamento}
-                      onChange={(e) => setFormData({ ...formData, data_pagamento: e.target.value })}
-                    />
-                  </div>
-                )}
-
-                <div className="form-group full-width">
-                  <label>Observações</label>
-                  <textarea
-                    value={formData.observacoes}
-                    onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-                    placeholder="Informações adicionais..."
-                    rows="3"
-                  />
-                </div>
-              </div>
-
-              <div className="modal-footer">
-                <button type="button" className="btn-secondary" onClick={fecharModal}>
-                  Cancelar
-                </button>
-                <button type="submit" className="btn-primary">
-                  {editingTransacao ? 'Atualizar' : 'Cadastrar'}
-                </button>
-              </div>
-            </form>
+            )}
           </div>
         </div>
-      )}
+
+        {/* Top Categorias */}
+        <div className="dashboard-widget">
+          <div className="widget-header">
+            <h3>
+              <TrendingDown size={20} />
+              Maiores Despesas do Mês
+            </h3>
+          </div>
+          <div className="widget-content">
+            {topCategorias().length === 0 ? (
+              <div className="widget-empty">
+                <span>Nenhuma despesa no mês</span>
+              </div>
+            ) : (
+              <div className="categorias-list">
+                {topCategorias().map((cat, index) => (
+                  <div key={index} className="categoria-item">
+                    <div className="categoria-info">
+                      <span className="categoria-posicao">{index + 1}º</span>
+                      <div 
+                        className="categoria-icon"
+                        style={{ backgroundColor: cat.cor }}
+                      >
+                        {cat.icone}
+                      </div>
+                      <span className="categoria-nome">{cat.nome}</span>
+                    </div>
+                    <span className="categoria-valor">
+                      {formatCurrency(cat.valor)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Minhas Contas */}
+        <div className="dashboard-widget widget-full">
+          <div className="widget-header">
+            <h3>
+              <Wallet size={20} />
+              Minhas Contas
+            </h3>
+            <Link to="/contas" className="widget-link">Ver todas</Link>
+          </div>
+          <div className="widget-content">
+            {dados.contas.length === 0 ? (
+              <div className="widget-empty">
+                <span>Nenhuma conta cadastrada</span>
+                <Link to="/contas" className="btn-secondary">
+                  Cadastrar Conta
+                </Link>
+              </div>
+            ) : (
+              <div className="contas-grid">
+                {dados.contas.slice(0, 4).map((conta) => (
+                  <div key={conta.id} className="conta-mini">
+                    <div 
+                      className="conta-mini-icon"
+                      style={{ backgroundColor: conta.cor }}
+                    >
+                      💳
+                    </div>
+                    <div className="conta-mini-info">
+                      <strong>{conta.nome}</strong>
+                      <span className={conta.saldo_atual >= 0 ? 'positivo' : 'negativo'}>
+                        {formatCurrency(conta.saldo_atual || 0)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Dicas Rápidas */}
+      <div className="dashboard-tips">
+        <h3>💡 Dicas Rápidas</h3>
+        <div className="tips-grid">
+          <div className="tip-card">
+            <strong>Organize-se</strong>
+            <p>Cadastre todas as suas contas e categorias para ter um controle completo</p>
+          </div>
+          <div className="tip-card">
+            <strong>Lance diariamente</strong>
+            <p>Registre suas transações todos os dias para não perder o controle</p>
+          </div>
+          <div className="tip-card">
+            <strong>Fique de olho</strong>
+            <p>Acompanhe seus vencimentos e não deixe contas atrasarem</p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
