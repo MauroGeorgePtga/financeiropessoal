@@ -5,6 +5,7 @@ import Layout from './components/layout/Layout'
 import Dashboard from './pages/Dashboard'
 import Transacoes from './pages/Transacoes'
 import ContasBancarias from './pages/ContasBancarias'
+import Categorias from './pages/Categorias'
 import Investimentos from './pages/Investimentos'
 import Patrimonio from './pages/Patrimonio'
 import Relatorios from './pages/Relatorios'
@@ -58,6 +59,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/transacoes" element={<Transacoes />} />
           <Route path="/contas" element={<ContasBancarias />} />
+          <Route path="/categorias" element={<Categorias />} />
           <Route path="/investimentos" element={<Investimentos />} />
           <Route path="/patrimonio" element={<Patrimonio />} />
           <Route path="/relatorios" element={<Relatorios />} />
