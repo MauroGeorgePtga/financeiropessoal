@@ -1,27 +1,663 @@
-import './Page.css'
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { Plus, Edit2, Trash2, Search, Check, X, Calendar } from 'lucide-react'
+import './Transacoes.css'
 
 export default function Transacoes() {
+  const { user } = useAuth()
+  const [transacoes, setTransacoes] = useState([])
+  const [contas, setContas] = useState([])
+  const [categorias, setCategorias] = useState([])
+  const [subcategorias, setSubcategorias] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editingTransacao, setEditingTransacao] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filtroTipo, setFiltroTipo] = useState('todos')
+  const [filtroPago, setFiltroPago] = useState('todos')
+  
+  const [formData, setFormData] = useState({
+    tipo: 'despesa',
+    descricao: '',
+    valor: 0,
+    conta_id: '',
+    categoria_id: '',
+    subcategoria_id: '',
+    data_transacao: new Date().toISOString().split('T')[0],
+    data_vencimento: '',
+    pago: false,
+    data_pagamento: '',
+    observacoes: ''
+  })
+
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+
+  useEffect(() => {
+    if (user) {
+      carregarDados()
+    }
+  }, [user])
+
+  const carregarDados = async () => {
+    try {
+      setLoading(true)
+
+      const { data: transData, error: transError } = await supabase
+        .from('transacoes')
+        .select(`
+          *,
+          contas_bancarias(nome, cor),
+          categorias(nome, cor, icone, tipo),
+          subcategorias(nome)
+        `)
+        .eq('user_id', user.id)
+        .order('data_transacao', { ascending: false })
+
+      if (transError) throw transError
+
+      const { data: contasData, error: contasError } = await supabase
+        .from('contas_bancarias')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('ativo', true)
+        .order('nome')
+
+      if (contasError) throw contasError
+
+      const { data: catData, error: catError } = await supabase
+        .from('categorias')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('ativo', true)
+        .order('tipo', { ascending: false })
+        .order('nome')
+
+      if (catError) throw catError
+
+      const { data: subData, error: subError } = await supabase
+        .from('subcategorias')
+        .select(`
+          *,
+          categorias!inner(user_id)
+        `)
+        .eq('categorias.user_id', user.id)
+        .eq('ativo', true)
+        .order('nome')
+
+      if (subError) throw subError
+
+      setTransacoes(transData || [])
+      setContas(contasData || [])
+      setCategorias(catData || [])
+      setSubcategorias(subData || [])
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error)
+      setError('Erro ao carregar transações')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setSuccess('')
+
+    try {
+      if (!formData.conta_id) {
+        setError('Selecione uma conta')
+        return
+      }
+      if (!formData.categoria_id) {
+        setError('Selecione uma categoria')
+        return
+      }
+
+      const dadosTransacao = {
+        ...formData,
+        valor: parseFloat(formData.valor),
+        user_id: user.id,
+        subcategoria_id: formData.subcategoria_id || null,
+        data_vencimento: formData.data_vencimento || null,
+        data_pagamento: formData.pago ? (formData.data_pagamento || formData.data_transacao) : null
+      }
+
+      if (editingTransacao) {
+        const { error } = await supabase
+          .from('transacoes')
+          .update(dadosTransacao)
+          .eq('id', editingTransacao.id)
+
+        if (error) throw error
+        setSuccess('Transação atualizada com sucesso!')
+      } else {
+        const { error } = await supabase
+          .from('transacoes')
+          .insert([dadosTransacao])
+
+        if (error) throw error
+        setSuccess('Transação cadastrada com sucesso!')
+      }
+
+      await carregarDados()
+      fecharModal()
+    } catch (error) {
+      console.error('Erro ao salvar transação:', error)
+      setError(error.message || 'Erro ao salvar transação')
+    }
+  }
+
+  const handleEditar = (transacao) => {
+    setEditingTransacao(transacao)
+    setFormData({
+      tipo: transacao.tipo,
+      descricao: transacao.descricao,
+      valor: transacao.valor,
+      conta_id: transacao.conta_id,
+      categoria_id: transacao.categoria_id,
+      subcategoria_id: transacao.subcategoria_id || '',
+      data_transacao: transacao.data_transacao,
+      data_vencimento: transacao.data_vencimento || '',
+      pago: transacao.pago,
+      data_pagamento: transacao.data_pagamento || '',
+      observacoes: transacao.observacoes || ''
+    })
+    setShowModal(true)
+  }
+
+  const handleExcluir = async (id) => {
+    if (!confirm('Tem certeza que deseja excluir esta transação?')) return
+
+    try {
+      const { error } = await supabase
+        .from('transacoes')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+      
+      setSuccess('Transação excluída com sucesso!')
+      await carregarDados()
+    } catch (error) {
+      console.error('Erro ao excluir transação:', error)
+      setError('Erro ao excluir transação')
+    }
+  }
+
+  const handleDarBaixa = async (transacao) => {
+    try {
+      const { error } = await supabase
+        .from('transacoes')
+        .update({
+          pago: true,
+          data_pagamento: new Date().toISOString().split('T')[0]
+        })
+        .eq('id', transacao.id)
+
+      if (error) throw error
+      
+      setSuccess('Baixa realizada com sucesso!')
+      await carregarDados()
+    } catch (error) {
+      console.error('Erro ao dar baixa:', error)
+      setError('Erro ao dar baixa na transação')
+    }
+  }
+
+  const abrirModal = () => {
+    setEditingTransacao(null)
+    setFormData({
+      tipo: 'despesa',
+      descricao: '',
+      valor: 0,
+      conta_id: contas.length > 0 ? contas[0].id : '',
+      categoria_id: '',
+      subcategoria_id: '',
+      data_transacao: new Date().toISOString().split('T')[0],
+      data_vencimento: '',
+      pago: false,
+      data_pagamento: '',
+      observacoes: ''
+    })
+    setError('')
+    setSuccess('')
+    setShowModal(true)
+  }
+
+  const fecharModal = () => {
+    setShowModal(false)
+    setEditingTransacao(null)
+    setError('')
+  }
+
+  const transacoesFiltradas = transacoes.filter(trans => {
+    const matchSearch = trans.descricao.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchTipo = filtroTipo === 'todos' || trans.tipo === filtroTipo
+    const matchPago = filtroPago === 'todos' || 
+                      (filtroPago === 'pago' && trans.pago) ||
+                      (filtroPago === 'pendente' && !trans.pago)
+    
+    return matchSearch && matchTipo && matchPago
+  })
+
+  const subcategoriasFiltradas = subcategorias.filter(
+    sub => sub.categoria_id === formData.categoria_id
+  )
+
+  const categoriasFiltradas = categorias.filter(
+    cat => cat.tipo === formData.tipo
+  )
+
+  const totalReceitas = transacoes
+    .filter(t => t.tipo === 'receita' && t.pago)
+    .reduce((acc, t) => acc + t.valor, 0)
+  
+  const totalDespesas = transacoes
+    .filter(t => t.tipo === 'despesa' && t.pago)
+    .reduce((acc, t) => acc + t.valor, 0)
+  
+  const totalPendente = transacoes
+    .filter(t => !t.pago)
+    .reduce((acc, t) => acc + (t.tipo === 'receita' ? t.valor : -t.valor), 0)
+
+  const saldo = totalReceitas - totalDespesas
+
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="loading">Carregando transações...</div>
+      </div>
+    )
+  }
+
   return (
     <div className="page-container">
       <div className="page-header">
-        <h1>Transações</h1>
-        <p>Gerencie suas receitas e despesas</p>
+        <div>
+          <h1>Transações</h1>
+          <p>Gerencie suas receitas e despesas</p>
+        </div>
+        <button className="btn-primary" onClick={abrirModal}>
+          <Plus size={20} />
+          Nova Transação
+        </button>
       </div>
 
-      <div className="page-content">
-        <div className="empty-state">
-          <div className="empty-icon">💰</div>
-          <h2>Módulo de Transações</h2>
-          <p>Em breve você poderá registrar e gerenciar todas as suas transações financeiras.</p>
-          <ul className="feature-list">
-            <li>✅ Cadastrar receitas e despesas</li>
-            <li>✅ Organizar por categorias</li>
-            <li>✅ Lançamentos em lote</li>
-            <li>✅ Controle de recorrência</li>
-            <li>✅ Histórico completo</li>
-          </ul>
+      {error && (
+        <div className="alert alert-error">
+          {error}
+          <button onClick={() => setError('')}>×</button>
+        </div>
+      )}
+      {success && (
+        <div className="alert alert-success">
+          {success}
+          <button onClick={() => setSuccess('')}>×</button>
+        </div>
+      )}
+
+      <div className="resumo-cards">
+        <div className="resumo-card card-receita">
+          <div className="resumo-icon">💰</div>
+          <div className="resumo-info">
+            <span className="resumo-label">Receitas</span>
+            <span className="resumo-valor">
+              {new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+              }).format(totalReceitas)}
+            </span>
+          </div>
+        </div>
+
+        <div className="resumo-card card-despesa">
+          <div className="resumo-icon">💸</div>
+          <div className="resumo-info">
+            <span className="resumo-label">Despesas</span>
+            <span className="resumo-valor">
+              {new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+              }).format(totalDespesas)}
+            </span>
+          </div>
+        </div>
+
+        <div className="resumo-card card-saldo">
+          <div className="resumo-icon">💵</div>
+          <div className="resumo-info">
+            <span className="resumo-label">Saldo</span>
+            <span className={`resumo-valor ${saldo >= 0 ? 'positivo' : 'negativo'}`}>
+              {new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+              }).format(saldo)}
+            </span>
+          </div>
+        </div>
+
+        <div className="resumo-card card-pendente">
+          <div className="resumo-icon">⏳</div>
+          <div className="resumo-info">
+            <span className="resumo-label">Pendentes</span>
+            <span className="resumo-valor">
+              {new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+              }).format(Math.abs(totalPendente))}
+            </span>
+          </div>
         </div>
       </div>
+
+      <div className="filtros-container">
+        <div className="search-box">
+          <Search size={20} />
+          <input
+            type="text"
+            placeholder="Buscar transações..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        <div className="filtros-group">
+          <select 
+            value={filtroTipo} 
+            onChange={(e) => setFiltroTipo(e.target.value)}
+            className="filtro-select"
+          >
+            <option value="todos">Todos os tipos</option>
+            <option value="receita">Receitas</option>
+            <option value="despesa">Despesas</option>
+          </select>
+
+          <select 
+            value={filtroPago} 
+            onChange={(e) => setFiltroPago(e.target.value)}
+            className="filtro-select"
+          >
+            <option value="todos">Todos os status</option>
+            <option value="pago">Pagos</option>
+            <option value="pendente">Pendentes</option>
+          </select>
+        </div>
+      </div>
+
+      {transacoesFiltradas.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">💰</div>
+          <h2>Nenhuma transação encontrada</h2>
+          <p>Comece lançando suas receitas e despesas</p>
+          <button className="btn-primary" onClick={abrirModal}>
+            <Plus size={20} />
+            Lançar Primeira Transação
+          </button>
+        </div>
+      ) : (
+        <div className="transacoes-list">
+          {transacoesFiltradas.map((trans) => (
+            <div 
+              key={trans.id} 
+              className={`transacao-item ${trans.tipo} ${trans.pago ? 'pago' : 'pendente'}`}
+            >
+              <div className="transacao-header">
+                <div className="transacao-categoria">
+                  <div 
+                    className="categoria-icon"
+                    style={{ backgroundColor: trans.categorias?.cor }}
+                  >
+                    {trans.categorias?.icone}
+                  </div>
+                  <div className="categoria-info">
+                    <span className="categoria-nome">{trans.categorias?.nome}</span>
+                    {trans.subcategorias && (
+                      <span className="subcategoria-nome">{trans.subcategorias.nome}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="transacao-actions">
+                  {!trans.pago && (
+                    <button
+                      className="btn-icon btn-check"
+                      onClick={() => handleDarBaixa(trans)}
+                      title="Dar Baixa"
+                    >
+                      <Check size={16} />
+                    </button>
+                  )}
+                  <button
+                    className="btn-icon"
+                    onClick={() => handleEditar(trans)}
+                    title="Editar"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                  <button
+                    className="btn-icon btn-delete"
+                    onClick={() => handleExcluir(trans.id)}
+                    title="Excluir"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="transacao-body">
+                <div className="transacao-descricao">
+                  <h3>{trans.descricao}</h3>
+                  <div className="transacao-detalhes">
+                    <span className="transacao-conta">
+                      <div 
+                        className="conta-dot" 
+                        style={{ backgroundColor: trans.contas_bancarias?.cor }}
+                      />
+                      {trans.contas_bancarias?.nome}
+                    </span>
+                    <span className="transacao-data">
+                      <Calendar size={14} />
+                      {new Date(trans.data_transacao + 'T00:00:00').toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="transacao-valor">
+                  <span className={`valor ${trans.tipo}`}>
+                    {trans.tipo === 'receita' ? '+' : '-'}
+                    {new Intl.NumberFormat('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL'
+                    }).format(trans.valor)}
+                  </span>
+                  <span className={`status-badge ${trans.pago ? 'pago' : 'pendente'}`}>
+                    {trans.pago ? 'Pago' : 'Pendente'}
+                  </span>
+                </div>
+              </div>
+
+              {trans.observacoes && (
+                <div className="transacao-obs">
+                  <small>{trans.observacoes}</small>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showModal && (
+        <div className="modal-overlay" onClick={fecharModal}>
+          <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{editingTransacao ? 'Editar Transação' : 'Nova Transação'}</h2>
+              <button className="btn-close" onClick={fecharModal}>
+                <X size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              <div className="form-grid">
+                <div className="form-group full-width">
+                  <label>Tipo *</label>
+                  <div className="radio-group">
+                    <label className="radio-label">
+                      <input
+                        type="radio"
+                        value="receita"
+                        checked={formData.tipo === 'receita'}
+                        onChange={(e) => setFormData({ ...formData, tipo: e.target.value, categoria_id: '', subcategoria_id: '' })}
+                      />
+                      <span>Receita</span>
+                    </label>
+                    <label className="radio-label">
+                      <input
+                        type="radio"
+                        value="despesa"
+                        checked={formData.tipo === 'despesa'}
+                        onChange={(e) => setFormData({ ...formData, tipo: e.target.value, categoria_id: '', subcategoria_id: '' })}
+                      />
+                      <span>Despesa</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="form-group full-width">
+                  <label>Descrição *</label>
+                  <input
+                    type="text"
+                    value={formData.descricao}
+                    onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+                    placeholder="Ex: Compra no supermercado"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Valor *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.valor}
+                    onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Conta *</label>
+                  <select
+                    value={formData.conta_id}
+                    onChange={(e) => setFormData({ ...formData, conta_id: e.target.value })}
+                    required
+                  >
+                    <option value="">Selecione...</option>
+                    {contas.map(conta => (
+                      <option key={conta.id} value={conta.id}>
+                        {conta.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Categoria *</label>
+                  <select
+                    value={formData.categoria_id}
+                    onChange={(e) => setFormData({ ...formData, categoria_id: e.target.value, subcategoria_id: '' })}
+                    required
+                  >
+                    <option value="">Selecione...</option>
+                    {categoriasFiltradas.map(cat => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.icone} {cat.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Subcategoria</label>
+                  <select
+                    value={formData.subcategoria_id}
+                    onChange={(e) => setFormData({ ...formData, subcategoria_id: e.target.value })}
+                    disabled={!formData.categoria_id || subcategoriasFiltradas.length === 0}
+                  >
+                    <option value="">Nenhuma</option>
+                    {subcategoriasFiltradas.map(sub => (
+                      <option key={sub.id} value={sub.id}>
+                        {sub.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Data da Transação *</label>
+                  <input
+                    type="date"
+                    value={formData.data_transacao}
+                    onChange={(e) => setFormData({ ...formData, data_transacao: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Data de Vencimento</label>
+                  <input
+                    type="date"
+                    value={formData.data_vencimento}
+                    onChange={(e) => setFormData({ ...formData, data_vencimento: e.target.value })}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={formData.pago}
+                      onChange={(e) => setFormData({ ...formData, pago: e.target.checked })}
+                    />
+                    <span>Pago</span>
+                  </label>
+                </div>
+
+                {formData.pago && (
+                  <div className="form-group">
+                    <label>Data de Pagamento</label>
+                    <input
+                      type="date"
+                      value={formData.data_pagamento}
+                      onChange={(e) => setFormData({ ...formData, data_pagamento: e.target.value })}
+                    />
+                  </div>
+                )}
+
+                <div className="form-group full-width">
+                  <label>Observações</label>
+                  <textarea
+                    value={formData.observacoes}
+                    onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                    placeholder="Informações adicionais..."
+                    rows="3"
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button type="button" className="btn-secondary" onClick={fecharModal}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-primary">
+                  {editingTransacao ? 'Atualizar' : 'Cadastrar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
