@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { 
   LayoutDashboard, 
@@ -17,6 +18,7 @@ import './Layout.css'
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const { user, signOut } = useAuth()
+  const location = useLocation()
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -52,14 +54,14 @@ export default function Layout({ children }) {
 
         <nav className="sidebar-nav">
           {menuItems.map((item) => (
-            <a 
+            <Link 
               key={item.path}
-              href={item.path}
-              className="nav-item"
+              to={item.path}
+              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
             >
               <item.icon size={20} />
               {sidebarOpen && <span>{item.label}</span>}
-            </a>
+            </Link>
           ))}
         </nav>
 
