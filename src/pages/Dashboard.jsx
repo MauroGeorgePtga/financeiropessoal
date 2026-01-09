@@ -11,7 +11,9 @@ import {
   CheckCircle,
   Clock,
   ArrowUpCircle,
-  ArrowDownCircle
+  ArrowDownCircle,
+  Landmark,
+  Banknote
 } from 'lucide-react'
 import './Dashboard.css'
 
@@ -24,8 +26,15 @@ export default function Dashboard() {
     categorias: [],
     totalContas: 0,
     saldoTotal: 0,
+    // Receitas
     receitasMes: 0,
+    receitasBanco: 0,
+    receitasDinheiro: 0,
+    // Despesas
     despesasMes: 0,
+    despesasBanco: 0,
+    despesasDinheiro: 0,
+    // Saldo
     saldoMes: 0,
     transacoesPendentes: 0,
     valorPendente: 0,
@@ -79,22 +88,34 @@ export default function Dashboard() {
       // Calcular totais
       const saldoTotal = contas.reduce((acc, conta) => acc + (conta.saldo_atual || 0), 0)
 
-      // Transações do mês atual
+      // Transações do mês atual PAGAS
       const transacoesMes = transacoes.filter(t => 
         t.data_transacao >= primeiroDiaMes && 
         t.data_transacao <= ultimoDiaMes &&
         t.pago
       )
 
-      const receitasMes = transacoesMes
-        .filter(t => t.tipo === 'receita')
+      // RECEITAS do mês
+      const receitasMes = transacoesMes.filter(t => t.tipo === 'receita')
+      const receitasBanco = receitasMes
+        .filter(t => t.conta_id !== null)
         .reduce((acc, t) => acc + t.valor, 0)
-
-      const despesasMes = transacoesMes
-        .filter(t => t.tipo === 'despesa')
+      const receitasDinheiro = receitasMes
+        .filter(t => t.conta_id === null)
         .reduce((acc, t) => acc + t.valor, 0)
+      const receitasTotal = receitasBanco + receitasDinheiro
 
-      const saldoMes = receitasMes - despesasMes
+      // DESPESAS do mês
+      const despesasMes = transacoesMes.filter(t => t.tipo === 'despesa')
+      const despesasBanco = despesasMes
+        .filter(t => t.conta_id !== null)
+        .reduce((acc, t) => acc + t.valor, 0)
+      const despesasDinheiro = despesasMes
+        .filter(t => t.conta_id === null)
+        .reduce((acc, t) => acc + t.valor, 0)
+      const despesasTotal = despesasBanco + despesasDinheiro
+
+      const saldoMes = receitasTotal - despesasTotal
 
       // Transações pendentes
       const pendentes = transacoes.filter(t => !t.pago)
@@ -120,8 +141,12 @@ export default function Dashboard() {
         categorias,
         totalContas: contas.length,
         saldoTotal,
-        receitasMes,
-        despesasMes,
+        receitasMes: receitasTotal,
+        receitasBanco,
+        receitasDinheiro,
+        despesasMes: despesasTotal,
+        despesasBanco,
+        despesasDinheiro,
         saldoMes,
         transacoesPendentes,
         valorPendente,
@@ -210,7 +235,7 @@ export default function Dashboard() {
       <div className="dashboard-cards">
         <div className="dashboard-card card-saldo-total">
           <div className="card-header">
-            <span className="card-title">Saldo Total</span>
+            <span className="card-title">Saldo Total em Contas</span>
             <Wallet size={24} className="card-icon" />
           </div>
           <div className="card-value">
@@ -232,10 +257,17 @@ export default function Dashboard() {
           <div className="card-value">
             <span className="positivo">{formatCurrency(dados.receitasMes)}</span>
           </div>
-          <div className="card-footer">
-            <span>
-              {dados.transacoes.filter(t => t.tipo === 'receita' && t.pago).length} transação(ões)
-            </span>
+          <div className="card-footer-split">
+            <div className="footer-item">
+              <Landmark size={14} />
+              <span className="footer-label">Banco:</span>
+              <span className="footer-value">{formatCurrency(dados.receitasBanco)}</span>
+            </div>
+            <div className="footer-item">
+              <Banknote size={14} />
+              <span className="footer-label">Dinheiro:</span>
+              <span className="footer-value">{formatCurrency(dados.receitasDinheiro)}</span>
+            </div>
           </div>
         </div>
 
@@ -247,10 +279,17 @@ export default function Dashboard() {
           <div className="card-value">
             <span className="negativo">{formatCurrency(dados.despesasMes)}</span>
           </div>
-          <div className="card-footer">
-            <span>
-              {dados.transacoes.filter(t => t.tipo === 'despesa' && t.pago).length} transação(ões)
-            </span>
+          <div className="card-footer-split">
+            <div className="footer-item">
+              <Landmark size={14} />
+              <span className="footer-label">Banco:</span>
+              <span className="footer-value">{formatCurrency(dados.despesasBanco)}</span>
+            </div>
+            <div className="footer-item">
+              <Banknote size={14} />
+              <span className="footer-label">Dinheiro:</span>
+              <span className="footer-value">{formatCurrency(dados.despesasDinheiro)}</span>
+            </div>
           </div>
         </div>
 
