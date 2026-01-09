@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { Plus, Edit2, Trash2, Search, Check, X, Calendar, Wallet, Banknote } from 'lucide-react'
+import { Plus, Edit2, Trash2, Search, Check, X, Calendar, Banknote } from 'lucide-react'
 import './Transacoes.css'
 
 export default function Transacoes() {
@@ -21,7 +21,7 @@ export default function Transacoes() {
     tipo: 'despesa',
     descricao: '',
     valor: 0,
-    forma_pagamento: 'conta', // 'conta' ou 'dinheiro'
+    forma_pagamento: 'conta',
     conta_id: '',
     categoria_id: '',
     subcategoria_id: '',
@@ -101,13 +101,58 @@ export default function Transacoes() {
     }
   }
 
+  // Função para atualizar saldo da conta
+  const atualizarSaldoConta = async (contaId, valor, tipo, operacao) => {
+    if (!contaId) return // Se for dinheiro, não atualiza conta
+
+    try {
+      // Buscar conta atual
+      const { data: conta, error: contaError } = await supabase
+        .from('contas_bancarias')
+        .select('saldo_atual')
+        .eq('id', contaId)
+        .single()
+
+      if (contaError) throw contaError
+
+      let novoSaldo = conta.saldo_atual
+
+      // Calcular novo saldo baseado na operação
+      if (operacao === 'adicionar') {
+        if (tipo === 'receita') {
+          novoSaldo += valor
+        } else if (tipo === 'despesa') {
+          novoSaldo -= valor
+        }
+      } else if (operacao === 'remover') {
+        if (tipo === 'receita') {
+          novoSaldo -= valor
+        } else if (tipo === 'despesa') {
+          novoSaldo += valor
+        }
+      }
+
+      // Atualizar saldo
+      const { error: updateError } = await supabase
+        .from('contas_bancarias')
+        .update({ saldo_atual: novoSaldo })
+        .eq('id', contaId)
+
+      if (updateError) throw updateError
+
+      console.log(`Saldo atualizado: Conta ${contaId}, Novo saldo: R$ ${novoSaldo}`)
+    } catch (error) {
+      console.error('Erro ao atualizar saldo:', error)
+      throw error
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setSuccess('')
 
     try {
-      // Validação: Se for pagamento em conta, precisa selecionar uma conta
       if (formData.forma_pagamento === 'conta' && !formData.conta_id) {
         setError('Selecione uma conta bancária')
         return
@@ -118,36 +163,76 @@ export default function Transacoes() {
         return
       }
 
+      const valor = parseFloat(formData.valor)
+      const pago = formData.pago
+
       const dadosTransacao = {
         tipo: formData.tipo,
         descricao: formData.descricao,
-        valor: parseFloat(formData.valor),
+        valor: valor,
         user_id: user.id,
-        // Se for dinheiro, conta_id fica null
         conta_id: formData.forma_pagamento === 'dinheiro' ? null : formData.conta_id,
         categoria_id: formData.categoria_id,
         subcategoria_id: formData.subcategoria_id || null,
         data_transacao: formData.data_transacao,
         data_vencimento: formData.data_vencimento || null,
-        pago: formData.pago,
-        data_pagamento: formData.pago ? (formData.data_pagamento || formData.data_transacao) : null,
+        pago: pago,
+        data_pagamento: pago ? (formData.data_pagamento || formData.data_transacao) : null,
         observacoes: formData.observacoes || null
       }
 
       if (editingTransacao) {
+        // EDITAR TRANSAÇÃO
+        
+        // 1. Se a transação antiga estava paga, reverter o saldo
+        if (editingTransacao.pago && editingTransacao.conta_id) {
+          await atualizarSaldoConta(
+            editingTransacao.conta_id,
+            editingTransacao.valor,
+            editingTransacao.tipo,
+            'remover'
+          )
+        }
+
+        // 2. Atualizar a transação
         const { error } = await supabase
           .from('transacoes')
           .update(dadosTransacao)
           .eq('id', editingTransacao.id)
 
         if (error) throw error
+
+        // 3. Se a nova transação está paga, adicionar ao saldo
+        if (pago && dadosTransacao.conta_id) {
+          await atualizarSaldoConta(
+            dadosTransacao.conta_id,
+            valor,
+            dadosTransacao.tipo,
+            'adicionar'
+          )
+        }
+
         setSuccess('Transação atualizada com sucesso!')
       } else {
+        // CRIAR NOVA TRANSAÇÃO
+        
+        // 1. Inserir a transação
         const { error } = await supabase
           .from('transacoes')
           .insert([dadosTransacao])
 
         if (error) throw error
+
+        // 2. Se estiver paga, atualizar o saldo
+        if (pago && dadosTransacao.conta_id) {
+          await atualizarSaldoConta(
+            dadosTransacao.conta_id,
+            valor,
+            dadosTransacao.tipo,
+            'adicionar'
+          )
+        }
+
         setSuccess('Transação cadastrada com sucesso!')
       }
 
@@ -178,14 +263,25 @@ export default function Transacoes() {
     setShowModal(true)
   }
 
-  const handleExcluir = async (id) => {
+  const handleExcluir = async (transacao) => {
     if (!confirm('Tem certeza que deseja excluir esta transação?')) return
 
     try {
+      // 1. Se a transação estava paga, reverter o saldo
+      if (transacao.pago && transacao.conta_id) {
+        await atualizarSaldoConta(
+          transacao.conta_id,
+          transacao.valor,
+          transacao.tipo,
+          'remover'
+        )
+      }
+
+      // 2. Excluir a transação
       const { error } = await supabase
         .from('transacoes')
         .delete()
-        .eq('id', id)
+        .eq('id', transacao.id)
 
       if (error) throw error
       
@@ -199,15 +295,28 @@ export default function Transacoes() {
 
   const handleDarBaixa = async (transacao) => {
     try {
+      const dataPagamento = new Date().toISOString().split('T')[0]
+
+      // 1. Atualizar transação como paga
       const { error } = await supabase
         .from('transacoes')
         .update({
           pago: true,
-          data_pagamento: new Date().toISOString().split('T')[0]
+          data_pagamento: dataPagamento
         })
         .eq('id', transacao.id)
 
       if (error) throw error
+
+      // 2. Se tiver conta vinculada, atualizar o saldo
+      if (transacao.conta_id) {
+        await atualizarSaldoConta(
+          transacao.conta_id,
+          transacao.valor,
+          transacao.tipo,
+          'adicionar'
+        )
+      }
       
       setSuccess('Baixa realizada com sucesso!')
       await carregarDados()
@@ -450,7 +559,7 @@ export default function Transacoes() {
                   </button>
                   <button
                     className="btn-icon btn-delete"
-                    onClick={() => handleExcluir(trans.id)}
+                    onClick={() => handleExcluir(trans)}
                     title="Excluir"
                   >
                     <Trash2 size={16} />
