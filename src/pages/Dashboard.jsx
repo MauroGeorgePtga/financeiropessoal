@@ -1,84 +1,453 @@
-import { DollarSign, TrendingUp, TrendingDown, Wallet } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { Link } from 'react-router-dom'
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Wallet,
+  Calendar,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  ArrowUpCircle,
+  ArrowDownCircle
+} from 'lucide-react'
 import './Dashboard.css'
 
 export default function Dashboard() {
-  // Dados temporários para demonstração
-  const cards = [
-    {
-      title: 'Saldo Total',
-      value: 'R$ 0,00',
-      icon: Wallet,
-      color: '#667eea'
-    },
-    {
-      title: 'Receitas do Mês',
-      value: 'R$ 0,00',
-      icon: TrendingUp,
-      color: '#48bb78'
-    },
-    {
-      title: 'Despesas do Mês',
-      value: 'R$ 0,00',
-      icon: TrendingDown,
-      color: '#f56565'
-    },
-    {
-      title: 'Patrimônio',
-      value: 'R$ 0,00',
-      icon: DollarSign,
-      color: '#ed8936'
+  const { user } = useAuth()
+  const [loading, setLoading] = useState(true)
+  const [dados, setDados] = useState({
+    contas: [],
+    transacoes: [],
+    categorias: [],
+    totalContas: 0,
+    saldoTotal: 0,
+    receitasMes: 0,
+    despesasMes: 0,
+    saldoMes: 0,
+    transacoesPendentes: 0,
+    valorPendente: 0,
+    proximosVencimentos: []
+  })
+
+  useEffect(() => {
+    if (user) {
+      carregarDados()
     }
-  ]
+  }, [user])
+
+  const carregarDados = async () => {
+    try {
+      setLoading(true)
+
+      // Data atual
+      const hoje = new Date()
+      const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0]
+      const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().split('T')[0]
+      const daquiA7Dias = new Date(hoje.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
+      // Carregar contas
+      const { data: contasData } = await supabase
+        .from('contas_bancarias')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('ativo', true)
+
+      // Carregar transações
+      const { data: transacoesData } = await supabase
+        .from('transacoes')
+        .select(`
+          *,
+          contas_bancarias(nome, cor),
+          categorias(nome, cor, icone)
+        `)
+        .eq('user_id', user.id)
+
+      // Carregar categorias
+      const { data: categoriasData } = await supabase
+        .from('categorias')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('ativo', true)
+
+      const contas = contasData || []
+      const transacoes = transacoesData || []
+      const categorias = categoriasData || []
+
+      // Calcular totais
+      const saldoTotal = contas.reduce((acc, conta) => acc + (conta.saldo_atual || 0), 0)
+
+      // Transações do mês atual
+      const transacoesMes = transacoes.filter(t => 
+        t.data_transacao >= primeiroDiaMes && 
+        t.data_transacao <= ultimoDiaMes &&
+        t.pago
+      )
+
+      const receitasMes = transacoesMes
+        .filter(t => t.tipo === 'receita')
+        .reduce((acc, t) => acc + t.valor, 0)
+
+      const despesasMes = transacoesMes
+        .filter(t => t.tipo === 'despesa')
+        .reduce((acc, t) => acc + t.valor, 0)
+
+      const saldoMes = receitasMes - despesasMes
+
+      // Transações pendentes
+      const pendentes = transacoes.filter(t => !t.pago)
+      const transacoesPendentes = pendentes.length
+      const valorPendente = pendentes.reduce((acc, t) => {
+        return acc + (t.tipo === 'receita' ? t.valor : -t.valor)
+      }, 0)
+
+      // Próximos vencimentos (7 dias)
+      const proximosVencimentos = transacoes
+        .filter(t => 
+          !t.pago && 
+          t.data_vencimento && 
+          t.data_vencimento <= daquiA7Dias &&
+          t.data_vencimento >= hoje.toISOString().split('T')[0]
+        )
+        .sort((a, b) => new Date(a.data_vencimento) - new Date(b.data_vencimento))
+        .slice(0, 5)
+
+      setDados({
+        contas,
+        transacoes,
+        categorias,
+        totalContas: contas.length,
+        saldoTotal,
+        receitasMes,
+        despesasMes,
+        saldoMes,
+        transacoesPendentes,
+        valorPendente,
+        proximosVencimentos
+      })
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Top 5 categorias mais usadas no mês
+  const topCategorias = () => {
+    const hoje = new Date()
+    const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0]
+    const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().split('T')[0]
+
+    const transacoesMes = dados.transacoes.filter(t => 
+      t.data_transacao >= primeiroDiaMes && 
+      t.data_transacao <= ultimoDiaMes &&
+      t.pago &&
+      t.tipo === 'despesa'
+    )
+
+    const categoriasSoma = {}
+    transacoesMes.forEach(t => {
+      const catNome = t.categorias?.nome || 'Sem categoria'
+      if (!categoriasSoma[catNome]) {
+        categoriasSoma[catNome] = {
+          nome: catNome,
+          valor: 0,
+          cor: t.categorias?.cor || '#999',
+          icone: t.categorias?.icone || '📦'
+        }
+      }
+      categoriasSoma[catNome].valor += t.valor
+    })
+
+    return Object.values(categoriasSoma)
+      .sort((a, b) => b.valor - a.valor)
+      .slice(0, 5)
+  }
+
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="loading">Carregando dashboard...</div>
+      </div>
+    )
+  }
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value)
+  }
+
+  const formatDate = (date) => {
+    return new Date(date + 'T00:00:00').toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short'
+    })
+  }
 
   return (
-    <div className="dashboard">
+    <div className="page-container">
       <div className="dashboard-header">
-        <h1>Dashboard</h1>
-        <p>Bem-vindo ao seu controle financeiro pessoal</p>
+        <div>
+          <h1>Dashboard</h1>
+          <p>Visão geral das suas finanças</p>
+        </div>
+        <div className="dashboard-date">
+          <Calendar size={20} />
+          <span>{new Date().toLocaleDateString('pt-BR', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })}</span>
+        </div>
       </div>
 
-      <div className="cards-grid">
-        {cards.map((card, index) => (
-          <div key={index} className="dashboard-card">
-            <div className="card-icon" style={{ backgroundColor: card.color }}>
-              <card.icon size={24} color="white" />
-            </div>
-            <div className="card-content">
-              <span className="card-title">{card.title}</span>
-              <span className="card-value">{card.value}</span>
-            </div>
+      {/* Cards Principais */}
+      <div className="dashboard-cards">
+        <div className="dashboard-card card-saldo-total">
+          <div className="card-header">
+            <span className="card-title">Saldo Total</span>
+            <Wallet size={24} className="card-icon" />
           </div>
-        ))}
-      </div>
-
-      <div className="dashboard-content">
-        <div className="content-box">
-          <h2>Próximos Passos</h2>
-          <ul className="steps-list">
-            <li>✅ Sistema configurado e funcionando</li>
-            <li>📝 Configure suas contas bancárias</li>
-            <li>📝 Crie categorias para suas transações</li>
-            <li>📝 Comece a registrar suas receitas e despesas</li>
-            <li>📝 Cadastre seu patrimônio</li>
-            <li>📝 Registre seus investimentos</li>
-          </ul>
+          <div className="card-value">
+            <span className={dados.saldoTotal >= 0 ? 'positivo' : 'negativo'}>
+              {formatCurrency(dados.saldoTotal)}
+            </span>
+          </div>
+          <div className="card-footer">
+            <span>{dados.totalContas} conta(s) ativa(s)</span>
+            <Link to="/contas" className="card-link">Ver contas →</Link>
+          </div>
         </div>
 
-        <div className="content-box">
-          <h2>Informações do Sistema</h2>
-          <div className="info-grid">
-            <div className="info-item">
-              <span className="info-label">Versão:</span>
-              <span className="info-value">1.0.0</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Banco de Dados:</span>
-              <span className="info-value">Supabase</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Status:</span>
-              <span className="info-value status-online">● Online</span>
-            </div>
+        <div className="dashboard-card card-receitas">
+          <div className="card-header">
+            <span className="card-title">Receitas do Mês</span>
+            <ArrowUpCircle size={24} className="card-icon" />
+          </div>
+          <div className="card-value">
+            <span className="positivo">{formatCurrency(dados.receitasMes)}</span>
+          </div>
+          <div className="card-footer">
+            <span>
+              {dados.transacoes.filter(t => t.tipo === 'receita' && t.pago).length} transação(ões)
+            </span>
+          </div>
+        </div>
+
+        <div className="dashboard-card card-despesas">
+          <div className="card-header">
+            <span className="card-title">Despesas do Mês</span>
+            <ArrowDownCircle size={24} className="card-icon" />
+          </div>
+          <div className="card-value">
+            <span className="negativo">{formatCurrency(dados.despesasMes)}</span>
+          </div>
+          <div className="card-footer">
+            <span>
+              {dados.transacoes.filter(t => t.tipo === 'despesa' && t.pago).length} transação(ões)
+            </span>
+          </div>
+        </div>
+
+        <div className="dashboard-card card-saldo-mes">
+          <div className="card-header">
+            <span className="card-title">Saldo do Mês</span>
+            {dados.saldoMes >= 0 ? (
+              <TrendingUp size={24} className="card-icon" />
+            ) : (
+              <TrendingDown size={24} className="card-icon" />
+            )}
+          </div>
+          <div className="card-value">
+            <span className={dados.saldoMes >= 0 ? 'positivo' : 'negativo'}>
+              {formatCurrency(dados.saldoMes)}
+            </span>
+          </div>
+          <div className="card-footer">
+            <span>
+              {dados.saldoMes >= 0 ? 'Superávit' : 'Déficit'} mensal
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Cards Secundários */}
+      <div className="dashboard-secondary-cards">
+        <div className="secondary-card card-pendentes">
+          <div className="secondary-header">
+            <Clock size={20} />
+            <span>Transações Pendentes</span>
+          </div>
+          <div className="secondary-value">
+            <strong>{dados.transacoesPendentes}</strong>
+            <span className={dados.valorPendente >= 0 ? 'positivo' : 'negativo'}>
+              {formatCurrency(Math.abs(dados.valorPendente))}
+            </span>
+          </div>
+          <Link to="/transacoes" className="secondary-link">
+            Ver pendentes →
+          </Link>
+        </div>
+
+        <div className="secondary-card card-categorias">
+          <div className="secondary-header">
+            <CheckCircle size={20} />
+            <span>Categorias Ativas</span>
+          </div>
+          <div className="secondary-value">
+            <strong>{dados.categorias.length}</strong>
+            <span className="subtitle">
+              {dados.categorias.filter(c => c.tipo === 'receita').length} receitas / {' '}
+              {dados.categorias.filter(c => c.tipo === 'despesa').length} despesas
+            </span>
+          </div>
+          <Link to="/categorias" className="secondary-link">
+            Gerenciar →
+          </Link>
+        </div>
+      </div>
+
+      {/* Conteúdo em Grid */}
+      <div className="dashboard-grid">
+        {/* Próximos Vencimentos */}
+        <div className="dashboard-widget">
+          <div className="widget-header">
+            <h3>
+              <AlertCircle size={20} />
+              Próximos Vencimentos (7 dias)
+            </h3>
+          </div>
+          <div className="widget-content">
+            {dados.proximosVencimentos.length === 0 ? (
+              <div className="widget-empty">
+                <span>Nenhum vencimento próximo</span>
+              </div>
+            ) : (
+              <div className="vencimentos-list">
+                {dados.proximosVencimentos.map((trans) => (
+                  <div key={trans.id} className="vencimento-item">
+                    <div className="vencimento-info">
+                      <div 
+                        className="vencimento-icon"
+                        style={{ backgroundColor: trans.categorias?.cor }}
+                      >
+                        {trans.categorias?.icone}
+                      </div>
+                      <div className="vencimento-detalhes">
+                        <strong>{trans.descricao}</strong>
+                        <span className="vencimento-data">
+                          Vence em {formatDate(trans.data_vencimento)}
+                        </span>
+                      </div>
+                    </div>
+                    <span className={`vencimento-valor ${trans.tipo}`}>
+                      {formatCurrency(trans.valor)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Top Categorias */}
+        <div className="dashboard-widget">
+          <div className="widget-header">
+            <h3>
+              <TrendingDown size={20} />
+              Maiores Despesas do Mês
+            </h3>
+          </div>
+          <div className="widget-content">
+            {topCategorias().length === 0 ? (
+              <div className="widget-empty">
+                <span>Nenhuma despesa no mês</span>
+              </div>
+            ) : (
+              <div className="categorias-list">
+                {topCategorias().map((cat, index) => (
+                  <div key={index} className="categoria-item">
+                    <div className="categoria-info">
+                      <span className="categoria-posicao">{index + 1}º</span>
+                      <div 
+                        className="categoria-icon"
+                        style={{ backgroundColor: cat.cor }}
+                      >
+                        {cat.icone}
+                      </div>
+                      <span className="categoria-nome">{cat.nome}</span>
+                    </div>
+                    <span className="categoria-valor">
+                      {formatCurrency(cat.valor)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Minhas Contas */}
+        <div className="dashboard-widget widget-full">
+          <div className="widget-header">
+            <h3>
+              <Wallet size={20} />
+              Minhas Contas
+            </h3>
+            <Link to="/contas" className="widget-link">Ver todas</Link>
+          </div>
+          <div className="widget-content">
+            {dados.contas.length === 0 ? (
+              <div className="widget-empty">
+                <span>Nenhuma conta cadastrada</span>
+                <Link to="/contas" className="btn-secondary">
+                  Cadastrar Conta
+                </Link>
+              </div>
+            ) : (
+              <div className="contas-grid">
+                {dados.contas.slice(0, 4).map((conta) => (
+                  <div key={conta.id} className="conta-mini">
+                    <div 
+                      className="conta-mini-icon"
+                      style={{ backgroundColor: conta.cor }}
+                    >
+                      💳
+                    </div>
+                    <div className="conta-mini-info">
+                      <strong>{conta.nome}</strong>
+                      <span className={conta.saldo_atual >= 0 ? 'positivo' : 'negativo'}>
+                        {formatCurrency(conta.saldo_atual || 0)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Dicas Rápidas */}
+      <div className="dashboard-tips">
+        <h3>💡 Dicas Rápidas</h3>
+        <div className="tips-grid">
+          <div className="tip-card">
+            <strong>Organize-se</strong>
+            <p>Cadastre todas as suas contas e categorias para ter um controle completo</p>
+          </div>
+          <div className="tip-card">
+            <strong>Lance diariamente</strong>
+            <p>Registre suas transações todos os dias para não perder o controle</p>
+          </div>
+          <div className="tip-card">
+            <strong>Fique de olho</strong>
+            <p>Acompanhe seus vencimentos e não deixe contas atrasarem</p>
           </div>
         </div>
       </div>
