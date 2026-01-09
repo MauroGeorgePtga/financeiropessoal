@@ -1,7 +1,14 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import Login from './components/auth/Login'
 import Layout from './components/layout/Layout'
 import Dashboard from './pages/Dashboard'
+import Transacoes from './pages/Transacoes'
+import ContasBancarias from './pages/ContasBancarias'
+import Investimentos from './pages/Investimentos'
+import Patrimonio from './pages/Patrimonio'
+import Relatorios from './pages/Relatorios'
+import Configuracoes from './pages/Configuracoes'
 
 function App() {
   const { user, loading } = useAuth()
@@ -45,9 +52,20 @@ function App() {
   }
 
   return (
-    <Layout>
-      <Dashboard />
-    </Layout>
+    <BrowserRouter>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/transacoes" element={<Transacoes />} />
+          <Route path="/contas" element={<ContasBancarias />} />
+          <Route path="/investimentos" element={<Investimentos />} />
+          <Route path="/patrimonio" element={<Patrimonio />} />
+          <Route path="/relatorios" element={<Relatorios />} />
+          <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Layout>
+    </BrowserRouter>
   )
 }
 
