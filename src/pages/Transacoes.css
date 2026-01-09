@@ -225,12 +225,18 @@
 }
 
 .transacao-conta,
+.transacao-dinheiro,
 .transacao-data {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 13px;
   color: #666;
+}
+
+.transacao-dinheiro {
+  color: #48bb78;
+  font-weight: 600;
 }
 
 .conta-dot {
