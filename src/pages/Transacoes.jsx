@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { Plus, Edit2, Trash2, Search, Check, X, Calendar } from 'lucide-react'
+import { Plus, Edit2, Trash2, Search, Check, X, Calendar, Wallet, Banknote } from 'lucide-react'
 import './Transacoes.css'
 
 export default function Transacoes() {
@@ -21,6 +21,7 @@ export default function Transacoes() {
     tipo: 'despesa',
     descricao: '',
     valor: 0,
+    forma_pagamento: 'conta', // 'conta' ou 'dinheiro'
     conta_id: '',
     categoria_id: '',
     subcategoria_id: '',
@@ -106,22 +107,31 @@ export default function Transacoes() {
     setSuccess('')
 
     try {
-      if (!formData.conta_id) {
-        setError('Selecione uma conta')
+      // Validação: Se for pagamento em conta, precisa selecionar uma conta
+      if (formData.forma_pagamento === 'conta' && !formData.conta_id) {
+        setError('Selecione uma conta bancária')
         return
       }
+
       if (!formData.categoria_id) {
         setError('Selecione uma categoria')
         return
       }
 
       const dadosTransacao = {
-        ...formData,
+        tipo: formData.tipo,
+        descricao: formData.descricao,
         valor: parseFloat(formData.valor),
         user_id: user.id,
+        // Se for dinheiro, conta_id fica null
+        conta_id: formData.forma_pagamento === 'dinheiro' ? null : formData.conta_id,
+        categoria_id: formData.categoria_id,
         subcategoria_id: formData.subcategoria_id || null,
+        data_transacao: formData.data_transacao,
         data_vencimento: formData.data_vencimento || null,
-        data_pagamento: formData.pago ? (formData.data_pagamento || formData.data_transacao) : null
+        pago: formData.pago,
+        data_pagamento: formData.pago ? (formData.data_pagamento || formData.data_transacao) : null,
+        observacoes: formData.observacoes || null
       }
 
       if (editingTransacao) {
@@ -155,7 +165,8 @@ export default function Transacoes() {
       tipo: transacao.tipo,
       descricao: transacao.descricao,
       valor: transacao.valor,
-      conta_id: transacao.conta_id,
+      forma_pagamento: transacao.conta_id ? 'conta' : 'dinheiro',
+      conta_id: transacao.conta_id || '',
       categoria_id: transacao.categoria_id,
       subcategoria_id: transacao.subcategoria_id || '',
       data_transacao: transacao.data_transacao,
@@ -212,6 +223,7 @@ export default function Transacoes() {
       tipo: 'despesa',
       descricao: '',
       valor: 0,
+      forma_pagamento: 'conta',
       conta_id: contas.length > 0 ? contas[0].id : '',
       categoria_id: '',
       subcategoria_id: '',
@@ -450,13 +462,20 @@ export default function Transacoes() {
                 <div className="transacao-descricao">
                   <h3>{trans.descricao}</h3>
                   <div className="transacao-detalhes">
-                    <span className="transacao-conta">
-                      <div 
-                        className="conta-dot" 
-                        style={{ backgroundColor: trans.contas_bancarias?.cor }}
-                      />
-                      {trans.contas_bancarias?.nome}
-                    </span>
+                    {trans.conta_id ? (
+                      <span className="transacao-conta">
+                        <div 
+                          className="conta-dot" 
+                          style={{ backgroundColor: trans.contas_bancarias?.cor }}
+                        />
+                        {trans.contas_bancarias?.nome}
+                      </span>
+                    ) : (
+                      <span className="transacao-dinheiro">
+                        <Banknote size={14} />
+                        Dinheiro
+                      </span>
+                    )}
                     <span className="transacao-data">
                       <Calendar size={14} />
                       {new Date(trans.data_transacao + 'T00:00:00').toLocaleDateString('pt-BR')}
@@ -547,20 +566,34 @@ export default function Transacoes() {
                 </div>
 
                 <div className="form-group">
-                  <label>Conta *</label>
+                  <label>Forma de Pagamento *</label>
                   <select
-                    value={formData.conta_id}
-                    onChange={(e) => setFormData({ ...formData, conta_id: e.target.value })}
+                    value={formData.forma_pagamento}
+                    onChange={(e) => setFormData({ ...formData, forma_pagamento: e.target.value, conta_id: '' })}
                     required
                   >
-                    <option value="">Selecione...</option>
-                    {contas.map(conta => (
-                      <option key={conta.id} value={conta.id}>
-                        {conta.nome}
-                      </option>
-                    ))}
+                    <option value="conta">Conta Bancária</option>
+                    <option value="dinheiro">Dinheiro</option>
                   </select>
                 </div>
+
+                {formData.forma_pagamento === 'conta' && (
+                  <div className="form-group">
+                    <label>Conta *</label>
+                    <select
+                      value={formData.conta_id}
+                      onChange={(e) => setFormData({ ...formData, conta_id: e.target.value })}
+                      required
+                    >
+                      <option value="">Selecione...</option>
+                      {contas.map(conta => (
+                        <option key={conta.id} value={conta.id}>
+                          {conta.nome}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div className="form-group">
                   <label>Categoria *</label>
