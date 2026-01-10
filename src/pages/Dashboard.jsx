@@ -41,11 +41,97 @@ export default function Dashboard() {
     proximosVencimentos: []
   })
 
+  const [investimentos, setInvestimentos] = useState({
+    totalInvestido: 0,
+    valorAtual: 0,
+    rentabilidade: 0,
+    qtdAtivos: 0
+  })
+  const [loadingInvestimentos, setLoadingInvestimentos] = useState(true)
+
   useEffect(() => {
     if (user) {
       carregarDados()
+      carregarInvestimentos()
     }
   }, [user])
+
+  const carregarInvestimentos = async () => {
+    try {
+      setLoadingInvestimentos(true)
+      
+      // Buscar operações
+      const { data: operacoes, error: opError } = await supabase
+        .from('investimentos_operacoes')
+        .select('*')
+        .eq('user_id', user.id)
+
+      if (opError) throw opError
+
+      // Buscar cotações
+      const { data: cotacoes, error: cotError } = await supabase
+        .from('investimentos_cotacoes')
+        .select('*')
+        .eq('user_id', user.id)
+
+      if (cotError) throw cotError
+
+      // Calcular carteira
+      const carteira = {}
+      
+      operacoes?.forEach(op => {
+        if (!carteira[op.ticker]) {
+          carteira[op.ticker] = {
+            ticker: op.ticker,
+            quantidade: 0,
+            total_investido: 0
+          }
+        }
+
+        const custoTotal = (op.taxa_corretagem || 0) + (op.emolumentos || 0) + (op.outros_custos || 0)
+
+        if (op.tipo_operacao === 'compra') {
+          carteira[op.ticker].quantidade += op.quantidade
+          carteira[op.ticker].total_investido += (op.quantidade * op.preco_unitario) + custoTotal
+        } else if (op.tipo_operacao === 'venda') {
+          carteira[op.ticker].quantidade -= op.quantidade
+          carteira[op.ticker].total_investido -= (op.quantidade * op.preco_unitario) - custoTotal
+        }
+      })
+
+      // Calcular totais
+      let totalInvestido = 0
+      let valorAtual = 0
+      let qtdAtivos = 0
+
+      Object.keys(carteira).forEach(ticker => {
+        if (carteira[ticker].quantidade > 0) {
+          totalInvestido += carteira[ticker].total_investido
+          qtdAtivos++
+
+          const cotacao = cotacoes?.find(c => c.ticker === ticker)
+          if (cotacao) {
+            valorAtual += carteira[ticker].quantidade * cotacao.cotacao_atual
+          }
+        }
+      })
+
+      const rentabilidade = totalInvestido > 0 
+        ? ((valorAtual - totalInvestido) / totalInvestido) * 100 
+        : 0
+
+      setInvestimentos({
+        totalInvestido,
+        valorAtual,
+        rentabilidade,
+        qtdAtivos
+      })
+    } catch (error) {
+      console.error('Erro ao carregar investimentos:', error)
+    } finally {
+      setLoadingInvestimentos(false)
+    }
+  }
 
   const carregarDados = async () => {
     try {
@@ -317,6 +403,34 @@ export default function Dashboard() {
 
       {/* Cards Secundários */}
       <div className="dashboard-secondary-cards">
+        {/* Card Investimentos - NOVO */}
+        <div className="secondary-card card-investimentos">
+          <div className="secondary-header">
+            <span>💰 Investimentos</span>
+          </div>
+          {loadingInvestimentos ? (
+            <div className="loading-invest">Carregando...</div>
+          ) : (
+            <>
+              <div className="secondary-value">
+                <strong>{formatCurrency(investimentos.valorAtual)}</strong>
+                <span className="invest-subtitle">
+                  Investido: {formatCurrency(investimentos.totalInvestido)}
+                </span>
+              </div>
+              <div className={`invest-rentabilidade ${investimentos.rentabilidade >= 0 ? 'positivo' : 'negativo'}`}>
+                {investimentos.rentabilidade >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                <span>
+                  {investimentos.rentabilidade >= 0 ? '+' : ''}{investimentos.rentabilidade.toFixed(2)}%
+                </span>
+              </div>
+              <Link to="/investimentos" className="secondary-link">
+                {investimentos.qtdAtivos} ativo(s) →
+              </Link>
+            </>
+          )}
+        </div>
+
         <div className="secondary-card card-pendentes">
           <div className="secondary-header">
             <Clock size={20} />
