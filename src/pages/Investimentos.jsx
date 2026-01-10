@@ -322,6 +322,8 @@ export default function Investimentos() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filtroTipoOp, setFiltroTipoOp] = useState('todos')
   const [filtroTipoAtivo, setFiltroTipoAtivo] = useState('todos')
+  const [atualizandoCotacoes, setAtualizandoCotacoes] = useState(false)
+  const [progressoAtualizacao, setProgressoAtualizacao] = useState({ atual: 0, total: 0 })
 
   const [formData, setFormData] = useState({
     tipo_operacao: 'compra',
@@ -423,6 +425,88 @@ export default function Investimentos() {
     } catch (error) {
       console.log('API própria não disponível, use atualização manual')
       return null
+    }
+  }
+
+  // Atualizar todas as cotações automaticamente
+  const atualizarTodasCotacoes = async () => {
+    setAtualizandoCotacoes(true)
+    setError('')
+    setSuccess('')
+
+    const tickersUnicos = [...new Set(carteira.map(a => a.ticker))]
+    setProgressoAtualizacao({ atual: 0, total: tickersUnicos.length })
+
+    let sucessos = 0
+    let falhas = 0
+
+    try {
+      for (let i = 0; i < tickersUnicos.length; i++) {
+        const ticker = tickersUnicos[i]
+        setProgressoAtualizacao({ atual: i + 1, total: tickersUnicos.length })
+
+        try {
+          // Buscar cotação via API
+          const cotacao = await buscarCotacaoAPI(ticker)
+
+          if (cotacao) {
+            // Atualizar no banco
+            const ativo = carteira.find(a => a.ticker === ticker)
+
+            const { data: existing } = await supabase
+              .from('investimentos_cotacoes')
+              .select('id')
+              .eq('ticker', ticker)
+              .eq('user_id', user.id)
+              .single()
+
+            if (existing) {
+              await supabase
+                .from('investimentos_cotacoes')
+                .update({
+                  cotacao_atual: cotacao,
+                  data_atualizacao: new Date().toISOString()
+                })
+                .eq('ticker', ticker)
+                .eq('user_id', user.id)
+            } else {
+              await supabase
+                .from('investimentos_cotacoes')
+                .insert({
+                  ticker: ticker,
+                  tipo_ativo: ativo.tipo_ativo,
+                  nome_ativo: ativo.nome_ativo,
+                  cotacao_atual: cotacao,
+                  user_id: user.id,
+                  data_atualizacao: new Date().toISOString()
+                })
+            }
+
+            sucessos++
+          } else {
+            falhas++
+          }
+        } catch (error) {
+          console.error(`Erro ao atualizar ${ticker}:`, error)
+          falhas++
+        }
+
+        // Delay de 500ms entre requisições para não sobrecarregar
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
+
+      if (sucessos > 0) {
+        setSuccess(`${sucessos} cotação(ões) atualizada(s)!${falhas > 0 ? ` (${falhas} falharam)` : ''}`)
+        await carregarDados()
+      } else {
+        setError('Nenhuma cotação foi atualizada. Verifique se a API está configurada.')
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar cotações:', error)
+      setError('Erro ao atualizar cotações')
+    } finally {
+      setAtualizandoCotacoes(false)
+      setProgressoAtualizacao({ atual: 0, total: 0 })
     }
   }
 
@@ -920,6 +1004,31 @@ export default function Investimentos() {
 
       {activeTab === 'carteira' && (
         <>
+          {carteira.length > 0 && (
+            <div className="carteira-header">
+              <button 
+                className="btn-atualizar-cotacoes"
+                onClick={atualizarTodasCotacoes}
+                disabled={atualizandoCotacoes}
+              >
+                {atualizandoCotacoes ? (
+                  <>
+                    <Loader size={20} className="spinner" />
+                    Atualizando {progressoAtualizacao.atual}/{progressoAtualizacao.total}...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw size={20} />
+                    Atualizar Todas as Cotações
+                  </>
+                )}
+              </button>
+              <span className="carteira-info">
+                {carteira.length} ativo(s) • Cotações via Yahoo Finance
+              </span>
+            </div>
+          )}
+
           {carteira.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">💼</div>
