@@ -224,6 +224,61 @@
   color: #764ba2;
 }
 
+/* Card Investimentos */
+.card-investimentos {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.card-investimentos .secondary-header {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.card-investimentos .secondary-value strong {
+  color: white;
+  font-size: 28px;
+}
+
+.card-investimentos .invest-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.invest-rentabilidade {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  width: fit-content;
+  margin-bottom: 12px;
+}
+
+.invest-rentabilidade.positivo {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.invest-rentabilidade.negativo {
+  background: rgba(255, 100, 100, 0.3);
+}
+
+.card-investimentos .secondary-link {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.card-investimentos .secondary-link:hover {
+  color: white;
+}
+
+.loading-invest {
+  padding: 20px;
+  text-align: center;
+  opacity: 0.8;
+}
+
 /* Grid de Widgets */
 .dashboard-grid {
   display: grid;
