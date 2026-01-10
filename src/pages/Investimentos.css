@@ -39,20 +39,24 @@
   border-color: #667eea;
 }
 
-/* Operações List */
+/* Operações List - LAYOUT COMPACTO */
 .operacoes-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .operacao-card {
   background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  transition: transform 0.2s;
-  border-left: 4px solid;
+  padding: 12px 20px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  transition: all 0.2s;
+  border-left: 3px solid;
 }
 
 .operacao-card.compra {
@@ -64,31 +68,39 @@
 }
 
 .operacao-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transform: translateX(3px);
 }
 
 .operacao-header {
-  padding: 15px;
-  border-bottom: 1px solid #f0f0f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: none; /* Removido no layout compacto */
 }
 
-.operacao-tipo-badge {
+.operacao-body {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 20px;
+  flex: 1;
+  padding: 0;
+  min-width: 0;
+}
+
+/* Badge de Operação Compacto */
+.operacao-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .badge-compra,
 .badge-venda {
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 12px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .badge-compra {
@@ -101,20 +113,106 @@
   color: #f56565;
 }
 
-.tipo-ativo-badge {
+.tipo-ativo-mini {
+  font-size: 11px;
+  color: #999;
+  font-weight: 600;
+  background: #f5f5f5;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+/* Info Principal */
+.operacao-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 200px;
+  flex-shrink: 0;
+}
+
+.operacao-info h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #333;
+}
+
+.operacao-info p {
+  margin: 0;
   font-size: 12px;
   color: #999;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Detalhes em Linha */
+.operacao-detalhes {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  margin: 0;
+}
+
+.detalhe-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detalhe-label {
+  font-size: 10px;
+  color: #999;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.detalhe-valor {
+  font-size: 13px;
+  color: #333;
   font-weight: 600;
 }
 
+/* Total Compacto */
+.operacao-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 0;
+  border: none;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.total-label {
+  font-size: 10px;
+  color: #999;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.total-valor {
+  font-size: 16px;
+  color: #667eea;
+  font-weight: 700;
+}
+
+/* Ações Compactas */
 .operacao-acoes {
   display: flex;
-  gap: 5px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .btn-acao {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border: none;
   border-radius: 6px;
   background: #f5f5f5;
@@ -134,71 +232,6 @@
 .btn-acao.btn-delete:hover {
   background: #fee;
   color: #f56565;
-}
-
-.operacao-body {
-  padding: 15px;
-}
-
-.operacao-info h3 {
-  margin: 0 0 5px 0;
-  font-size: 18px;
-  color: #333;
-}
-
-.operacao-info p {
-  margin: 0;
-  font-size: 13px;
-  color: #999;
-}
-
-.operacao-detalhes {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin: 15px 0;
-  padding: 12px;
-  background: #f9f9f9;
-  border-radius: 8px;
-}
-
-.detalhe-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.detalhe-label {
-  font-size: 11px;
-  color: #999;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.detalhe-valor {
-  font-size: 14px;
-  color: #333;
-  font-weight: 600;
-}
-
-.operacao-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.total-label {
-  font-size: 13px;
-  color: #666;
-  font-weight: 600;
-}
-
-.total-valor {
-  font-size: 20px;
-  color: #667eea;
-  font-weight: 700;
 }
 
 /* Carteira Grid */
@@ -443,6 +476,52 @@
 }
 
 /* Responsive */
+@media (max-width: 968px) {
+  .operacao-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px;
+  }
+
+  .operacao-body {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .operacao-badge {
+    margin-bottom: 8px;
+  }
+
+  .operacao-info {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .operacao-detalhes {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .operacao-total {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .operacao-acoes {
+    width: 100%;
+    justify-content: flex-end;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+  }
+}
+
 @media (max-width: 768px) {
   .header-actions {
     width: 100%;
@@ -457,15 +536,12 @@
     flex-direction: column;
   }
 
-  .operacoes-list {
-    grid-template-columns: 1fr;
-  }
-
   .carteira-grid {
     grid-template-columns: 1fr;
   }
 
-  .operacao-detalhes {
-    grid-template-columns: 1fr;
+  .detalhe-item {
+    flex: 1;
+    min-width: 80px;
   }
 }
