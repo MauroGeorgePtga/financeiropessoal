@@ -322,8 +322,6 @@ export default function Investimentos() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filtroTipoOp, setFiltroTipoOp] = useState('todos')
   const [filtroTipoAtivo, setFiltroTipoAtivo] = useState('todos')
-  const [atualizandoCotacoes, setAtualizandoCotacoes] = useState(false)
-  const [ultimaAtualizacao, setUltimaAtualizacao] = useState(null)
 
   const [formData, setFormData] = useState({
     tipo_operacao: 'compra',
@@ -378,14 +376,6 @@ export default function Investimentos() {
 
       setOperacoes(opData || [])
       setCotacoes(cotData || [])
-      
-      // Pegar timestamp da última atualização
-      if (cotData && cotData.length > 0) {
-        const maisRecente = cotData.reduce((prev, current) => 
-          new Date(current.data_atualizacao) > new Date(prev.data_atualizacao) ? current : prev
-        )
-        setUltimaAtualizacao(maisRecente.data_atualizacao)
-      }
     } catch (error) {
       console.error('Erro ao carregar dados:', error)
       setError('Erro ao carregar investimentos')
@@ -412,15 +402,6 @@ export default function Investimentos() {
   }
 
   // Atualizar cotações manualmente (uma por vez)
-  const atualizarTodasCotacoes = async () => {
-    setAtualizandoCotacoes(true)
-    setError('Por favor, atualize as cotações manualmente por enquanto.')
-    setTimeout(() => {
-      setAtualizandoCotacoes(false)
-      setError('')
-    }, 2000)
-  }
-
   const calcularCarteira = () => {
     const carteira = {}
 
@@ -656,16 +637,6 @@ export default function Investimentos() {
     return new Date(date + 'T00:00:00').toLocaleDateString('pt-BR')
   }
 
-  const formatDatetime = (datetime) => {
-    const date = new Date(datetime)
-    const hoje = new Date()
-    const diff = Math.floor((hoje - date) / 1000 / 60) // minutos
-    
-    if (diff < 60) return `Há ${diff} min`
-    if (diff < 1440) return `Há ${Math.floor(diff / 60)}h`
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
-  }
-
   const calcularTotal = () => {
     const qtd = parseFloat(formData.quantidade) || 0
     const preco = parseFloat(formData.preco_unitario) || 0
@@ -897,31 +868,6 @@ export default function Investimentos() {
 
       {activeTab === 'carteira' && (
         <>
-          <div className="carteira-header">
-            <button 
-              className="btn-atualizar-cotacoes"
-              onClick={atualizarTodasCotacoes}
-              disabled={atualizandoCotacoes || carteira.length === 0}
-            >
-              {atualizandoCotacoes ? (
-                <>
-                  <Loader size={20} className="spinner" />
-                  Atualizando...
-                </>
-              ) : (
-                <>
-                  <RefreshCw size={20} />
-                  Atualizar Todas as Cotações
-                </>
-              )}
-            </button>
-            {ultimaAtualizacao && (
-              <span className="ultima-atualizacao">
-                ⏱️ Última atualização: {formatDatetime(ultimaAtualizacao)}
-              </span>
-            )}
-          </div>
-
           {carteira.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">💼</div>
@@ -929,80 +875,81 @@ export default function Investimentos() {
               <p>Cadastre operações para montar sua carteira</p>
             </div>
           ) : (
-            <div className="carteira-grid">
+            <div className="carteira-list">
               {carteira.map((ativo) => {
                 const tipoConfig = tiposAtivo.find(t => t.value === ativo.tipo_ativo)
                 const temCotacao = ativo.cotacao_atual !== undefined
 
                 return (
-                  <div key={ativo.ticker} className="ativo-card">
-                    <div className="ativo-header">
-                      <span className="tipo-emoji">{tipoConfig?.emoji}</span>
-                      <span className="tipo-label">{tipoConfig?.label}</span>
+                  <div key={ativo.ticker} className="ativo-linha">
+                    <div className="ativo-badge-mini">
+                      <span className="ativo-tipo-emoji">{tipoConfig?.emoji}</span>
                     </div>
 
-                    <div className="ativo-titulo">
+                    <div className="ativo-info-compact">
                       <h3>{ativo.ticker}</h3>
                       <p>{ativo.nome_ativo}</p>
                     </div>
 
-                    <div className="ativo-info">
-                      <div className="info-row">
-                        <span>Quantidade:</span>
-                        <span>{ativo.quantidade}</span>
+                    <div className="ativo-dados">
+                      <div className="dado-item">
+                        <span className="dado-label">Qtd</span>
+                        <span className="dado-valor">{ativo.quantidade}</span>
                       </div>
-                      <div className="info-row">
-                        <span>Preço Médio:</span>
-                        <span>{formatCurrency(ativo.preco_medio)}</span>
+                      <div className="dado-item">
+                        <span className="dado-label">PM</span>
+                        <span className="dado-valor">{formatCurrency(ativo.preco_medio)}</span>
                       </div>
-                      <div className="info-row">
-                        <span>Investido:</span>
-                        <strong>{formatCurrency(ativo.total_investido)}</strong>
+                      <div className="dado-item">
+                        <span className="dado-label">Investido</span>
+                        <span className="dado-valor destaque">{formatCurrency(ativo.total_investido)}</span>
                       </div>
                     </div>
 
-                    <div className="ativo-cotacao">
-                      <label>Cotação Atual:</label>
-                      <div className="cotacao-group">
-                        <input
-                          type="number"
-                          step="0.01"
-                          defaultValue={ativo.cotacao_atual || ''}
-                          placeholder="0,00"
-                          id={`cotacao-${ativo.ticker}`}
-                        />
-                        <button 
-                          className="btn-refresh"
-                          onClick={() => {
-                            const input = document.getElementById(`cotacao-${ativo.ticker}`)
-                            if (input && input.value) {
-                              handleAtualizarCotacao(ativo.ticker, input.value)
-                            }
-                          }}
-                        >
-                          <RefreshCw size={16} />
-                        </button>
-                      </div>
+                    <div className="ativo-cotacao-inline">
+                      <label>Cotação:</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        defaultValue={ativo.cotacao_atual || ''}
+                        placeholder="0,00"
+                        className="cotacao-input-small"
+                        id={`cotacao-${ativo.ticker}`}
+                      />
+                      <button 
+                        className="btn-refresh-small"
+                        onClick={() => {
+                          const input = document.getElementById(`cotacao-${ativo.ticker}`)
+                          if (input && input.value) {
+                            handleAtualizarCotacao(ativo.ticker, input.value)
+                          }
+                        }}
+                        title="Atualizar"
+                      >
+                        <RefreshCw size={14} />
+                      </button>
                     </div>
 
                     {temCotacao && (
-                      <div className="ativo-resultado">
-                        <div className="resultado-row">
-                          <span>Valor Atual:</span>
-                          <span>{formatCurrency(ativo.valor_atual)}</span>
+                      <div className="ativo-resultado-inline">
+                        <div className="resultado-valor">
+                          <span className="resultado-label">Atual:</span>
+                          <span className="resultado-number">{formatCurrency(ativo.valor_atual)}</span>
                         </div>
-                        <div className={`rentabilidade ${ativo.rentabilidade >= 0 ? 'positivo' : 'negativo'}`}>
-                          {ativo.rentabilidade >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                          <span>
+                        <div className={`resultado-rent ${ativo.rentabilidade >= 0 ? 'positivo' : 'negativo'}`}>
+                          {ativo.rentabilidade >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                          <span className="rent-percent">
                             {ativo.rentabilidade >= 0 ? '+' : ''}{ativo.rentabilidade.toFixed(2)}%
                           </span>
-                          <span>({formatCurrency(ativo.lucro)})</span>
+                          <span className="rent-valor">
+                            ({formatCurrency(ativo.lucro)})
+                          </span>
                         </div>
                       </div>
                     )}
 
-                    <div className="ativo-ops">
-                      <small>{ativo.operacoes_compra} compra(s) • {ativo.operacoes_venda} venda(s)</small>
+                    <div className="ativo-ops-mini">
+                      <small>{ativo.operacoes_compra}C • {ativo.operacoes_venda}V</small>
                     </div>
                   </div>
                 )
