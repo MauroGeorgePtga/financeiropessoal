@@ -440,6 +440,131 @@
   color: #667eea;
 }
 
+/* Modal Investimentos - 2 Colunas */
+.modal-invest {
+  max-width: 700px;
+}
+
+.form-invest-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  padding: 20px;
+}
+
+.form-invest-grid .form-group {
+  margin-bottom: 0;
+}
+
+.form-invest-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+.radio-group-compact {
+  display: flex;
+  gap: 10px;
+}
+
+.radio-group-compact .radio-label {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.radio-group-compact .radio-label:hover {
+  border-color: #667eea;
+  background: #f5f7ff;
+}
+
+.radio-group-compact input[type="radio"]:checked + span {
+  font-weight: 700;
+}
+
+.radio-group-compact .radio-label:has(input:checked) {
+  border-color: #667eea;
+  background: #f5f7ff;
+}
+
+.ticker-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ticker-input-group input {
+  flex: 1;
+  padding-right: 35px;
+}
+
+.spinner-small {
+  position: absolute;
+  right: 10px;
+  animation: spin 1s linear infinite;
+}
+
+/* Carteira Header */
+.carteira-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.btn-atualizar-cotacoes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-atualizar-cotacoes:hover:not(:disabled) {
+  background: #5568d3;
+  transform: translateY(-2px);
+}
+
+.btn-atualizar-cotacoes:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ultima-atualizacao {
+  font-size: 13px;
+  color: #666;
+  font-weight: 600;
+}
+
 /* Cards Específicos de Resumo */
 .card-investido {
   border-left: 4px solid #667eea;
@@ -519,6 +644,20 @@
     justify-content: flex-end;
     padding-top: 10px;
     border-top: 1px solid #f0f0f0;
+  }
+
+  .form-invest-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .carteira-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .btn-atualizar-cotacoes {
+    width: 100%;
   }
 }
 
