@@ -401,6 +401,31 @@ export default function Investimentos() {
     }
   }
 
+  // Buscar cotação usando API própria (se disponível)
+  const buscarCotacaoAPI = async (ticker) => {
+    try {
+      // Tenta usar API própria primeiro (sem CORS)
+      // Você precisará hospedar o arquivo cotacoes-api.js como função serverless
+      const baseURL = window.location.origin // Usa o mesmo domínio
+      const response = await fetch(`${baseURL}/api/cotacoes?ticker=${ticker}`)
+      
+      if (!response.ok) {
+        throw new Error('API não disponível')
+      }
+      
+      const data = await response.json()
+      
+      if (data.success && data.cotacao) {
+        return data.cotacao
+      }
+      
+      return null
+    } catch (error) {
+      console.log('API própria não disponível, use atualização manual')
+      return null
+    }
+  }
+
   // Atualizar cotações manualmente (uma por vez)
   const calcularCarteira = () => {
     const carteira = {}
@@ -564,24 +589,51 @@ export default function Investimentos() {
     try {
       const ativo = carteira.find(a => a.ticker === ticker)
       
-      const { error } = await supabase
+      // Verificar se já existe registro
+      const { data: existing } = await supabase
         .from('investimentos_cotacoes')
-        .upsert({
-          ticker: ticker,
-          tipo_ativo: ativo.tipo_ativo,
-          nome_ativo: ativo.nome_ativo,
-          cotacao_atual: parseFloat(cotacao),
-          user_id: user.id,
-          data_atualizacao: new Date().toISOString()
-        }, {
-          onConflict: 'ticker,user_id'
-        })
+        .select('id')
+        .eq('ticker', ticker)
+        .eq('user_id', user.id)
+        .single()
+      
+      let error
+      
+      if (existing) {
+        // Atualizar existente
+        const result = await supabase
+          .from('investimentos_cotacoes')
+          .update({
+            cotacao_atual: parseFloat(cotacao),
+            data_atualizacao: new Date().toISOString()
+          })
+          .eq('ticker', ticker)
+          .eq('user_id', user.id)
+        
+        error = result.error
+      } else {
+        // Inserir novo
+        const result = await supabase
+          .from('investimentos_cotacoes')
+          .insert({
+            ticker: ticker,
+            tipo_ativo: ativo.tipo_ativo,
+            nome_ativo: ativo.nome_ativo,
+            cotacao_atual: parseFloat(cotacao),
+            user_id: user.id,
+            data_atualizacao: new Date().toISOString()
+          })
+        
+        error = result.error
+      }
 
       if (error) throw error
+      
       setSuccess(`Cotação ${ticker} atualizada!`)
       await carregarDados()
     } catch (error) {
-      setError('Erro ao atualizar cotação')
+      console.error('Erro ao atualizar cotação:', error)
+      setError(`Erro ao atualizar: ${error.message}`)
     }
   }
 
