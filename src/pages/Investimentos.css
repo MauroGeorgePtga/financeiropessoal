@@ -684,6 +684,17 @@
   font-weight: 600;
 }
 
+.resumo-sub-investido {
+  font-size: 12px;
+  color: #999;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.card-investimentos {
+  border-left: 4px solid #667eea;
+}
+
 /* Responsive */
 @media (max-width: 968px) {
   .tabs-container {
