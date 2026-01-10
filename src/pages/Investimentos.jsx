@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { buscarAtivo } from './ativosBrasileiros'
 import { 
   Plus, 
   Edit2, 
@@ -323,8 +324,6 @@ export default function Investimentos() {
   const [filtroTipoAtivo, setFiltroTipoAtivo] = useState('todos')
   const [atualizandoCotacoes, setAtualizandoCotacoes] = useState(false)
   const [ultimaAtualizacao, setUltimaAtualizacao] = useState(null)
-  const [buscandoTicker, setBuscandoTicker] = useState(false)
-  const [debounceTimer, setDebounceTimer] = useState(null)
 
   const [formData, setFormData] = useState({
     tipo_operacao: 'compra',
@@ -395,137 +394,31 @@ export default function Investimentos() {
     }
   }
 
-  // Buscar informações do ticker usando Yahoo Finance
-  const buscarInfoTicker = async (ticker) => {
+  // Buscar informações do ticker na lista local
+  const buscarInfoTicker = (ticker) => {
     if (!ticker || ticker.length < 4) return
     
-    // Limpar timer anterior
-    if (debounceTimer) {
-      clearTimeout(debounceTimer)
-    }
+    const tickerLimpo = ticker.toUpperCase().trim()
+    const nomeEncontrado = buscarAtivo(tickerLimpo)
     
-    setBuscandoTicker(true)
-    
-    try {
-      const tickerLimpo = ticker.toUpperCase().trim()
-      
-      // Adicionar .SA para ações brasileiras (Yahoo Finance)
-      const tickerYahoo = tickerLimpo.includes('.') ? tickerLimpo : `${tickerLimpo}.SA`
-      
-      console.log('Buscando ticker:', tickerYahoo)
-      
-      // Usar API pública do Yahoo Finance via query1.finance.yahoo.com
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${tickerYahoo}`
-      const response = await fetch(url)
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
-      
-      const data = await response.json()
-      console.log('Resposta da API Yahoo:', data)
-      
-      if (data.chart && data.chart.result && data.chart.result.length > 0) {
-        const info = data.chart.result[0].meta
-        const nome = info.longName || info.shortName || ''
-        
-        console.log('Nome encontrado:', nome)
-        
-        if (nome) {
-          setFormData(prev => ({
-            ...prev,
-            nome_ativo: nome
-          }))
-          
-          setSuccess(`✓ ${tickerLimpo} encontrado: ${nome.substring(0, 30)}...`)
-          setTimeout(() => setSuccess(''), 3000)
-        } else {
-          throw new Error('Nome não encontrado')
-        }
-      } else {
-        throw new Error('Ticker não encontrado')
-      }
-    } catch (error) {
-      console.error('Erro ao buscar ticker:', error)
-      setError('Ticker não encontrado. Digite o nome manualmente.')
-      setTimeout(() => setError(''), 3000)
-    } finally {
-      setBuscandoTicker(false)
+    if (nomeEncontrado) {
+      setFormData(prev => ({
+        ...prev,
+        nome_ativo: nomeEncontrado
+      }))
+      setSuccess(`✓ ${tickerLimpo}: ${nomeEncontrado}`)
+      setTimeout(() => setSuccess(''), 2000)
     }
   }
 
-  // Limpar timer ao desmontar
-  useEffect(() => {
-    return () => {
-      if (debounceTimer) {
-        clearTimeout(debounceTimer)
-      }
-    }
-  }, [debounceTimer])
-
-  // Atualizar todas as cotações usando Yahoo Finance
+  // Atualizar cotações manualmente (uma por vez)
   const atualizarTodasCotacoes = async () => {
     setAtualizandoCotacoes(true)
-    setError('')
-    
-    try {
-      const tickersUnicos = [...new Set(carteira.map(a => a.ticker))]
-      
-      let totalAtualizados = 0
-      
-      for (const ticker of tickersUnicos) {
-        try {
-          // Adicionar .SA para ações brasileiras
-          const tickerYahoo = ticker.includes('.') ? ticker : `${ticker}.SA`
-          
-          const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${tickerYahoo}`)
-          
-          if (!response.ok) continue
-          
-          const data = await response.json()
-          
-          if (data.chart && data.chart.result && data.chart.result.length > 0) {
-            const info = data.chart.result[0].meta
-            const cotacao = info.regularMarketPrice
-            
-            if (cotacao) {
-              const ativo = carteira.find(a => a.ticker === ticker)
-              
-              await supabase
-                .from('investimentos_cotacoes')
-                .upsert({
-                  ticker: ticker,
-                  tipo_ativo: ativo.tipo_ativo,
-                  nome_ativo: info.longName || info.shortName || ativo.nome_ativo,
-                  cotacao_atual: cotacao,
-                  user_id: user.id,
-                  data_atualizacao: new Date().toISOString()
-                }, {
-                  onConflict: 'ticker,user_id'
-                })
-              
-              totalAtualizados++
-            }
-          }
-        } catch (error) {
-          console.error(`Erro ao buscar ${ticker}:`, error)
-        }
-        
-        // Delay de 500ms entre requisições
-        await new Promise(resolve => setTimeout(resolve, 500))
-      }
-      
-      if (totalAtualizados > 0) {
-        setSuccess(`${totalAtualizados} cotação(ões) atualizada(s)!`)
-        await carregarDados()
-      } else {
-        setError('Nenhuma cotação foi atualizada')
-      }
-    } catch (error) {
-      setError('Erro ao atualizar cotações')
-    } finally {
+    setError('Por favor, atualize as cotações manualmente por enquanto.')
+    setTimeout(() => {
       setAtualizandoCotacoes(false)
-    }
+      setError('')
+    }, 2000)
   }
 
   const calcularCarteira = () => {
@@ -1171,37 +1064,28 @@ export default function Investimentos() {
                 </div>
 
                 <div className="form-group">
-                  <label>
-                    Ticker * 
-                    {buscandoTicker && <span className="label-loading">🔍 Buscando...</span>}
-                  </label>
-                  <div className="ticker-input-group">
-                    <input
-                      type="text"
-                      value={formData.ticker}
-                      onChange={(e) => {
-                        const ticker = e.target.value.toUpperCase()
-                        setFormData({ ...formData, ticker })
-                        // Busca automática quando tiver 5+ caracteres
-                        if (ticker.length >= 5) {
-                          buscarInfoTicker(ticker)
-                        }
-                      }}
-                      onKeyPress={(e) => {
-                        // Se apertar Enter no ticker, busca imediatamente
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          if (formData.ticker.length >= 4) {
-                            buscarInfoTicker(formData.ticker)
-                          }
-                        }
-                      }}
-                      placeholder="Ex: PETR4"
-                      required
-                    />
-                    {buscandoTicker && <Loader size={16} className="spinner-small" />}
-                  </div>
-                  <small className="form-hint">Digite o ticker e aperte Enter para buscar o nome</small>
+                  <label>Ticker *</label>
+                  <input
+                    type="text"
+                    value={formData.ticker}
+                    onChange={(e) => {
+                      const ticker = e.target.value.toUpperCase()
+                      setFormData({ ...formData, ticker })
+                      // Busca instantânea quando tiver 5+ caracteres
+                      if (ticker.length >= 5) {
+                        buscarInfoTicker(ticker)
+                      }
+                    }}
+                    onBlur={() => {
+                      // Busca ao sair do campo também
+                      if (formData.ticker.length >= 4) {
+                        buscarInfoTicker(formData.ticker)
+                      }
+                    }}
+                    placeholder="Ex: PETR4"
+                    required
+                  />
+                  <small className="form-hint">Sistema busca automaticamente na base de 200+ ativos</small>
                 </div>
 
                 <div className="form-group">
