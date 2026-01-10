@@ -825,19 +825,12 @@ export default function Investimentos() {
       )}
 
       <div className="resumo-cards">
-        <div className="resumo-card card-investido">
+        <div className="resumo-card card-investimentos">
           <div className="resumo-icon">💰</div>
           <div className="resumo-info">
-            <span className="resumo-label">Total Investido</span>
-            <span className="resumo-valor">{formatCurrency(totalInvestido)}</span>
-          </div>
-        </div>
-
-        <div className="resumo-card card-atual">
-          <div className="resumo-icon">💎</div>
-          <div className="resumo-info">
-            <span className="resumo-label">Valor Atual</span>
+            <span className="resumo-label">Investimentos</span>
             <span className="resumo-valor">{formatCurrency(totalAtual)}</span>
+            <span className="resumo-sub-investido">Investido: {formatCurrency(totalInvestido)}</span>
           </div>
         </div>
 
