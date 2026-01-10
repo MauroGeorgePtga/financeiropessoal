@@ -234,6 +234,62 @@
   color: #f56565;
 }
 
+/* Carteira Header */
+.carteira-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.btn-atualizar-cotacoes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-atualizar-cotacoes:hover:not(:disabled) {
+  background: #5568d3;
+  transform: translateY(-2px);
+}
+
+.btn-atualizar-cotacoes:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.carteira-info {
+  font-size: 13px;
+  color: #666;
+  font-weight: 600;
+}
+
 /* Carteira List - Layout em Linhas */
 .carteira-list {
   display: flex;
@@ -637,6 +693,16 @@
   }
   
   .ativo-resultado-inline {
+    width: 100%;
+  }
+  
+  .carteira-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .btn-atualizar-cotacoes {
     width: 100%;
   }
 }
