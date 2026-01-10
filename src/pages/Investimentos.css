@@ -5,40 +5,238 @@
   gap: 10px;
 }
 
-/* Tabs */
-.tabs-container {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  background: white;
-  padding: 10px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* Layout Dual - 2 Colunas */
+.investimentos-dual-layout {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 20px;
+  align-items: start;
 }
 
-.tab-btn {
-  flex: 1;
-  padding: 12px 20px;
-  border: 2px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: #666;
-  font-size: 14px;
-  font-weight: 600;
+/* Coluna Carteira */
+.coluna-carteira {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  position: sticky;
+  top: 20px;
+}
+
+.coluna-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 2px solid #f0f0f0;
+  background: #f5f7ff;
+  border-radius: 10px 10px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.coluna-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+.btn-atualizar-mini {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: #667eea;
+  color: white;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s;
 }
 
-.tab-btn:hover {
-  background: #f5f5f5;
+.btn-atualizar-mini:hover:not(:disabled) {
+  background: #5568d3;
+  transform: rotate(90deg);
 }
 
-.tab-btn.active {
-  background: #667eea;
-  color: white;
+.btn-atualizar-mini:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.empty-state-mini {
+  padding: 40px 20px;
+  text-align: center;
+  color: #999;
+}
+
+.empty-state-mini .empty-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.empty-state-mini p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Carteira Lista Compacta */
+.carteira-list-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 10px;
+}
+
+.ativo-linha-compact {
+  padding: 12px 15px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.ativo-linha-compact:hover {
+  background: #f5f7ff;
+}
+
+.ativo-linha-compact:last-child {
+  border-bottom: none;
+}
+
+.ativo-header-compact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.ativo-emoji {
+  font-size: 20px;
+}
+
+.ativo-info-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.ativo-info-mini strong {
+  font-size: 14px;
+  color: #333;
+}
+
+.ativo-nome-mini {
+  font-size: 11px;
+  color: #999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ativo-valores-compact {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 8px;
+}
+
+.valor-item-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.label-mini {
+  font-size: 9px;
+  color: #999;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.numero-mini {
+  font-size: 13px;
+  color: #333;
+  font-weight: 600;
+}
+
+.numero-mini.destaque {
+  color: #667eea;
+}
+
+.ativo-cotacao-compact {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.cotacao-input-mini {
+  flex: 1;
+  padding: 5px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cotacao-input-mini:focus {
+  outline: none;
   border-color: #667eea;
 }
 
+.btn-refresh-mini {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  background: #667eea;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-refresh-mini:hover {
+  background: #5568d3;
+  transform: rotate(90deg);
+}
+
+.ativo-rent-compact {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.ativo-rent-compact.positivo {
+  background: #e6fffa;
+  color: #38b2ac;
+}
+
+.ativo-rent-compact.negativo {
+  background: #fff5f5;
+  color: #f56565;
+}
+
+/* Coluna Operações */
+.coluna-operacoes {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding-bottom: 20px;
+}
+
+/* Tabs - REMOVIDO */
 /* Operações List - LAYOUT COMPACTO */
 .operacoes-list {
   display: flex;
@@ -629,6 +827,15 @@
 
 /* Responsive */
 @media (max-width: 968px) {
+  .investimentos-dual-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .coluna-carteira {
+    position: static;
+    max-height: 400px;
+  }
+  
   .operacao-card {
     flex-direction: column;
     align-items: flex-start;
@@ -715,10 +922,6 @@
 
   .header-actions button {
     width: 100%;
-  }
-
-  .tabs-container {
-    flex-direction: column;
   }
 
   .detalhe-item {
