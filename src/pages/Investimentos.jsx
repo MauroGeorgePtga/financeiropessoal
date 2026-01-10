@@ -404,33 +404,46 @@ export default function Investimentos() {
       clearTimeout(debounceTimer)
     }
     
-    // Criar novo timer
-    const timer = setTimeout(async () => {
-      setBuscandoTicker(true)
-      try {
-        const tickerLimpo = ticker.toUpperCase().trim()
-        const response = await fetch(`https://brapi.dev/api/quote/${tickerLimpo}?fundamental=false`)
-        const data = await response.json()
-        
-        if (data.results && data.results.length > 0) {
-          const info = data.results[0]
-          setFormData(prev => ({
-            ...prev,
-            nome_ativo: info.longName || info.shortName || prev.nome_ativo
-          }))
-          setSuccess(`✓ ${tickerLimpo} encontrado!`)
-          setTimeout(() => setSuccess(''), 2000)
-        } else {
-          console.log('Ticker não encontrado')
-        }
-      } catch (error) {
-        console.log('Erro ao buscar ticker:', error)
-      } finally {
-        setBuscandoTicker(false)
-      }
-    }, 800) // Aguarda 800ms após parar de digitar
+    setBuscandoTicker(true)
     
-    setDebounceTimer(timer)
+    try {
+      const tickerLimpo = ticker.toUpperCase().trim()
+      console.log('Buscando ticker:', tickerLimpo)
+      
+      const response = await fetch(`https://brapi.dev/api/quote/${tickerLimpo}?fundamental=false`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      const data = await response.json()
+      console.log('Resposta da API:', data)
+      
+      if (data.results && data.results.length > 0) {
+        const info = data.results[0]
+        const nome = info.longName || info.shortName || ''
+        
+        console.log('Nome encontrado:', nome)
+        
+        setFormData(prev => ({
+          ...prev,
+          nome_ativo: nome
+        }))
+        
+        setSuccess(`✓ ${tickerLimpo} encontrado!`)
+        setTimeout(() => setSuccess(''), 2000)
+      } else {
+        console.log('Nenhum resultado encontrado')
+        setError('Ticker não encontrado. Digite o nome manualmente.')
+        setTimeout(() => setError(''), 3000)
+      }
+    } catch (error) {
+      console.error('Erro ao buscar ticker:', error)
+      setError('Erro ao buscar. Digite o nome manualmente.')
+      setTimeout(() => setError(''), 3000)
+    } finally {
+      setBuscandoTicker(false)
+    }
   }
 
   // Limpar timer ao desmontar
@@ -1148,7 +1161,10 @@ export default function Investimentos() {
                 </div>
 
                 <div className="form-group">
-                  <label>Ticker * {buscandoTicker && <span className="label-loading">🔍 Buscando...</span>}</label>
+                  <label>
+                    Ticker * 
+                    {buscandoTicker && <span className="label-loading">🔍 Buscando...</span>}
+                  </label>
                   <div className="ticker-input-group">
                     <input
                       type="text"
@@ -1156,15 +1172,26 @@ export default function Investimentos() {
                       onChange={(e) => {
                         const ticker = e.target.value.toUpperCase()
                         setFormData({ ...formData, ticker })
-                        if (ticker.length >= 4) {
+                        // Busca automática quando tiver 5+ caracteres
+                        if (ticker.length >= 5) {
                           buscarInfoTicker(ticker)
                         }
                       }}
-                      placeholder="PETR4"
+                      onKeyPress={(e) => {
+                        // Se apertar Enter no ticker, busca imediatamente
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          if (formData.ticker.length >= 4) {
+                            buscarInfoTicker(formData.ticker)
+                          }
+                        }
+                      }}
+                      placeholder="Ex: PETR4"
                       required
                     />
                     {buscandoTicker && <Loader size={16} className="spinner-small" />}
                   </div>
+                  <small className="form-hint">Digite o ticker e aperte Enter para buscar o nome</small>
                 </div>
 
                 <div className="form-group">
