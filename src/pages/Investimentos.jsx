@@ -312,6 +312,7 @@ compra,fii,HGLG11,CSHG Logística,100,150.00,0,0,0,2023-03-10,Primeiro FII`
 
 export default function Investimentos() {
   const { user } = useAuth()
+  const [activeTab, setActiveTab] = useState('carteira')
   const [operacoes, setOperacoes] = useState([])
   const [cotacoes, setCotacoes] = useState([])
   const [loading, setLoading] = useState(true)
@@ -862,100 +863,141 @@ export default function Investimentos() {
         </div>
       </div>
 
-      <div className="investimentos-dual-layout">
-        {/* COLUNA 1 - CARTEIRA */}
-        <div className="coluna-carteira">
-          <div className="coluna-header">
-            <h2>💼 Carteira ({carteira.length})</h2>
-            {carteira.length > 0 && (
+      <div className="tabs-container">
+        <button 
+          className={`tab-btn ${activeTab === 'carteira' ? 'active' : ''}`}
+          onClick={() => setActiveTab('carteira')}
+        >
+          💼 Carteira ({carteira.length})
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'operacoes' ? 'active' : ''}`}
+          onClick={() => setActiveTab('operacoes')}
+        >
+          📜 Operações ({operacoes.length})
+        </button>
+      </div>
+
+      {activeTab === 'carteira' && (
+        <>
+          {carteira.length > 0 && (
+            <div className="carteira-header">
               <button 
-                className="btn-atualizar-mini"
+                className="btn-atualizar-cotacoes"
                 onClick={atualizarTodasCotacoes}
                 disabled={atualizandoCotacoes}
-                title="Atualizar todas as cotações"
               >
                 {atualizandoCotacoes ? (
-                  <Loader size={16} className="spinner" />
+                  <>
+                    <Loader size={20} className="spinner" />
+                    Atualizando {progressoAtualizacao.atual}/{progressoAtualizacao.total}...
+                  </>
                 ) : (
-                  <RefreshCw size={16} />
+                  <>
+                    <RefreshCw size={20} />
+                    Atualizar Todas as Cotações
+                  </>
                 )}
               </button>
-            )}
-          </div>
+              <span className="carteira-info">
+                {carteira.length} ativo(s) • Cotações via Yahoo Finance
+              </span>
+            </div>
+          )}
 
           {carteira.length === 0 ? (
-            <div className="empty-state-mini">
+            <div className="empty-state">
               <div className="empty-icon">💼</div>
-              <p>Nenhum ativo na carteira</p>
+              <h2>Carteira vazia</h2>
+              <p>Cadastre operações para montar sua carteira</p>
             </div>
           ) : (
-            <div className="carteira-list-compact">
+            <div className="carteira-list">
               {carteira.map((ativo) => {
                 const tipoConfig = tiposAtivo.find(t => t.value === ativo.tipo_ativo)
                 const temCotacao = ativo.cotacao_atual !== undefined
 
                 return (
-                  <div key={ativo.ticker} className="ativo-linha-compact">
-                    <div className="ativo-header-compact">
-                      <span className="ativo-emoji">{tipoConfig?.emoji}</span>
-                      <div className="ativo-info-mini">
-                        <strong>{ativo.ticker}</strong>
-                        <span className="ativo-nome-mini">{ativo.nome_ativo}</span>
+                  <div key={ativo.ticker} className="ativo-linha">
+                    <div className="ativo-badge-mini">
+                      <span className="ativo-tipo-emoji">{tipoConfig?.emoji}</span>
+                    </div>
+
+                    <div className="ativo-info-compact">
+                      <h3>{ativo.ticker}</h3>
+                      <p>{ativo.nome_ativo}</p>
+                    </div>
+
+                    <div className="ativo-dados">
+                      <div className="dado-item">
+                        <span className="dado-label">Qtd</span>
+                        <span className="dado-valor">{ativo.quantidade}</span>
+                      </div>
+                      <div className="dado-item">
+                        <span className="dado-label">PM</span>
+                        <span className="dado-valor">{formatCurrency(ativo.preco_medio)}</span>
+                      </div>
+                      <div className="dado-item">
+                        <span className="dado-label">Investido</span>
+                        <span className="dado-valor destaque">{formatCurrency(ativo.total_investido)}</span>
                       </div>
                     </div>
 
-                    <div className="ativo-valores-compact">
-                      <div className="valor-item-mini">
-                        <span className="label-mini">Qtd</span>
-                        <span className="numero-mini">{ativo.quantidade}</span>
-                      </div>
-                      <div className="valor-item-mini">
-                        <span className="label-mini">Investido</span>
-                        <span className="numero-mini destaque">{formatCurrency(ativo.total_investido)}</span>
-                      </div>
-                    </div>
-
-                    <div className="ativo-cotacao-compact">
+                    <div className="ativo-cotacao-inline">
+                      <label>Cotação:</label>
                       <input
                         type="number"
                         step="0.01"
                         defaultValue={ativo.cotacao_atual || ''}
-                        placeholder="Cotação"
-                        className="cotacao-input-mini"
+                        placeholder="0,00"
+                        className="cotacao-input-small"
                         id={`cotacao-${ativo.ticker}`}
                       />
                       <button 
-                        className="btn-refresh-mini"
+                        className="btn-refresh-small"
                         onClick={() => {
                           const input = document.getElementById(`cotacao-${ativo.ticker}`)
                           if (input && input.value) {
                             handleAtualizarCotacao(ativo.ticker, input.value)
                           }
                         }}
+                        title="Atualizar"
                       >
-                        <RefreshCw size={12} />
+                        <RefreshCw size={14} />
                       </button>
                     </div>
 
                     {temCotacao && (
-                      <div className={`ativo-rent-compact ${ativo.rentabilidade >= 0 ? 'positivo' : 'negativo'}`}>
-                        {ativo.rentabilidade >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                        <span>{ativo.rentabilidade >= 0 ? '+' : ''}{ativo.rentabilidade.toFixed(2)}%</span>
+                      <div className="ativo-resultado-inline">
+                        <div className="resultado-valor">
+                          <span className="resultado-label">Atual:</span>
+                          <span className="resultado-number">{formatCurrency(ativo.valor_atual)}</span>
+                        </div>
+                        <div className={`resultado-rent ${ativo.rentabilidade >= 0 ? 'positivo' : 'negativo'}`}>
+                          {ativo.rentabilidade >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                          <span className="rent-percent">
+                            {ativo.rentabilidade >= 0 ? '+' : ''}{ativo.rentabilidade.toFixed(2)}%
+                          </span>
+                          <span className="rent-valor">
+                            ({formatCurrency(ativo.lucro)})
+                          </span>
+                        </div>
                       </div>
                     )}
+
+                    <div className="ativo-ops-mini">
+                      <small>{ativo.operacoes_compra}C • {ativo.operacoes_venda}V</small>
+                    </div>
                   </div>
                 )
               })}
             </div>
           )}
-        </div>
+        </>
+      )}
 
-        {/* COLUNA 2 - OPERAÇÕES */}
-        <div className="coluna-operacoes">
-          <div className="coluna-header">
-            <h2>📜 Operações ({operacoesFiltradas.length})</h2>
-          </div>
-
+      {activeTab === 'operacoes' && (
+        <>
           <div className="filtros-container">
             <div className="search-box">
               <Search size={20} />
@@ -1083,8 +1125,8 @@ export default function Investimentos() {
               })}
             </div>
           )}
-        </div>
-      </div>
+        </>
+      )}
 
       {showModal && (
         <div className="modal-overlay" onClick={fecharModal}>
