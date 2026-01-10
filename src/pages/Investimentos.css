@@ -509,6 +509,13 @@
   animation: spin 1s linear infinite;
 }
 
+.label-loading {
+  font-size: 11px;
+  color: #667eea;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
 /* Carteira Header */
 .carteira-header {
   display: flex;
