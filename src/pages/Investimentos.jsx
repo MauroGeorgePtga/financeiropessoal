@@ -13,8 +13,8 @@ import {
   X,
   Copy
 } from 'lucide-react'
-import ImportarInvestimentos from './ImportarInvestimentos'
 import './Investimentos.css'
+import './ImportarInvestimentos.css'
 
 export default function Investimentos() {
   const { user } = useAuth()
@@ -487,41 +487,16 @@ export default function Investimentos() {
 
                 return (
                   <div key={op.id} className={`operacao-card ${op.tipo_operacao}`}>
-                    <div className="operacao-header">
-                      <div className="operacao-tipo-badge">
-                        <span className={`badge-${op.tipo_operacao}`}>
-                          {op.tipo_operacao === 'compra' ? '🟢 COMPRA' : '🔴 VENDA'}
-                        </span>
-                        <span className="tipo-ativo-badge">
-                          {tipoConfig?.emoji} {tipoConfig?.label}
-                        </span>
-                      </div>
-                      <div className="operacao-acoes">
-                        <button
-                          className="btn-acao"
-                          onClick={() => handleDuplicar(op)}
-                          title="Duplicar"
-                        >
-                          <Copy size={16} />
-                        </button>
-                        <button
-                          className="btn-acao"
-                          onClick={() => handleEditar(op)}
-                          title="Editar"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          className="btn-acao btn-delete"
-                          onClick={() => handleExcluir(op.id)}
-                          title="Excluir"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-
                     <div className="operacao-body">
+                      <div className="operacao-badge">
+                        <span className={`badge-${op.tipo_operacao}`}>
+                          {op.tipo_operacao === 'compra' ? '🟢 C' : '🔴 V'}
+                        </span>
+                        <span className="tipo-ativo-mini">
+                          {tipoConfig?.emoji}
+                        </span>
+                      </div>
+
                       <div className="operacao-info">
                         <h3>{op.ticker}</h3>
                         <p>{op.nome_ativo}</p>
@@ -529,22 +504,46 @@ export default function Investimentos() {
 
                       <div className="operacao-detalhes">
                         <div className="detalhe-item">
-                          <span className="detalhe-label">Qtd:</span>
+                          <span className="detalhe-label">Qtd</span>
                           <span className="detalhe-valor">{op.quantidade}</span>
                         </div>
                         <div className="detalhe-item">
-                          <span className="detalhe-label">Preço:</span>
+                          <span className="detalhe-label">Preço</span>
                           <span className="detalhe-valor">{formatCurrency(op.preco_unitario)}</span>
                         </div>
                         <div className="detalhe-item">
-                          <span className="detalhe-label">Data:</span>
+                          <span className="detalhe-label">Data</span>
                           <span className="detalhe-valor">{formatDate(op.data_operacao)}</span>
                         </div>
                       </div>
 
                       <div className="operacao-total">
-                        <span className="total-label">Total:</span>
+                        <span className="total-label">Total</span>
                         <span className="total-valor">{formatCurrency(total)}</span>
+                      </div>
+
+                      <div className="operacao-acoes">
+                        <button
+                          className="btn-acao"
+                          onClick={() => handleDuplicar(op)}
+                          title="Duplicar"
+                        >
+                          <Copy size={14} />
+                        </button>
+                        <button
+                          className="btn-acao"
+                          onClick={() => handleEditar(op)}
+                          title="Editar"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button
+                          className="btn-acao btn-delete"
+                          onClick={() => handleExcluir(op.id)}
+                          title="Excluir"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
                     </div>
                   </div>
