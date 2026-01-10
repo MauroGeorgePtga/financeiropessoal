@@ -9,12 +9,305 @@ import {
   TrendingUp, 
   TrendingDown,
   Upload,
+  Download,
   RefreshCw,
   X,
-  Copy
+  Copy,
+  AlertCircle,
+  CheckCircle,
+  FileText,
+  Loader
 } from 'lucide-react'
 import './Investimentos.css'
 import './ImportarInvestimentos.css'
+
+// Componente de Importação CSV
+function ImportarInvestimentos({ onClose, onSuccess, userId }) {
+  const [arquivo, setArquivo] = useState(null)
+  const [preview, setPreview] = useState([])
+  const [erros, setErros] = useState([])
+  const [processando, setProcessando] = useState(false)
+  const [resultado, setResultado] = useState(null)
+
+  const templateCSV = `tipo_operacao,tipo_ativo,ticker,nome_ativo,quantidade,preco_unitario,taxa_corretagem,emolumentos,outros_custos,data_operacao,observacoes
+compra,acao,PETR4,Petrobras PN,100,25.50,5.00,0.50,0,2023-01-15,Primeira compra
+compra,acao,VALE3,Vale ON,50,62.80,5.00,0.30,0,2023-02-20,
+venda,acao,PETR4,Petrobras PN,50,38.00,5.00,0.25,0,2025-08-15,Realizacao de lucro
+compra,fii,HGLG11,CSHG Logística,100,150.00,0,0,0,2023-03-10,Primeiro FII`
+
+  const downloadTemplate = () => {
+    const blob = new Blob([templateCSV], { type: 'text/csv;charset=utf-8;' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'template_investimentos.csv'
+    link.click()
+    window.URL.revokeObjectURL(url)
+  }
+
+  const validarLinha = (linha) => {
+    const errosLinha = []
+    if (!['compra', 'venda'].includes(linha.tipo_operacao?.toLowerCase())) {
+      errosLinha.push(`Tipo de operação inválido`)
+    }
+    const tiposValidos = ['acao', 'fii', 'renda_fixa', 'etf', 'fundo', 'cripto']
+    if (!tiposValidos.includes(linha.tipo_ativo?.toLowerCase())) {
+      errosLinha.push(`Tipo de ativo inválido`)
+    }
+    if (!linha.ticker || linha.ticker.trim() === '') {
+      errosLinha.push('Ticker é obrigatório')
+    }
+    if (!linha.nome_ativo || linha.nome_ativo.trim() === '') {
+      errosLinha.push('Nome do ativo é obrigatório')
+    }
+    const quantidade = parseFloat(linha.quantidade)
+    if (isNaN(quantidade) || quantidade <= 0) {
+      errosLinha.push('Quantidade inválida')
+    }
+    const preco = parseFloat(linha.preco_unitario)
+    if (isNaN(preco) || preco <= 0) {
+      errosLinha.push('Preço unitário inválido')
+    }
+    if (!linha.data_operacao || !linha.data_operacao.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      errosLinha.push('Data inválida (formato: AAAA-MM-DD)')
+    }
+    return errosLinha
+  }
+
+  const parseCSV = (texto) => {
+    const linhas = texto.split('\n').filter(linha => linha.trim())
+    if (linhas.length < 2) {
+      throw new Error('Arquivo vazio')
+    }
+    const cabecalho = linhas[0].split(',').map(c => c.trim())
+    const dados = []
+    const errosValidacao = []
+    for (let i = 1; i < linhas.length; i++) {
+      const valores = linhas[i].split(',').map(v => v.trim())
+      const objeto = {}
+      cabecalho.forEach((campo, index) => {
+        objeto[campo] = valores[index]
+      })
+      const errosLinha = validarLinha(objeto)
+      if (errosLinha.length > 0) {
+        errosValidacao.push({
+          linha: i + 1,
+          dados: objeto,
+          erros: errosLinha
+        })
+      } else {
+        dados.push({
+          tipo_operacao: objeto.tipo_operacao.toLowerCase(),
+          tipo_ativo: objeto.tipo_ativo.toLowerCase(),
+          ticker: objeto.ticker.toUpperCase(),
+          nome_ativo: objeto.nome_ativo,
+          quantidade: parseFloat(objeto.quantidade),
+          preco_unitario: parseFloat(objeto.preco_unitario),
+          taxa_corretagem: parseFloat(objeto.taxa_corretagem) || 0,
+          emolumentos: parseFloat(objeto.emolumentos) || 0,
+          outros_custos: parseFloat(objeto.outros_custos) || 0,
+          data_operacao: objeto.data_operacao,
+          observacoes: objeto.observacoes || null,
+          user_id: userId
+        })
+      }
+    }
+    return { dados, errosValidacao }
+  }
+
+  const handleArquivo = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (!file.name.endsWith('.csv')) {
+      setErros([{ mensagem: 'Selecione um arquivo CSV' }])
+      return
+    }
+    setArquivo(file)
+    setErros([])
+    setResultado(null)
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      try {
+        const texto = event.target.result
+        const { dados, errosValidacao } = parseCSV(texto)
+        setPreview(dados)
+        setErros(errosValidacao)
+      } catch (error) {
+        setErros([{ mensagem: error.message }])
+        setPreview([])
+      }
+    }
+    reader.readAsText(file)
+  }
+
+  const handleImportar = async () => {
+    if (preview.length === 0) return
+    try {
+      setProcessando(true)
+      const { error } = await supabase
+        .from('investimentos_operacoes')
+        .insert(preview)
+      if (error) throw error
+      setResultado({
+        sucesso: true,
+        mensagem: `${preview.length} operação(ões) importada(s)!`
+      })
+      setTimeout(() => {
+        onSuccess()
+        onClose()
+      }, 2000)
+    } catch (error) {
+      setResultado({
+        sucesso: false,
+        mensagem: error.message || 'Erro ao importar'
+      })
+    } finally {
+      setProcessando(false)
+    }
+  }
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value)
+  }
+
+  const formatDate = (date) => {
+    return new Date(date + 'T00:00:00').toLocaleDateString('pt-BR')
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content modal-import" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Importar Operações (CSV)</h2>
+          <button className="btn-close" onClick={onClose}>
+            <X size={24} />
+          </button>
+        </div>
+        <div className="import-body">
+          <div className="import-instrucoes">
+            <h3>📋 Como importar:</h3>
+            <ol>
+              <li>Baixe o template CSV</li>
+              <li>Preencha com suas operações</li>
+              <li>Faça o upload aqui</li>
+            </ol>
+            <button className="btn-download" onClick={downloadTemplate}>
+              <Download size={20} />
+              Baixar Template CSV
+            </button>
+          </div>
+          <div className="import-upload">
+            <label className="upload-area">
+              <Upload size={48} />
+              <span>Selecionar arquivo CSV</span>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleArquivo}
+                style={{ display: 'none' }}
+              />
+            </label>
+            {arquivo && (
+              <div className="arquivo-selecionado">
+                <FileText size={20} />
+                <span>{arquivo.name}</span>
+              </div>
+            )}
+          </div>
+          {erros.length > 0 && (
+            <div className="import-erros">
+              <div className="erro-header">
+                <AlertCircle size={20} />
+                <h4>Erros ({erros.length}):</h4>
+              </div>
+              <div className="erros-list">
+                {erros.map((erro, index) => (
+                  <div key={index} className="erro-item">
+                    {erro.linha && <strong>Linha {erro.linha}:</strong>}
+                    {erro.mensagem && <p>{erro.mensagem}</p>}
+                    {erro.erros && (
+                      <ul>
+                        {erro.erros.map((e, i) => (
+                          <li key={i}>{e}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {preview.length > 0 && (
+            <div className="import-preview">
+              <div className="preview-header">
+                <CheckCircle size={20} />
+                <h4>Preview: {preview.length} operação(ões)</h4>
+              </div>
+              <div className="preview-table-container">
+                <table className="preview-table">
+                  <thead>
+                    <tr>
+                      <th>Op</th>
+                      <th>Ticker</th>
+                      <th>Qtd</th>
+                      <th>Preço</th>
+                      <th>Total</th>
+                      <th>Data</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {preview.slice(0, 10).map((op, index) => {
+                      const total = (op.quantidade * op.preco_unitario) + 
+                                   op.taxa_corretagem + 
+                                   op.emolumentos + 
+                                   op.outros_custos
+                      return (
+                        <tr key={index}>
+                          <td>{op.tipo_operacao === 'compra' ? '🟢' : '🔴'}</td>
+                          <td><strong>{op.ticker}</strong></td>
+                          <td>{op.quantidade}</td>
+                          <td>{formatCurrency(op.preco_unitario)}</td>
+                          <td><strong>{formatCurrency(total)}</strong></td>
+                          <td>{formatDate(op.data_operacao)}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+                {preview.length > 10 && (
+                  <p className="preview-mais">
+                    ... e mais {preview.length - 10} operação(ões)
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+          {resultado && (
+            <div className={`import-resultado ${resultado.sucesso ? 'sucesso' : 'erro'}`}>
+              {resultado.sucesso ? <CheckCircle size={24} /> : <AlertCircle size={24} />}
+              <p>{resultado.mensagem}</p>
+            </div>
+          )}
+        </div>
+        <div className="modal-footer">
+          <button className="btn-secondary" onClick={onClose} disabled={processando}>
+            Cancelar
+          </button>
+          <button 
+            className="btn-primary"
+            onClick={handleImportar}
+            disabled={preview.length === 0 || processando || resultado?.sucesso}
+          >
+            {processando ? 'Importando...' : `Importar ${preview.length} Op.`}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function Investimentos() {
   const { user } = useAuth()
@@ -28,6 +321,9 @@ export default function Investimentos() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filtroTipoOp, setFiltroTipoOp] = useState('todos')
   const [filtroTipoAtivo, setFiltroTipoAtivo] = useState('todos')
+  const [atualizandoCotacoes, setAtualizandoCotacoes] = useState(false)
+  const [ultimaAtualizacao, setUltimaAtualizacao] = useState(null)
+  const [buscandoTicker, setBuscandoTicker] = useState(false)
 
   const [formData, setFormData] = useState({
     tipo_operacao: 'compra',
@@ -82,11 +378,105 @@ export default function Investimentos() {
 
       setOperacoes(opData || [])
       setCotacoes(cotData || [])
+      
+      // Pegar timestamp da última atualização
+      if (cotData && cotData.length > 0) {
+        const maisRecente = cotData.reduce((prev, current) => 
+          new Date(current.data_atualizacao) > new Date(prev.data_atualizacao) ? current : prev
+        )
+        setUltimaAtualizacao(maisRecente.data_atualizacao)
+      }
     } catch (error) {
       console.error('Erro ao carregar dados:', error)
       setError('Erro ao carregar investimentos')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Buscar informações do ticker na Brapi
+  const buscarInfoTicker = async (ticker) => {
+    if (!ticker || ticker.length < 4) return
+    
+    setBuscandoTicker(true)
+    try {
+      const response = await fetch(`https://brapi.dev/api/quote/${ticker}?fundamental=false`)
+      const data = await response.json()
+      
+      if (data.results && data.results.length > 0) {
+        const info = data.results[0]
+        setFormData(prev => ({
+          ...prev,
+          nome_ativo: info.longName || info.shortName || prev.nome_ativo
+        }))
+      }
+    } catch (error) {
+      console.log('Ticker não encontrado na API')
+    } finally {
+      setBuscandoTicker(false)
+    }
+  }
+
+  // Atualizar todas as cotações
+  const atualizarTodasCotacoes = async () => {
+    setAtualizandoCotacoes(true)
+    setError('')
+    
+    try {
+      const tickersUnicos = [...new Set(carteira.map(a => a.ticker))]
+      
+      // Dividir em grupos de 10 (limite da API)
+      const grupos = []
+      for (let i = 0; i < tickersUnicos.length; i += 10) {
+        grupos.push(tickersUnicos.slice(i, i + 10))
+      }
+      
+      let totalAtualizados = 0
+      
+      for (const grupo of grupos) {
+        const tickersStr = grupo.join(',')
+        
+        try {
+          const response = await fetch(`https://brapi.dev/api/quote/${tickersStr}?fundamental=false`)
+          const data = await response.json()
+          
+          if (data.results) {
+            for (const result of data.results) {
+              const ativo = carteira.find(a => a.ticker === result.symbol)
+              if (ativo && result.regularMarketPrice) {
+                await supabase
+                  .from('investimentos_cotacoes')
+                  .upsert({
+                    ticker: result.symbol,
+                    tipo_ativo: ativo.tipo_ativo,
+                    nome_ativo: result.longName || result.shortName || ativo.nome_ativo,
+                    cotacao_atual: result.regularMarketPrice,
+                    user_id: user.id,
+                    data_atualizacao: new Date().toISOString()
+                  }, {
+                    onConflict: 'ticker,user_id'
+                  })
+                
+                totalAtualizados++
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao buscar grupo:', error)
+        }
+        
+        // Delay de 1 segundo entre requisições
+        if (grupos.indexOf(grupo) < grupos.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+      }
+      
+      setSuccess(`${totalAtualizados} cotação(ões) atualizada(s)!`)
+      await carregarDados()
+    } catch (error) {
+      setError('Erro ao atualizar cotações')
+    } finally {
+      setAtualizandoCotacoes(false)
     }
   }
 
@@ -262,7 +652,7 @@ export default function Investimentos() {
           user_id: user.id,
           data_atualizacao: new Date().toISOString()
         }, {
-          onConflict: 'ticker'
+          onConflict: 'ticker,user_id'
         })
 
       if (error) throw error
@@ -323,6 +713,16 @@ export default function Investimentos() {
 
   const formatDate = (date) => {
     return new Date(date + 'T00:00:00').toLocaleDateString('pt-BR')
+  }
+
+  const formatDatetime = (datetime) => {
+    const date = new Date(datetime)
+    const hoje = new Date()
+    const diff = Math.floor((hoje - date) / 1000 / 60) // minutos
+    
+    if (diff < 60) return `Há ${diff} min`
+    if (diff < 1440) return `Há ${Math.floor(diff / 60)}h`
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
   }
 
   const calcularTotal = () => {
@@ -556,6 +956,31 @@ export default function Investimentos() {
 
       {activeTab === 'carteira' && (
         <>
+          <div className="carteira-header">
+            <button 
+              className="btn-atualizar-cotacoes"
+              onClick={atualizarTodasCotacoes}
+              disabled={atualizandoCotacoes || carteira.length === 0}
+            >
+              {atualizandoCotacoes ? (
+                <>
+                  <Loader size={20} className="spinner" />
+                  Atualizando...
+                </>
+              ) : (
+                <>
+                  <RefreshCw size={20} />
+                  Atualizar Todas as Cotações
+                </>
+              )}
+            </button>
+            {ultimaAtualizacao && (
+              <span className="ultima-atualizacao">
+                ⏱️ Última atualização: {formatDatetime(ultimaAtualizacao)}
+              </span>
+            )}
+          </div>
+
           {carteira.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">💼</div>
@@ -648,7 +1073,7 @@ export default function Investimentos() {
 
       {showModal && (
         <div className="modal-overlay" onClick={fecharModal}>
-          <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content modal-invest" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{editingOperacao ? 'Editar Operação' : 'Nova Operação'}</h2>
               <button className="btn-close" onClick={fecharModal}>
@@ -657,10 +1082,10 @@ export default function Investimentos() {
             </div>
 
             <form onSubmit={(e) => handleSubmit(e, false)}>
-              <div className="form-grid">
-                <div className="form-group full-width">
-                  <label>Tipo de Operação *</label>
-                  <div className="radio-group">
+              <div className="form-invest-grid">
+                <div className="form-group">
+                  <label>Operação *</label>
+                  <div className="radio-group-compact">
                     <label className="radio-label">
                       <input
                         type="radio"
@@ -682,8 +1107,8 @@ export default function Investimentos() {
                   </div>
                 </div>
 
-                <div className="form-group full-width">
-                  <label>Tipo de Ativo *</label>
+                <div className="form-group">
+                  <label>Tipo *</label>
                   <select
                     value={formData.tipo_ativo}
                     onChange={(e) => setFormData({ ...formData, tipo_ativo: e.target.value })}
@@ -699,13 +1124,17 @@ export default function Investimentos() {
 
                 <div className="form-group">
                   <label>Ticker *</label>
-                  <input
-                    type="text"
-                    value={formData.ticker}
-                    onChange={(e) => setFormData({ ...formData, ticker: e.target.value.toUpperCase() })}
-                    placeholder="PETR4"
-                    required
-                  />
+                  <div className="ticker-input-group">
+                    <input
+                      type="text"
+                      value={formData.ticker}
+                      onChange={(e) => setFormData({ ...formData, ticker: e.target.value.toUpperCase() })}
+                      onBlur={(e) => buscarInfoTicker(e.target.value)}
+                      placeholder="PETR4"
+                      required
+                    />
+                    {buscandoTicker && <Loader size={16} className="spinner-small" />}
+                  </div>
                 </div>
 
                 <div className="form-group">
