@@ -324,6 +324,7 @@ export default function Investimentos() {
   const [atualizandoCotacoes, setAtualizandoCotacoes] = useState(false)
   const [ultimaAtualizacao, setUltimaAtualizacao] = useState(null)
   const [buscandoTicker, setBuscandoTicker] = useState(false)
+  const [debounceTimer, setDebounceTimer] = useState(null)
 
   const [formData, setFormData] = useState({
     tipo_operacao: 'compra',
@@ -398,24 +399,48 @@ export default function Investimentos() {
   const buscarInfoTicker = async (ticker) => {
     if (!ticker || ticker.length < 4) return
     
-    setBuscandoTicker(true)
-    try {
-      const response = await fetch(`https://brapi.dev/api/quote/${ticker}?fundamental=false`)
-      const data = await response.json()
-      
-      if (data.results && data.results.length > 0) {
-        const info = data.results[0]
-        setFormData(prev => ({
-          ...prev,
-          nome_ativo: info.longName || info.shortName || prev.nome_ativo
-        }))
-      }
-    } catch (error) {
-      console.log('Ticker não encontrado na API')
-    } finally {
-      setBuscandoTicker(false)
+    // Limpar timer anterior
+    if (debounceTimer) {
+      clearTimeout(debounceTimer)
     }
+    
+    // Criar novo timer
+    const timer = setTimeout(async () => {
+      setBuscandoTicker(true)
+      try {
+        const tickerLimpo = ticker.toUpperCase().trim()
+        const response = await fetch(`https://brapi.dev/api/quote/${tickerLimpo}?fundamental=false`)
+        const data = await response.json()
+        
+        if (data.results && data.results.length > 0) {
+          const info = data.results[0]
+          setFormData(prev => ({
+            ...prev,
+            nome_ativo: info.longName || info.shortName || prev.nome_ativo
+          }))
+          setSuccess(`✓ ${tickerLimpo} encontrado!`)
+          setTimeout(() => setSuccess(''), 2000)
+        } else {
+          console.log('Ticker não encontrado')
+        }
+      } catch (error) {
+        console.log('Erro ao buscar ticker:', error)
+      } finally {
+        setBuscandoTicker(false)
+      }
+    }, 800) // Aguarda 800ms após parar de digitar
+    
+    setDebounceTimer(timer)
   }
+
+  // Limpar timer ao desmontar
+  useEffect(() => {
+    return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer)
+      }
+    }
+  }, [debounceTimer])
 
   // Atualizar todas as cotações
   const atualizarTodasCotacoes = async () => {
@@ -1123,13 +1148,18 @@ export default function Investimentos() {
                 </div>
 
                 <div className="form-group">
-                  <label>Ticker *</label>
+                  <label>Ticker * {buscandoTicker && <span className="label-loading">🔍 Buscando...</span>}</label>
                   <div className="ticker-input-group">
                     <input
                       type="text"
                       value={formData.ticker}
-                      onChange={(e) => setFormData({ ...formData, ticker: e.target.value.toUpperCase() })}
-                      onBlur={(e) => buscarInfoTicker(e.target.value)}
+                      onChange={(e) => {
+                        const ticker = e.target.value.toUpperCase()
+                        setFormData({ ...formData, ticker })
+                        if (ticker.length >= 4) {
+                          buscarInfoTicker(ticker)
+                        }
+                      }}
                       placeholder="PETR4"
                       required
                     />
