@@ -13,6 +13,7 @@ import {
   X,
   Copy
 } from 'lucide-react'
+import ImportarInvestimentos from './ImportarInvestimentos'
 import './Investimentos.css'
 
 export default function Investimentos() {
@@ -819,29 +820,11 @@ export default function Investimentos() {
       )}
 
       {showImportModal && (
-        <div className="modal-overlay" onClick={() => setShowImportModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Importar CSV</h2>
-              <button className="btn-close" onClick={() => setShowImportModal(false)}>
-                <X size={24} />
-              </button>
-            </div>
-            <div style={{ padding: '20px', textAlign: 'center' }}>
-              <p>Funcionalidade em desenvolvimento!</p>
-              <p style={{ marginTop: '10px', fontSize: '14px', color: '#666' }}>
-                Por enquanto, use "Nova Operação" + "Salvar e Novo"
-              </p>
-              <button 
-                className="btn-primary" 
-                style={{ marginTop: '20px' }}
-                onClick={() => setShowImportModal(false)}
-              >
-                Entendi
-              </button>
-            </div>
-          </div>
-        </div>
+        <ImportarInvestimentos
+          onClose={() => setShowImportModal(false)}
+          onSuccess={carregarDados}
+          userId={user.id}
+        />
       )}
     </div>
   )
