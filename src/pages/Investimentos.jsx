@@ -395,7 +395,7 @@ export default function Investimentos() {
     }
   }
 
-  // Buscar informações do ticker na Brapi
+  // Buscar informações do ticker usando Yahoo Finance
   const buscarInfoTicker = async (ticker) => {
     if (!ticker || ticker.length < 4) return
     
@@ -408,38 +408,46 @@ export default function Investimentos() {
     
     try {
       const tickerLimpo = ticker.toUpperCase().trim()
-      console.log('Buscando ticker:', tickerLimpo)
       
-      const response = await fetch(`https://brapi.dev/api/quote/${tickerLimpo}?fundamental=false`)
+      // Adicionar .SA para ações brasileiras (Yahoo Finance)
+      const tickerYahoo = tickerLimpo.includes('.') ? tickerLimpo : `${tickerLimpo}.SA`
+      
+      console.log('Buscando ticker:', tickerYahoo)
+      
+      // Usar API pública do Yahoo Finance via query1.finance.yahoo.com
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${tickerYahoo}`
+      const response = await fetch(url)
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
       }
       
       const data = await response.json()
-      console.log('Resposta da API:', data)
+      console.log('Resposta da API Yahoo:', data)
       
-      if (data.results && data.results.length > 0) {
-        const info = data.results[0]
+      if (data.chart && data.chart.result && data.chart.result.length > 0) {
+        const info = data.chart.result[0].meta
         const nome = info.longName || info.shortName || ''
         
         console.log('Nome encontrado:', nome)
         
-        setFormData(prev => ({
-          ...prev,
-          nome_ativo: nome
-        }))
-        
-        setSuccess(`✓ ${tickerLimpo} encontrado!`)
-        setTimeout(() => setSuccess(''), 2000)
+        if (nome) {
+          setFormData(prev => ({
+            ...prev,
+            nome_ativo: nome
+          }))
+          
+          setSuccess(`✓ ${tickerLimpo} encontrado: ${nome.substring(0, 30)}...`)
+          setTimeout(() => setSuccess(''), 3000)
+        } else {
+          throw new Error('Nome não encontrado')
+        }
       } else {
-        console.log('Nenhum resultado encontrado')
-        setError('Ticker não encontrado. Digite o nome manualmente.')
-        setTimeout(() => setError(''), 3000)
+        throw new Error('Ticker não encontrado')
       }
     } catch (error) {
       console.error('Erro ao buscar ticker:', error)
-      setError('Erro ao buscar. Digite o nome manualmente.')
+      setError('Ticker não encontrado. Digite o nome manualmente.')
       setTimeout(() => setError(''), 3000)
     } finally {
       setBuscandoTicker(false)
@@ -455,7 +463,7 @@ export default function Investimentos() {
     }
   }, [debounceTimer])
 
-  // Atualizar todas as cotações
+  // Atualizar todas as cotações usando Yahoo Finance
   const atualizarTodasCotacoes = async () => {
     setAtualizandoCotacoes(true)
     setError('')
@@ -463,54 +471,56 @@ export default function Investimentos() {
     try {
       const tickersUnicos = [...new Set(carteira.map(a => a.ticker))]
       
-      // Dividir em grupos de 10 (limite da API)
-      const grupos = []
-      for (let i = 0; i < tickersUnicos.length; i += 10) {
-        grupos.push(tickersUnicos.slice(i, i + 10))
-      }
-      
       let totalAtualizados = 0
       
-      for (const grupo of grupos) {
-        const tickersStr = grupo.join(',')
-        
+      for (const ticker of tickersUnicos) {
         try {
-          const response = await fetch(`https://brapi.dev/api/quote/${tickersStr}?fundamental=false`)
+          // Adicionar .SA para ações brasileiras
+          const tickerYahoo = ticker.includes('.') ? ticker : `${ticker}.SA`
+          
+          const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${tickerYahoo}`)
+          
+          if (!response.ok) continue
+          
           const data = await response.json()
           
-          if (data.results) {
-            for (const result of data.results) {
-              const ativo = carteira.find(a => a.ticker === result.symbol)
-              if (ativo && result.regularMarketPrice) {
-                await supabase
-                  .from('investimentos_cotacoes')
-                  .upsert({
-                    ticker: result.symbol,
-                    tipo_ativo: ativo.tipo_ativo,
-                    nome_ativo: result.longName || result.shortName || ativo.nome_ativo,
-                    cotacao_atual: result.regularMarketPrice,
-                    user_id: user.id,
-                    data_atualizacao: new Date().toISOString()
-                  }, {
-                    onConflict: 'ticker,user_id'
-                  })
-                
-                totalAtualizados++
-              }
+          if (data.chart && data.chart.result && data.chart.result.length > 0) {
+            const info = data.chart.result[0].meta
+            const cotacao = info.regularMarketPrice
+            
+            if (cotacao) {
+              const ativo = carteira.find(a => a.ticker === ticker)
+              
+              await supabase
+                .from('investimentos_cotacoes')
+                .upsert({
+                  ticker: ticker,
+                  tipo_ativo: ativo.tipo_ativo,
+                  nome_ativo: info.longName || info.shortName || ativo.nome_ativo,
+                  cotacao_atual: cotacao,
+                  user_id: user.id,
+                  data_atualizacao: new Date().toISOString()
+                }, {
+                  onConflict: 'ticker,user_id'
+                })
+              
+              totalAtualizados++
             }
           }
         } catch (error) {
-          console.error('Erro ao buscar grupo:', error)
+          console.error(`Erro ao buscar ${ticker}:`, error)
         }
         
-        // Delay de 1 segundo entre requisições
-        if (grupos.indexOf(grupo) < grupos.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 1000))
-        }
+        // Delay de 500ms entre requisições
+        await new Promise(resolve => setTimeout(resolve, 500))
       }
       
-      setSuccess(`${totalAtualizados} cotação(ões) atualizada(s)!`)
-      await carregarDados()
+      if (totalAtualizados > 0) {
+        setSuccess(`${totalAtualizados} cotação(ões) atualizada(s)!`)
+        await carregarDados()
+      } else {
+        setError('Nenhuma cotação foi atualizada')
+      }
     } catch (error) {
       setError('Erro ao atualizar cotações')
     } finally {
