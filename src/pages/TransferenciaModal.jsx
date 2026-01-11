@@ -69,9 +69,11 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
           categoria_id: categorias.despesa.id,
           conta_id: formData.conta_origem,
           valor,
-          data: formData.data,
+          data_transacao: formData.data,
           descricao: formData.descricao || 'Transferência entre contas',
-          status: 'pago'
+          pago: true,
+          data_pagamento: formData.data,
+          forma_pagamento: 'conta'
         })
 
       if (despesaError) throw despesaError
@@ -85,9 +87,11 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
           categoria_id: categorias.receita.id,
           conta_id: formData.conta_destino,
           valor,
-          data: formData.data,
+          data_transacao: formData.data,
           descricao: formData.descricao || 'Transferência entre contas',
-          status: 'pago'
+          pago: true,
+          data_pagamento: formData.data,
+          forma_pagamento: 'conta'
         })
 
       if (receitaError) throw receitaError
