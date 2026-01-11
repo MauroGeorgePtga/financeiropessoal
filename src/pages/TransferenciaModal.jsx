@@ -32,25 +32,29 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
 
     setContas(contasData || [])
 
-    // Buscar subcategoria de despesa (Retirada Transferencia)
-    const { data: subDespesa } = await supabase
+    // Buscar TODAS categorias do usuário para debug
+    const { data: todasCats } = await supabase
       .from('categorias')
       .select('*')
       .eq('user_id', user.id)
-      .eq('tipo', 'despesa')
-      .ilike('nome', '%retirada%')
       .eq('ativo', true)
-      .single()
 
-    // Buscar subcategoria de receita (Credito Transferencia)
-    const { data: subReceita } = await supabase
-      .from('categorias')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('tipo', 'receita')
-      .ilike('nome', '%credito%')
-      .eq('ativo', true)
-      .single()
+    console.log('🔍 TODAS CATEGORIAS:', todasCats)
+
+    // Filtrar despesa
+    const subDespesa = todasCats?.find(c => 
+      c.tipo === 'despesa' && 
+      c.nome.toLowerCase().includes('retirada')
+    )
+
+    // Filtrar receita
+    const subReceita = todasCats?.find(c => 
+      c.tipo === 'receita' && 
+      c.nome.toLowerCase().includes('credito')
+    )
+
+    console.log('✅ Despesa encontrada:', subDespesa)
+    console.log('✅ Receita encontrada:', subReceita)
 
     setCategorias({
       despesa: subDespesa,
