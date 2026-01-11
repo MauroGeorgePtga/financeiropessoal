@@ -380,3 +380,16 @@
     font-size: 18px;
   }
 }
+
+/* Modal Transferência */
+.transferencia-arrow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  color: #667eea;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
