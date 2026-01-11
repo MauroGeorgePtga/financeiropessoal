@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { buscarAtivo } from './ativosBrasileiros'
 import { 
   Plus, 
   Edit2, 
@@ -325,6 +324,8 @@ export default function Investimentos() {
   const [atualizandoCotacoes, setAtualizandoCotacoes] = useState(false)
   const [progressoAtualizacao, setProgressoAtualizacao] = useState({ atual: 0, total: 0 })
   const [limiteOperacoes, setLimiteOperacoes] = useState(30)
+  const [ativosCadastrados, setAtivosCadastrados] = useState([])
+  const [ativosFiltradosPorTipo, setAtivosFiltradosPorTipo] = useState([])
 
   const [formData, setFormData] = useState({
     tipo_operacao: 'compra',
@@ -355,8 +356,17 @@ export default function Investimentos() {
   useEffect(() => {
     if (user) {
       carregarDados()
+      carregarAtivosCadastrados()
     }
   }, [user])
+
+  // Filtrar ativos quando mudar o tipo selecionado
+  useEffect(() => {
+    const ativosFiltrados = ativosCadastrados.filter(
+      a => a.tipo_ativo === formData.tipo_ativo
+    )
+    setAtivosFiltradosPorTipo(ativosFiltrados)
+  }, [formData.tipo_ativo, ativosCadastrados])
 
   const carregarDados = async () => {
     try {
@@ -387,20 +397,48 @@ export default function Investimentos() {
     }
   }
 
-  // Buscar informações do ticker na lista local
+  const carregarAtivosCadastrados = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('ativos_cadastrados')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('ativo', true)
+        .order('ticker', { ascending: true })
+
+      if (error) throw error
+      setAtivosCadastrados(data || [])
+    } catch (error) {
+      console.error('Erro ao carregar ativos cadastrados:', error)
+    }
+  }
+
+  // Buscar informações do ticker no banco
   const buscarInfoTicker = (ticker) => {
     if (!ticker || ticker.length < 4) return
     
     const tickerLimpo = ticker.toUpperCase().trim()
-    const nomeEncontrado = buscarAtivo(tickerLimpo)
+    const ativoEncontrado = ativosCadastrados.find(a => a.ticker === tickerLimpo)
     
-    if (nomeEncontrado) {
+    if (ativoEncontrado) {
+      // Validar se o tipo corresponde ao selecionado
+      if (ativoEncontrado.tipo_ativo !== formData.tipo_ativo) {
+        const tipoSelecionado = tiposAtivo.find(t => t.value === formData.tipo_ativo)?.label
+        const tipoAtivo = tiposAtivo.find(t => t.value === ativoEncontrado.tipo_ativo)?.label
+        setError(`${tickerLimpo} é ${tipoAtivo}, mas você selecionou ${tipoSelecionado}`)
+        setTimeout(() => setError(''), 4000)
+        return
+      }
+      
       setFormData(prev => ({
         ...prev,
-        nome_ativo: nomeEncontrado
+        nome_ativo: ativoEncontrado.nome_ativo
       }))
-      setSuccess(`✓ ${tickerLimpo}: ${nomeEncontrado}`)
+      setSuccess(`✓ ${tickerLimpo}: ${ativoEncontrado.nome_ativo}`)
       setTimeout(() => setSuccess(''), 2000)
+    } else {
+      setError(`${tickerLimpo} não cadastrado. Cadastre em "Cadastro de Ativos"`)
+      setTimeout(() => setError(''), 4000)
     }
   }
 
@@ -566,6 +604,24 @@ export default function Investimentos() {
     setSuccess('')
 
     try {
+      // Validar se ticker está cadastrado
+      const tickerExiste = ativosCadastrados.find(
+        a => a.ticker === formData.ticker.toUpperCase()
+      )
+
+      if (!tickerExiste) {
+        setError(`Ticker ${formData.ticker} não cadastrado. Cadastre em "Cadastro de Ativos"`)
+        return
+      }
+
+      // Validar tipo de ativo
+      if (tickerExiste.tipo_ativo !== formData.tipo_ativo) {
+        const tipoSelecionado = tiposAtivo.find(t => t.value === formData.tipo_ativo)?.label
+        const tipoAtivo = tiposAtivo.find(t => t.value === tickerExiste.tipo_ativo)?.label
+        setError(`${formData.ticker} é ${tipoAtivo}, mas você selecionou ${tipoSelecionado}`)
+        return
+      }
+
       const dadosOperacao = {
         ...formData,
         quantidade: parseFloat(formData.quantidade),
