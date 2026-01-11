@@ -32,38 +32,29 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
 
     setContas(contasData || [])
 
-    // Carregar TODAS categorias e subcategorias do usuário
-    const { data: catData } = await supabase
+    // Buscar subcategoria de despesa (Retirada Transferencia)
+    const { data: subDespesa } = await supabase
       .from('categorias')
-      .select('*, subcategorias:categorias!categoria_pai_id(*)')
+      .select('*')
       .eq('user_id', user.id)
+      .eq('tipo', 'despesa')
+      .ilike('nome', '%retirada%')
       .eq('ativo', true)
+      .single()
 
-    // Buscar categoria de transferência (despesa)
-    let catDespesa = catData?.find(c => 
-      c.tipo === 'despesa' && 
-      (c.nome.toLowerCase().includes('transfer') || c.nome.toLowerCase().includes('retirada'))
-    )
-    
-    // Se for categoria pai, pegar primeira subcategoria
-    if (catDespesa?.subcategorias?.length > 0) {
-      catDespesa = catDespesa.subcategorias[0]
-    }
-
-    // Buscar categoria de transferência (receita)
-    let catReceita = catData?.find(c => 
-      c.tipo === 'receita' && 
-      (c.nome.toLowerCase().includes('transfer') || c.nome.toLowerCase().includes('recebimento') || c.nome.toLowerCase().includes('crédito') || c.nome.toLowerCase().includes('credito'))
-    )
-    
-    // Se for categoria pai, pegar primeira subcategoria
-    if (catReceita?.subcategorias?.length > 0) {
-      catReceita = catReceita.subcategorias[0]
-    }
+    // Buscar subcategoria de receita (Credito Transferencia)
+    const { data: subReceita } = await supabase
+      .from('categorias')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('tipo', 'receita')
+      .ilike('nome', '%credito%')
+      .eq('ativo', true)
+      .single()
 
     setCategorias({
-      despesa: catDespesa,
-      receita: catReceita
+      despesa: subDespesa,
+      receita: subReceita
     })
   }
 
