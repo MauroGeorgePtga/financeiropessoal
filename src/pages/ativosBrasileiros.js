@@ -134,6 +134,7 @@ export const ativosBrasileiros = {
   'SARE11': 'Santander Renda de Aluguéis FII',
   'RBRF11': 'RBR High Grade FII',
   'XPCI11': 'XP Corporate Macaé FII',
+  'VGHF11': 'Valora Hedge Fund FII',
 
   // ETFs - Fundos de Índice
   'BOVA11': 'iShares Ibovespa Fundo de Índice',
