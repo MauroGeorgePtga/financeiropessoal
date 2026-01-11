@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { Plus, Edit2, Trash2, Search, Check, X, Calendar, Banknote, Landmark } from 'lucide-react'
+import { Plus, Edit2, Trash2, Search, Check, X, Calendar, Banknote, Landmark, ArrowRightLeft } from 'lucide-react'
+import TransferenciaModal from './TransferenciaModal'
 import './Transacoes.css'
 
 export default function Transacoes() {
@@ -12,6 +13,7 @@ export default function Transacoes() {
   const [subcategorias, setSubcategorias] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showTransferenciaModal, setShowTransferenciaModal] = useState(false)
   const [editingTransacao, setEditingTransacao] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filtroTipo, setFiltroTipo] = useState('todos')
@@ -396,10 +398,16 @@ export default function Transacoes() {
           <h1>Transações</h1>
           <p>Gerencie suas receitas e despesas</p>
         </div>
-        <button className="btn-primary" onClick={abrirModal}>
-          <Plus size={20} />
-          Nova Transação
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="btn-primary" onClick={abrirModal}>
+            <Plus size={20} />
+            Nova Transação
+          </button>
+          <button className="btn-primary" onClick={() => setShowTransferenciaModal(true)}>
+            <ArrowRightLeft size={20} />
+            Transferência
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -774,6 +782,13 @@ export default function Transacoes() {
             </form>
           </div>
         </div>
+      )}
+
+      {showTransferenciaModal && (
+        <TransferenciaModal
+          onClose={() => setShowTransferenciaModal(false)}
+          onSuccess={carregarDados}
+        />
       )}
     </div>
   )
