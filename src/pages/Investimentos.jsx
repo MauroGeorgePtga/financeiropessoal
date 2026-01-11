@@ -343,6 +343,8 @@ export default function Investimentos() {
 
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [modalError, setModalError] = useState('')
+  const [modalSuccess, setModalSuccess] = useState('')
 
   const tiposAtivo = [
     { value: 'acao', label: 'Ação', emoji: '📈' },
@@ -425,8 +427,9 @@ export default function Investimentos() {
       if (ativoEncontrado.tipo_ativo !== formData.tipo_ativo) {
         const tipoSelecionado = tiposAtivo.find(t => t.value === formData.tipo_ativo)?.label
         const tipoAtivo = tiposAtivo.find(t => t.value === ativoEncontrado.tipo_ativo)?.label
-        setError(`${tickerLimpo} é ${tipoAtivo}, mas você selecionou ${tipoSelecionado}`)
-        setTimeout(() => setError(''), 4000)
+        setModalError(`${tickerLimpo} é ${tipoAtivo}, mas você selecionou ${tipoSelecionado}`)
+        setModalSuccess('')
+        setTimeout(() => setModalError(''), 4000)
         return
       }
       
@@ -434,11 +437,13 @@ export default function Investimentos() {
         ...prev,
         nome_ativo: ativoEncontrado.nome_ativo
       }))
-      setSuccess(`✓ ${tickerLimpo}: ${ativoEncontrado.nome_ativo}`)
-      setTimeout(() => setSuccess(''), 2000)
+      setModalSuccess(`✓ ${tickerLimpo}: ${ativoEncontrado.nome_ativo}`)
+      setModalError('')
+      setTimeout(() => setModalSuccess(''), 2000)
     } else {
-      setError(`${tickerLimpo} não cadastrado. Cadastre em "Cadastro de Ativos"`)
-      setTimeout(() => setError(''), 4000)
+      setModalError(`${tickerLimpo} não cadastrado. Cadastre em "Cadastro de Ativos"`)
+      setModalSuccess('')
+      setTimeout(() => setModalError(''), 4000)
     }
   }
 
@@ -602,6 +607,8 @@ export default function Investimentos() {
     e.preventDefault()
     setError('')
     setSuccess('')
+    setModalError('')
+    setModalSuccess('')
 
     try {
       // Validar se ticker está cadastrado
@@ -610,7 +617,7 @@ export default function Investimentos() {
       )
 
       if (!tickerExiste) {
-        setError(`Ticker ${formData.ticker} não cadastrado. Cadastre em "Cadastro de Ativos"`)
+        setModalError(`Ticker ${formData.ticker} não cadastrado. Cadastre em "Cadastro de Ativos"`)
         return
       }
 
@@ -618,7 +625,7 @@ export default function Investimentos() {
       if (tickerExiste.tipo_ativo !== formData.tipo_ativo) {
         const tipoSelecionado = tiposAtivo.find(t => t.value === formData.tipo_ativo)?.label
         const tipoAtivo = tiposAtivo.find(t => t.value === tickerExiste.tipo_ativo)?.label
-        setError(`${formData.ticker} é ${tipoAtivo}, mas você selecionou ${tipoSelecionado}`)
+        setModalError(`${formData.ticker} é ${tipoAtivo}, mas você selecionou ${tipoSelecionado}`)
         return
       }
 
@@ -801,6 +808,8 @@ export default function Investimentos() {
   const fecharModal = () => {
     setShowModal(false)
     setEditingOperacao(null)
+    setModalError('')
+    setModalSuccess('')
   }
 
   const operacoesFiltradas = operacoes.filter(op => {
@@ -1186,6 +1195,17 @@ export default function Investimentos() {
                 <X size={24} />
               </button>
             </div>
+
+            {modalError && (
+              <div className="alert alert-error" style={{ margin: '0 20px 15px 20px' }}>
+                {modalError}
+              </div>
+            )}
+            {modalSuccess && (
+              <div className="alert alert-success" style={{ margin: '0 20px 15px 20px' }}>
+                {modalSuccess}
+              </div>
+            )}
 
             <form onSubmit={(e) => handleSubmit(e, false)}>
               <div className="form-invest-grid">
