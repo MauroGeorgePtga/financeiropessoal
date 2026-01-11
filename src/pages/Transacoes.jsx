@@ -399,13 +399,13 @@ export default function Transacoes() {
           <p>Gerencie suas receitas e despesas</p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button className="btn-primary" onClick={abrirModal}>
-            <Plus size={20} />
-            Nova Transação
-          </button>
           <button className="btn-primary" onClick={() => setShowTransferenciaModal(true)}>
             <ArrowRightLeft size={20} />
             Transferência
+          </button>
+          <button className="btn-primary" onClick={abrirModal}>
+            <Plus size={20} />
+            Nova Transação
           </button>
         </div>
       </div>
