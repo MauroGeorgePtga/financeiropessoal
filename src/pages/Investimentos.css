@@ -946,3 +946,50 @@
     width: 100%;
   }
 }
+
+/* Select de Ordenação */
+.carteira-controles {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.select-ordenacao {
+  padding: 10px 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.select-ordenacao:hover {
+  border-color: #667eea;
+}
+
+.select-ordenacao:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Responsive para controles */
+@media (max-width: 768px) {
+  .carteira-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .carteira-controles {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .select-ordenacao {
+    width: 100%;
+  }
+}
