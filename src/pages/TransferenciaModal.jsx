@@ -41,32 +41,32 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
 
     console.log('🔍 TODAS CATEGORIAS:', todasCats)
 
-    // Filtrar despesa - DEVE TER "transferencia" OU "retirada" no nome
+    // Buscar SUBCATEGORIA: "Retirada Transferencia" (despesa)
     const subDespesa = todasCats?.find(c => 
       c.tipo === 'despesa' && 
-      (c.nome.toLowerCase().includes('transferencia') || c.nome.toLowerCase().includes('retirada'))
+      c.nome.toLowerCase().includes('retirada') &&
+      c.nome.toLowerCase().includes('transferencia')
     )
 
-    // Filtrar receita - DEVE TER "transferencia" OU "credito" no nome
+    // Buscar SUBCATEGORIA: "Credito Transferencia" (receita)
     const subReceita = todasCats?.find(c => 
       c.tipo === 'receita' && 
-      (c.nome.toLowerCase().includes('transferencia') || c.nome.toLowerCase().includes('credito'))
+      c.nome.toLowerCase().includes('credito') &&
+      c.nome.toLowerCase().includes('transferencia')
     )
 
-    console.log('✅ Despesa encontrada:', subDespesa)
-    console.log('✅ Receita encontrada:', subReceita)
+    console.log('✅ SUBcategoria Despesa:', subDespesa)
+    console.log('✅ SUBcategoria Receita:', subReceita)
 
-    // SE encontrou as duas, está OK
     if (subDespesa && subReceita) {
       setCategorias({
         despesa: subDespesa,
         receita: subReceita
       })
     } else {
-      // Debug adicional
-      console.error('❌ Categorias faltando!')
-      console.log('Despesas disponíveis:', todasCats?.filter(c => c.tipo === 'despesa').map(c => c.nome))
-      console.log('Receitas disponíveis:', todasCats?.filter(c => c.tipo === 'receita').map(c => c.nome))
+      console.error('❌ Subcategorias faltando!')
+      console.log('Despesas:', todasCats?.filter(c => c.tipo === 'despesa').map(c => c.nome))
+      console.log('Receitas:', todasCats?.filter(c => c.tipo === 'receita').map(c => c.nome))
       
       setCategorias({
         despesa: null,
