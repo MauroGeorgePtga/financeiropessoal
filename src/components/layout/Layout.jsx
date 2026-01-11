@@ -6,7 +6,8 @@ import {
   ArrowLeftRight, 
   Landmark, 
   FolderOpen,
-  TrendingUp, 
+  TrendingUp,
+  Database,
   Target,
   FileText,
   Settings,
@@ -27,6 +28,7 @@ export default function Layout({ children }) {
     { icon: Landmark, label: 'Contas Bancárias', path: '/contas' },
     { icon: FolderOpen, label: 'Categorias', path: '/categorias' },
     { icon: TrendingUp, label: 'Investimentos', path: '/investimentos' },
+    { icon: Database, label: 'Cadastro de Ativos', path: '/cadastro-ativos' },
     { icon: Target, label: 'Patrimônio', path: '/patrimonio' },
     { icon: FileText, label: 'Relatórios', path: '/relatorios' },
     { icon: Settings, label: 'Configurações', path: '/configuracoes' }
