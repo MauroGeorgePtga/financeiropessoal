@@ -41,30 +41,42 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
 
     console.log('🔍 TODAS CATEGORIAS:', todasCats)
 
-    // Buscar categoria "Transferencia Conta" (despesa)
-    const catDespesa = todasCats?.find(c => 
+    // 1. Buscar CATEGORIA PAI "Transferencia Conta" (despesa)
+    const catPaiDespesa = todasCats?.find(c => 
       c.tipo === 'despesa' && 
       c.nome.toLowerCase().includes('transferencia') &&
       c.nome.toLowerCase().includes('conta')
     )
 
-    // Buscar categoria "Recebimento Transferencia" (receita)
-    const catReceita = todasCats?.find(c => 
+    // 2. Buscar SUBCATEGORIA de despesa
+    const subDespesa = todasCats?.find(c =>
+      c.tipo === 'despesa' &&
+      c.categoria_pai_id === catPaiDespesa?.id
+    )
+
+    // 3. Buscar CATEGORIA PAI "Recebimento Transferencia" (receita)
+    const catPaiReceita = todasCats?.find(c => 
       c.tipo === 'receita' && 
       c.nome.toLowerCase().includes('recebimento') &&
       c.nome.toLowerCase().includes('transferencia')
     )
 
-    console.log('✅ Categoria Despesa:', catDespesa)
-    console.log('✅ Categoria Receita:', catReceita)
+    // 4. Buscar SUBCATEGORIA de receita
+    const subReceita = todasCats?.find(c =>
+      c.tipo === 'receita' &&
+      c.categoria_pai_id === catPaiReceita?.id
+    )
 
-    if (catDespesa && catReceita) {
+    console.log('✅ SUBcategoria Despesa:', subDespesa)
+    console.log('✅ SUBcategoria Receita:', subReceita)
+
+    if (subDespesa && subReceita) {
       setCategorias({
-        despesa: catDespesa,
-        receita: catReceita
+        despesa: subDespesa,
+        receita: subReceita
       })
     } else {
-      console.error('❌ Categorias faltando!')
+      console.error('❌ Subcategorias faltando!')
       console.log('Despesas:', todasCats?.filter(c => c.tipo === 'despesa').map(c => c.nome))
       console.log('Receitas:', todasCats?.filter(c => c.tipo === 'receita').map(c => c.nome))
       
@@ -87,13 +99,14 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
 
       const valor = parseFloat(formData.valor)
 
-      // Criar despesa (saída)
+      // Criar despesa (saída) - categorias.despesa já é a SUBCATEGORIA
       const { error: despesaError } = await supabase
         .from('transacoes')
         .insert({
           user_id: user.id,
           tipo: 'despesa',
-          categoria_id: categorias.despesa.id,
+          categoria_id: categorias.despesa.categoria_pai_id, // Categoria PAI
+          subcategoria_id: categorias.despesa.id, // SUBCATEGORIA
           conta_id: formData.conta_origem,
           valor,
           data_transacao: formData.data,
@@ -104,13 +117,14 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
 
       if (despesaError) throw despesaError
 
-      // Criar receita (entrada)
+      // Criar receita (entrada) - categorias.receita já é a SUBCATEGORIA
       const { error: receitaError } = await supabase
         .from('transacoes')
         .insert({
           user_id: user.id,
           tipo: 'receita',
-          categoria_id: categorias.receita.id,
+          categoria_id: categorias.receita.categoria_pai_id, // Categoria PAI
+          subcategoria_id: categorias.receita.id, // SUBCATEGORIA
           conta_id: formData.conta_destino,
           valor,
           data_transacao: formData.data,
