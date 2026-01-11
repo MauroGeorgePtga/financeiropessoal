@@ -1,0 +1,196 @@
+/* Cadastro de Ativos */
+
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.stat-card {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card.active {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+}
+
+.stat-card.stat-total {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.stat-card.stat-total.active {
+  border-color: white;
+}
+
+.stat-emoji {
+  font-size: 32px;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.stat-card.stat-total .stat-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.stat-count {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+}
+
+.stat-card.stat-total .stat-count {
+  color: white;
+}
+
+/* Tabela de Ativos */
+.ativos-table-container {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ativos-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ativos-table thead {
+  background: #f8f9fa;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.ativos-table th {
+  padding: 15px 20px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ativos-table td {
+  padding: 15px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.ativos-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.ativos-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tipo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  white-space: nowrap;
+}
+
+.ativos-table .actions-col {
+  width: 100px;
+  text-align: right;
+}
+
+.ativos-table td.actions-col {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.table-footer {
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+}
+
+/* Modal Ativo */
+.modal-ativo {
+  max-width: 500px;
+}
+
+.modal-ativo .form-group {
+  margin-bottom: 20px;
+}
+
+.form-hint {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #999;
+  font-style: italic;
+}
+
+/* Empty State Actions */
+.empty-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ativos-table-container {
+    overflow-x: auto;
+  }
+
+  .ativos-table {
+    min-width: 600px;
+  }
+
+  .ativos-table th,
+  .ativos-table td {
+    padding: 12px 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-cards {
+    grid-template-columns: 1fr;
+  }
+}
