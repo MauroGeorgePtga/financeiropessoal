@@ -334,6 +334,7 @@ export default function Investimentos() {
     fundo: true,
     cripto: true
   })
+  const [ordenacaoCarteira, setOrdenacaoCarteira] = useState('valor_desc') // valor_desc, valor_asc, alfabetica
 
   const [formData, setFormData] = useState({
     tipo_operacao: 'compra',
@@ -827,6 +828,21 @@ export default function Investimentos() {
     }))
   }
 
+  const ordenarAtivos = (ativos) => {
+    const ativosOrdenados = [...ativos]
+    
+    switch (ordenacaoCarteira) {
+      case 'valor_desc':
+        return ativosOrdenados.sort((a, b) => b.total_investido - a.total_investido)
+      case 'valor_asc':
+        return ativosOrdenados.sort((a, b) => a.total_investido - b.total_investido)
+      case 'alfabetica':
+        return ativosOrdenados.sort((a, b) => a.ticker.localeCompare(b.ticker))
+      default:
+        return ativosOrdenados
+    }
+  }
+
   const operacoesFiltradas = operacoes.filter(op => {
     const matchSearch = op.ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         op.nome_ativo.toLowerCase().includes(searchTerm.toLowerCase())
@@ -981,9 +997,20 @@ export default function Investimentos() {
                   </>
                 )}
               </button>
-              <span className="carteira-info">
-                {carteira.length} ativo(s) • Cotações via Yahoo Finance
-              </span>
+              <div className="carteira-controles">
+                <select 
+                  value={ordenacaoCarteira}
+                  onChange={(e) => setOrdenacaoCarteira(e.target.value)}
+                  className="select-ordenacao"
+                >
+                  <option value="valor_desc">💰 Maior Valor</option>
+                  <option value="valor_asc">💵 Menor Valor</option>
+                  <option value="alfabetica">🔤 A-Z</option>
+                </select>
+                <span className="carteira-info">
+                  {carteira.length} ativo(s) • Cotações via Yahoo Finance
+                </span>
+              </div>
             </div>
           )}
 
@@ -1047,7 +1074,7 @@ export default function Investimentos() {
 
                     {isExpanded && (
                       <div className="carteira-list">
-                        {ativosDaTipo.map((ativo) => {
+                        {ordenarAtivos(ativosDaTipo).map((ativo) => {
                           const temCotacao = ativo.cotacao_atual !== undefined
 
                           return (
