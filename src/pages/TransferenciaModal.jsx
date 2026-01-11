@@ -32,7 +32,7 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
 
     setContas(contasData || [])
 
-    // Buscar TODAS categorias do usuário para debug
+    // Buscar TODAS categorias do usuário
     const { data: todasCats } = await supabase
       .from('categorias')
       .select('*')
@@ -41,25 +41,38 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
 
     console.log('🔍 TODAS CATEGORIAS:', todasCats)
 
-    // Filtrar despesa
+    // Filtrar despesa - DEVE TER "transferencia" OU "retirada" no nome
     const subDespesa = todasCats?.find(c => 
       c.tipo === 'despesa' && 
-      c.nome.toLowerCase().includes('retirada')
+      (c.nome.toLowerCase().includes('transferencia') || c.nome.toLowerCase().includes('retirada'))
     )
 
-    // Filtrar receita
+    // Filtrar receita - DEVE TER "transferencia" OU "credito" no nome
     const subReceita = todasCats?.find(c => 
       c.tipo === 'receita' && 
-      c.nome.toLowerCase().includes('credito')
+      (c.nome.toLowerCase().includes('transferencia') || c.nome.toLowerCase().includes('credito'))
     )
 
     console.log('✅ Despesa encontrada:', subDespesa)
     console.log('✅ Receita encontrada:', subReceita)
 
-    setCategorias({
-      despesa: subDespesa,
-      receita: subReceita
-    })
+    // SE encontrou as duas, está OK
+    if (subDespesa && subReceita) {
+      setCategorias({
+        despesa: subDespesa,
+        receita: subReceita
+      })
+    } else {
+      // Debug adicional
+      console.error('❌ Categorias faltando!')
+      console.log('Despesas disponíveis:', todasCats?.filter(c => c.tipo === 'despesa').map(c => c.nome))
+      console.log('Receitas disponíveis:', todasCats?.filter(c => c.tipo === 'receita').map(c => c.nome))
+      
+      setCategorias({
+        despesa: null,
+        receita: null
+      })
+    }
   }
 
   const handleSubmit = async (e) => {
