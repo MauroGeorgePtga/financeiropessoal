@@ -804,3 +804,145 @@
     min-width: 80px;
   }
 }
+
+/* Carteira Agrupada - Seções Expansíveis */
+.carteira-agrupada {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.carteira-secao {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.carteira-secao-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+}
+
+.carteira-secao-header:hover {
+  background: #f9fafb;
+}
+
+.secao-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.secao-icon {
+  font-size: 14px;
+  color: #666;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.secao-emoji {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.secao-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.secao-titulo {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+}
+
+.secao-subtitulo {
+  font-size: 12px;
+  color: #999;
+  font-weight: 600;
+}
+
+.secao-resumo {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+}
+
+.resumo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.resumo-item.rent {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  border-radius: 8px;
+}
+
+.resumo-item.rent.positivo {
+  background: #e6fffa;
+  color: #38b2ac;
+}
+
+.resumo-item.rent.negativo {
+  background: #fff5f5;
+  color: #f56565;
+}
+
+.resumo-label {
+  font-size: 11px;
+  color: #999;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.resumo-valor {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+.rent-valor {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.rent-money {
+  font-size: 12px;
+}
+
+.carteira-secao .carteira-list {
+  border-top: 1px solid #f0f0f0;
+  padding: 10px;
+}
+
+/* Responsive para seções */
+@media (max-width: 968px) {
+  .carteira-secao-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .secao-resumo {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .resumo-item.rent {
+    width: 100%;
+  }
+}
