@@ -48,9 +48,11 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
       c.nome.toLowerCase().includes('conta')
     )
 
-    // 2. Buscar SUBCATEGORIA de despesa (se existir)
+    // 2. Buscar SUBCATEGORIA "Retirada Transferencia" (filho da despesa)
     const subDespesa = todasCats?.find(c =>
       c.tipo === 'despesa' &&
+      c.nome.toLowerCase().includes('retirada') &&
+      c.nome.toLowerCase().includes('transferencia') &&
       c.categoria_pai_id === catPaiDespesa?.id
     )
 
@@ -61,30 +63,34 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
       c.nome.toLowerCase().includes('transferencia')
     )
 
-    // 4. Buscar SUBCATEGORIA de receita (se existir)
+    // 4. Buscar SUBCATEGORIA "Credito Transferencia" (filho da receita)
     const subReceita = todasCats?.find(c =>
       c.tipo === 'receita' &&
+      c.nome.toLowerCase().includes('credito') &&
+      c.nome.toLowerCase().includes('transferencia') &&
       c.categoria_pai_id === catPaiReceita?.id
     )
 
-    console.log('✅ Categoria Pai Despesa:', catPaiDespesa)
-    console.log('✅ SUBcategoria Despesa:', subDespesa)
-    console.log('✅ Categoria Pai Receita:', catPaiReceita)
-    console.log('✅ SUBcategoria Receita:', subReceita)
+    console.log('📂 Categoria Pai Despesa:', catPaiDespesa?.nome)
+    console.log('📄 Subcategoria Despesa:', subDespesa?.nome)
+    console.log('📂 Categoria Pai Receita:', catPaiReceita?.nome)
+    console.log('📄 Subcategoria Receita:', subReceita?.nome)
 
-    // Usar subcategoria se existir, senão usar categoria pai
-    const finalDespesa = subDespesa || catPaiDespesa
-    const finalReceita = subReceita || catPaiReceita
-
-    if (finalDespesa && finalReceita) {
+    if (subDespesa && subReceita) {
       setCategorias({
-        despesa: finalDespesa,
-        receita: finalReceita
+        despesa: subDespesa,
+        receita: subReceita
       })
     } else {
-      console.error('❌ Categorias faltando!')
-      console.log('Despesas:', todasCats?.filter(c => c.tipo === 'despesa').map(c => ({ nome: c.nome, pai_id: c.categoria_pai_id })))
-      console.log('Receitas:', todasCats?.filter(c => c.tipo === 'receita').map(c => ({ nome: c.nome, pai_id: c.categoria_pai_id })))
+      console.error('❌ Subcategorias não encontradas!')
+      console.log('Despesas com pai:', todasCats?.filter(c => c.tipo === 'despesa').map(c => ({ 
+        nome: c.nome, 
+        pai_id: c.categoria_pai_id 
+      })))
+      console.log('Receitas com pai:', todasCats?.filter(c => c.tipo === 'receita').map(c => ({ 
+        nome: c.nome, 
+        pai_id: c.categoria_pai_id 
+      })))
       
       setCategorias({
         despesa: null,
