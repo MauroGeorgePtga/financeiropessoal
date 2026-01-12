@@ -393,3 +393,138 @@
 .full-width {
   grid-column: 1 / -1;
 }
+
+/* Agrupamento por Conta */
+.transacoes-agrupadas {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.grupo-conta {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.grupo-conta-header {
+  padding: 20px;
+  background: linear-gradient(135deg, #f7f9fc 0%, #e8eef5 100%);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #e0e7ef;
+  transition: all 0.2s;
+}
+
+.grupo-conta-header:hover {
+  background: linear-gradient(135deg, #eef3f9 0%, #dfe6ed 100%);
+}
+
+.grupo-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.grupo-icone {
+  font-size: 16px;
+  color: #667eea;
+  font-weight: bold;
+  transition: transform 0.2s;
+}
+
+.grupo-nome {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.grupo-qtd {
+  font-size: 14px;
+  color: #999;
+  font-weight: 500;
+}
+
+.grupo-totais {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.grupo-total-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.total-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #999;
+}
+
+.total-valor {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.grupo-total-item.receitas .total-valor {
+  color: #48bb78;
+}
+
+.grupo-total-item.despesas .total-valor {
+  color: #f56565;
+}
+
+.grupo-total-item.saldo .total-valor {
+  color: #333;
+}
+
+.grupo-total-item.saldo.positivo .total-valor {
+  color: #48bb78;
+}
+
+.grupo-total-item.saldo.negativo .total-valor {
+  color: #f56565;
+}
+
+.grupo-conta .transacoes-list {
+  padding: 0;
+  background: #fafbfc;
+}
+
+.grupo-conta .transacao-card {
+  border-radius: 0;
+  border-bottom: 1px solid #e8eef5;
+  margin: 0;
+}
+
+.grupo-conta .transacao-card:last-child {
+  border-bottom: none;
+}
+
+/* Responsivo para grupos */
+@media (max-width: 768px) {
+  .grupo-conta-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .grupo-totais {
+    width: 100%;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .grupo-total-item {
+    align-items: center;
+  }
+}
