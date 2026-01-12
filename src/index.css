@@ -4,6 +4,15 @@
   box-sizing: border-box;
 }
 
+:root {
+  /* Cores padrão - serão sobrescritas pelo tema selecionado */
+  --cor-primaria: #667eea;
+  --cor-secundaria: #764ba2;
+  --cor-sucesso: #48bb78;
+  --cor-erro: #f56565;
+  --cor-aviso: #ed8936;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -45,4 +54,38 @@ button {
 /* Input reset */
 input, textarea, select {
   font-family: inherit;
+}
+
+/* Botões globais usando variáveis de tema */
+.btn-primary {
+  background: linear-gradient(135deg, var(--cor-primaria) 0%, var(--cor-secundaria) 100%) !important;
+}
+
+.btn-primary:hover {
+  opacity: 0.9 !important;
+}
+
+/* Cards e elementos que usam cor primária */
+.card-saldo-total,
+.dashboard-card,
+.resumo-card {
+  background: linear-gradient(135deg, var(--cor-primaria) 0%, var(--cor-secundaria) 100%);
+}
+
+/* Links e ícones com cor primária */
+a, .link-primary {
+  color: var(--cor-primaria) !important;
+}
+
+/* Badges de sucesso/erro */
+.badge-success, .positivo {
+  color: var(--cor-sucesso) !important;
+}
+
+.badge-error, .negativo {
+  color: var(--cor-erro) !important;
+}
+
+.badge-warning {
+  color: var(--cor-aviso) !important;
 }
