@@ -225,6 +225,8 @@ export default function Configuracoes() {
           cor_sucesso: prefs.cor_sucesso,
           cor_erro: prefs.cor_erro,
           cor_aviso: prefs.cor_aviso
+        }, {
+          onConflict: 'user_id'
         })
 
       if (error) throw error
