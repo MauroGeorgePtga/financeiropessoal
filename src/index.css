@@ -60,21 +60,15 @@ input, textarea, select {
 /* Botões globais usando variáveis de tema */
 .btn-primary {
   background: linear-gradient(135deg, var(--cor-primaria) 0%, var(--cor-secundaria) 100%) !important;
+  color: var(--cor-texto-primaria) !important;
 }
 
 .btn-primary:hover {
   opacity: 0.9 !important;
 }
 
-/* Cards e elementos que usam cor primária */
-.card-saldo-total,
-.dashboard-card,
-.resumo-card {
-  background: linear-gradient(135deg, var(--cor-primaria) 0%, var(--cor-secundaria) 100%);
-}
-
-/* Links e ícones com cor primária */
-a, .link-primary {
+/* Links com cor primária */
+a.link-primary {
   color: var(--cor-primaria) !important;
 }
 
