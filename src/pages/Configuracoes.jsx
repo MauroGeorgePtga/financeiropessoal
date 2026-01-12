@@ -66,10 +66,10 @@ export default function Configuracoes() {
     },
     { 
       id: 'grafite', 
-      nome: 'Grafite Escuro', 
+      nome: 'Grafite Claro', 
       cores: { 
-        primaria: '#2d3748', 
-        secundaria: '#1a202c',
+        primaria: '#4a5568', 
+        secundaria: '#2d3748',
         sucesso: '#48bb78',
         erro: '#f56565',
         aviso: '#ed8936'
@@ -77,10 +77,10 @@ export default function Configuracoes() {
     },
     { 
       id: 'azul', 
-      nome: 'Azul Oceano', 
+      nome: 'Azul Escuro', 
       cores: { 
-        primaria: '#2b6cb0', 
-        secundaria: '#2c5282',
+        primaria: '#2c5282', 
+        secundaria: '#2a4365',
         sucesso: '#38b2ac',
         erro: '#e53e3e',
         aviso: '#dd6b20'
@@ -88,7 +88,7 @@ export default function Configuracoes() {
     },
     { 
       id: 'verde', 
-      nome: 'Verde Floresta', 
+      nome: 'Verde Escuro', 
       cores: { 
         primaria: '#2f855a', 
         secundaria: '#276749',
@@ -99,7 +99,7 @@ export default function Configuracoes() {
     },
     { 
       id: 'roxo', 
-      nome: 'Roxo Real', 
+      nome: 'Roxo Escuro', 
       cores: { 
         primaria: '#6b46c1', 
         secundaria: '#553c9a',
@@ -110,7 +110,7 @@ export default function Configuracoes() {
     },
     { 
       id: 'laranja', 
-      nome: 'Laranja Vibrante', 
+      nome: 'Laranja Escuro', 
       cores: { 
         primaria: '#c05621', 
         secundaria: '#9c4221',
@@ -121,7 +121,7 @@ export default function Configuracoes() {
     },
     { 
       id: 'rosa', 
-      nome: 'Rosa Moderno', 
+      nome: 'Rosa Escuro', 
       cores: { 
         primaria: '#b83280', 
         secundaria: '#97266d',
