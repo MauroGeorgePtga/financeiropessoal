@@ -107,7 +107,8 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
           data_transacao: formData.data,
           descricao: formData.descricao || 'Transferência entre contas',
           pago: true,
-          data_pagamento: formData.data
+          data_pagamento: formData.data,
+          is_transferencia: true
         })
 
       if (despesaError) throw despesaError
@@ -125,7 +126,8 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
           data_transacao: formData.data,
           descricao: formData.descricao || 'Transferência entre contas',
           pago: true,
-          data_pagamento: formData.data
+          data_pagamento: formData.data,
+          is_transferencia: true
         })
 
       if (receitaError) throw receitaError
