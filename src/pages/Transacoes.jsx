@@ -104,45 +104,8 @@ export default function Transacoes() {
     }
   }
 
-  const atualizarSaldoConta = async (contaId, valor, tipo, operacao) => {
-    if (!contaId) return
-
-    try {
-      const { data: conta, error: contaError } = await supabase
-        .from('contas_bancarias')
-        .select('saldo_atual')
-        .eq('id', contaId)
-        .single()
-
-      if (contaError) throw contaError
-
-      let novoSaldo = conta.saldo_atual
-
-      if (operacao === 'adicionar') {
-        if (tipo === 'receita') {
-          novoSaldo += valor
-        } else if (tipo === 'despesa') {
-          novoSaldo -= valor
-        }
-      } else if (operacao === 'remover') {
-        if (tipo === 'receita') {
-          novoSaldo -= valor
-        } else if (tipo === 'despesa') {
-          novoSaldo += valor
-        }
-      }
-
-      const { error: updateError } = await supabase
-        .from('contas_bancarias')
-        .update({ saldo_atual: novoSaldo })
-        .eq('id', contaId)
-
-      if (updateError) throw updateError
-    } catch (error) {
-      console.error('Erro ao atualizar saldo:', error)
-      throw error
-    }
-  }
+  // REMOVIDO: atualizarSaldoConta
+  // O trigger do banco agora faz isso automaticamente!
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -179,14 +142,10 @@ export default function Transacoes() {
       }
 
       if (editingTransacao) {
-        if (editingTransacao.pago && editingTransacao.conta_id) {
-          await atualizarSaldoConta(
-            editingTransacao.conta_id,
-            editingTransacao.valor,
-            editingTransacao.tipo,
-            'remover'
-          )
-        }
+        // Remover saldo antigo (agora feito por trigger)
+        // if (editingTransacao.pago && editingTransacao.conta_id) {
+        //   await atualizarSaldoConta(...)
+        // }
 
         const { error } = await supabase
           .from('transacoes')
@@ -195,14 +154,10 @@ export default function Transacoes() {
 
         if (error) throw error
 
-        if (pago && dadosTransacao.conta_id) {
-          await atualizarSaldoConta(
-            dadosTransacao.conta_id,
-            valor,
-            dadosTransacao.tipo,
-            'adicionar'
-          )
-        }
+        // Adicionar novo saldo (agora feito por trigger)
+        // if (pago && dadosTransacao.conta_id) {
+        //   await atualizarSaldoConta(...)
+        // }
 
         setSuccess('Transação atualizada com sucesso!')
       } else {
@@ -212,14 +167,10 @@ export default function Transacoes() {
 
         if (error) throw error
 
-        if (pago && dadosTransacao.conta_id) {
-          await atualizarSaldoConta(
-            dadosTransacao.conta_id,
-            valor,
-            dadosTransacao.tipo,
-            'adicionar'
-          )
-        }
+        // Atualizar saldo (agora feito por trigger)
+        // if (pago && dadosTransacao.conta_id) {
+        //   await atualizarSaldoConta(...)
+        // }
 
         setSuccess('Transação cadastrada com sucesso!')
       }
@@ -255,14 +206,10 @@ export default function Transacoes() {
     if (!confirm('Tem certeza que deseja excluir esta transação?')) return
 
     try {
-      if (transacao.pago && transacao.conta_id) {
-        await atualizarSaldoConta(
-          transacao.conta_id,
-          transacao.valor,
-          transacao.tipo,
-          'remover'
-        )
-      }
+      // Remover saldo (agora feito por trigger)
+      // if (transacao.pago && transacao.conta_id) {
+      //   await atualizarSaldoConta(...)
+      // }
 
       const { error } = await supabase
         .from('transacoes')
@@ -293,14 +240,10 @@ export default function Transacoes() {
 
       if (error) throw error
 
-      if (transacao.conta_id) {
-        await atualizarSaldoConta(
-          transacao.conta_id,
-          transacao.valor,
-          transacao.tipo,
-          'adicionar'
-        )
-      }
+      // Atualizar saldo (agora feito por trigger)
+      // if (transacao.conta_id) {
+      //   await atualizarSaldoConta(...)
+      // }
       
       setSuccess('Baixa realizada com sucesso!')
       await carregarDados()
