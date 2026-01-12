@@ -26,6 +26,8 @@ export default function Dashboard() {
     categorias: [],
     totalContas: 0,
     saldoTotal: 0,
+    saldoPositivo: 0,
+    saldoNegativo: 0,
     // Receitas
     receitasMes: 0,
     receitasBanco: 0,
@@ -171,17 +173,26 @@ export default function Dashboard() {
       const transacoes = transacoesData || []
       const categorias = categoriasData || []
 
-      // Calcular totais
+      // Calcular saldos das contas (positivos e negativos separados)
+      const saldoPositivo = contas
+        .filter(conta => (conta.saldo_atual || 0) > 0)
+        .reduce((acc, conta) => acc + conta.saldo_atual, 0)
+      
+      const saldoNegativo = contas
+        .filter(conta => (conta.saldo_atual || 0) < 0)
+        .reduce((acc, conta) => acc + conta.saldo_atual, 0)
+      
       const saldoTotal = contas.reduce((acc, conta) => acc + (conta.saldo_atual || 0), 0)
 
-      // Transações do mês atual PAGAS
+      // Transações do mês atual PAGAS (excluindo transferências)
       const transacoesMes = transacoes.filter(t => 
         t.data_transacao >= primeiroDiaMes && 
         t.data_transacao <= ultimoDiaMes &&
-        t.pago
+        t.pago &&
+        !t.is_transferencia  // EXCLUIR TRANSFERÊNCIAS
       )
 
-      // RECEITAS do mês
+      // RECEITAS do mês (sem transferências)
       const receitasMes = transacoesMes.filter(t => t.tipo === 'receita')
       const receitasBanco = receitasMes
         .filter(t => t.conta_id !== null)
@@ -191,7 +202,7 @@ export default function Dashboard() {
         .reduce((acc, t) => acc + t.valor, 0)
       const receitasTotal = receitasBanco + receitasDinheiro
 
-      // DESPESAS do mês
+      // DESPESAS do mês (sem transferências)
       const despesasMes = transacoesMes.filter(t => t.tipo === 'despesa')
       const despesasBanco = despesasMes
         .filter(t => t.conta_id !== null)
@@ -203,17 +214,18 @@ export default function Dashboard() {
 
       const saldoMes = receitasTotal - despesasTotal
 
-      // Transações pendentes
-      const pendentes = transacoes.filter(t => !t.pago)
+      // Transações pendentes (excluindo transferências)
+      const pendentes = transacoes.filter(t => !t.pago && !t.is_transferencia)
       const transacoesPendentes = pendentes.length
       const valorPendente = pendentes.reduce((acc, t) => {
         return acc + (t.tipo === 'receita' ? t.valor : -t.valor)
       }, 0)
 
-      // Próximos vencimentos (7 dias)
+      // Próximos vencimentos (7 dias) - excluindo transferências
       const proximosVencimentos = transacoes
         .filter(t => 
           !t.pago && 
+          !t.is_transferencia &&  // EXCLUIR TRANSFERÊNCIAS
           t.data_vencimento && 
           t.data_vencimento <= daquiA7Dias &&
           t.data_vencimento >= hoje.toISOString().split('T')[0]
@@ -227,6 +239,8 @@ export default function Dashboard() {
         categorias,
         totalContas: contas.length,
         saldoTotal,
+        saldoPositivo,      // NOVO
+        saldoNegativo,      // NOVO
         receitasMes: receitasTotal,
         receitasBanco,
         receitasDinheiro,
@@ -255,7 +269,8 @@ export default function Dashboard() {
       t.data_transacao >= primeiroDiaMes && 
       t.data_transacao <= ultimoDiaMes &&
       t.pago &&
-      t.tipo === 'despesa'
+      t.tipo === 'despesa' &&
+      !t.is_transferencia  // EXCLUIR TRANSFERÊNCIAS
     )
 
     const categoriasSoma = {}
@@ -329,9 +344,17 @@ export default function Dashboard() {
               {formatCurrency(dados.saldoTotal)}
             </span>
           </div>
-          <div className="card-footer">
-            <span>{dados.totalContas} conta(s) ativa(s)</span>
-            <Link to="/contas" className="card-link">Ver contas →</Link>
+          <div className="card-footer-split">
+            <div className="footer-item">
+              <TrendingUp size={14} />
+              <span className="footer-label">Positivo:</span>
+              <span className="footer-value positivo">{formatCurrency(dados.saldoPositivo || 0)}</span>
+            </div>
+            <div className="footer-item">
+              <TrendingDown size={14} />
+              <span className="footer-label">Negativo:</span>
+              <span className="footer-value negativo">{formatCurrency(dados.saldoNegativo || 0)}</span>
+            </div>
           </div>
         </div>
 
