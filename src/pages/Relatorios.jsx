@@ -124,9 +124,9 @@ export default function Relatorios() {
 
       const transacoes = transacoesData || []
 
-      // Calcular resumo
-      const receitas = transacoes.filter(t => t.tipo === 'receita')
-      const despesas = transacoes.filter(t => t.tipo === 'despesa')
+      // Calcular resumo (EXCLUINDO TRANSFERÊNCIAS)
+      const receitas = transacoes.filter(t => t.tipo === 'receita' && !t.is_transferencia)
+      const despesas = transacoes.filter(t => t.tipo === 'despesa' && !t.is_transferencia)
 
       const totalReceitas = receitas.reduce((acc, t) => acc + t.valor, 0)
       const totalDespesas = despesas.reduce((acc, t) => acc + t.valor, 0)
@@ -160,7 +160,7 @@ export default function Relatorios() {
 
   // Dados para gráfico de pizza - Despesas por Categoria
   const getDadosPizzaCategorias = () => {
-    const despesas = dados.transacoes.filter(t => t.tipo === 'despesa')
+    const despesas = dados.transacoes.filter(t => t.tipo === 'despesa' && !t.is_transferencia)
     const categoriasSoma = {}
 
     despesas.forEach(t => {
@@ -180,20 +180,22 @@ export default function Relatorios() {
   const getDadosBarrasMensal = () => {
     const meses = {}
     
-    dados.transacoes.forEach(t => {
-      const data = new Date(t.data_transacao + 'T00:00:00')
-      const mesAno = data.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' })
-      
-      if (!meses[mesAno]) {
-        meses[mesAno] = { mes: mesAno, receitas: 0, despesas: 0 }
-      }
+    dados.transacoes
+      .filter(t => !t.is_transferencia) // EXCLUIR TRANSFERÊNCIAS
+      .forEach(t => {
+        const data = new Date(t.data_transacao + 'T00:00:00')
+        const mesAno = data.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' })
+        
+        if (!meses[mesAno]) {
+          meses[mesAno] = { mes: mesAno, receitas: 0, despesas: 0 }
+        }
 
-      if (t.tipo === 'receita') {
-        meses[mesAno].receitas += t.valor
-      } else {
-        meses[mesAno].despesas += t.valor
-      }
-    })
+        if (t.tipo === 'receita') {
+          meses[mesAno].receitas += t.valor
+        } else {
+          meses[mesAno].despesas += t.valor
+        }
+      })
 
     return Object.values(meses)
   }
@@ -225,7 +227,7 @@ export default function Relatorios() {
   // Dados para gráfico de barras - Top 10 Transações
   const getTop10Transacoes = () => {
     return [...dados.transacoes]
-      .filter(t => t.tipo === 'despesa')
+      .filter(t => t.tipo === 'despesa' && !t.is_transferencia)
       .sort((a, b) => b.valor - a.valor)
       .slice(0, 10)
       .map(t => ({
