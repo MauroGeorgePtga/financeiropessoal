@@ -316,17 +316,21 @@ export default function Transacoes() {
     
     const saldoMovimentacoes = receitas - despesas
     
-    // Buscar saldo atual da conta
+    // Buscar saldo inicial e atual da conta
+    let saldoInicial = 0
     let saldoAtual = 0
+    
     if (chave !== 'dinheiro') {
       const conta = contas.find(c => c.id === chave)
+      saldoInicial = conta?.saldo_inicial || 0
       saldoAtual = conta?.saldo_atual || 0
     } else {
       // Para dinheiro, usar apenas as movimentações
+      saldoInicial = 0
       saldoAtual = saldoMovimentacoes
     }
     
-    return { receitas, despesas, saldoMovimentacoes, saldoAtual }
+    return { saldoInicial, receitas, despesas, saldoAtual }
   }
 
   const subcategoriasFiltradas = subcategorias.filter(
@@ -521,7 +525,7 @@ export default function Transacoes() {
       ) : (
         <div className="transacoes-agrupadas">
           {Object.entries(transacoesPorConta).map(([chave, transacoesDaConta]) => {
-            const { receitas, despesas, saldoMovimentacoes, saldoAtual } = calcularTotaisConta(chave, transacoesDaConta)
+            const { saldoInicial, receitas, despesas, saldoAtual } = calcularTotaisConta(chave, transacoesDaConta)
             const isExpanded = gruposExpandidos[chave] !== false // Por padrão todos expandidos
             
             return (
@@ -537,6 +541,12 @@ export default function Transacoes() {
                   </div>
                   
                   <div className="grupo-totais">
+                    {chave !== 'dinheiro' && (
+                      <div className="grupo-total-item inicial">
+                        <span className="total-label">Saldo Inicial:</span>
+                        <span className="total-valor">{formatCurrency(saldoInicial)}</span>
+                      </div>
+                    )}
                     <div className="grupo-total-item receitas">
                       <span className="total-label">Receitas:</span>
                       <span className="total-valor">{formatCurrency(receitas)}</span>
