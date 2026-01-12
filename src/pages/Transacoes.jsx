@@ -305,7 +305,7 @@ export default function Transacoes() {
   }, {})
 
   // Calcular totais por conta (INCLUINDO transferências)
-  const calcularTotaisConta = (transacoesDaConta) => {
+  const calcularTotaisConta = (chave, transacoesDaConta) => {
     const receitas = transacoesDaConta
       .filter(t => t.tipo === 'receita' && t.pago)
       .reduce((acc, t) => acc + t.valor, 0)
@@ -314,9 +314,19 @@ export default function Transacoes() {
       .filter(t => t.tipo === 'despesa' && t.pago)
       .reduce((acc, t) => acc + t.valor, 0)
     
-    const saldo = receitas - despesas
+    const saldoMovimentacoes = receitas - despesas
     
-    return { receitas, despesas, saldo }
+    // Buscar saldo atual da conta
+    let saldoAtual = 0
+    if (chave !== 'dinheiro') {
+      const conta = contas.find(c => c.id === chave)
+      saldoAtual = conta?.saldo_atual || 0
+    } else {
+      // Para dinheiro, usar apenas as movimentações
+      saldoAtual = saldoMovimentacoes
+    }
+    
+    return { receitas, despesas, saldoMovimentacoes, saldoAtual }
   }
 
   const subcategoriasFiltradas = subcategorias.filter(
@@ -511,7 +521,7 @@ export default function Transacoes() {
       ) : (
         <div className="transacoes-agrupadas">
           {Object.entries(transacoesPorConta).map(([chave, transacoesDaConta]) => {
-            const { receitas, despesas, saldo } = calcularTotaisConta(transacoesDaConta)
+            const { receitas, despesas, saldoMovimentacoes, saldoAtual } = calcularTotaisConta(chave, transacoesDaConta)
             const isExpanded = gruposExpandidos[chave] !== false // Por padrão todos expandidos
             
             return (
@@ -535,9 +545,9 @@ export default function Transacoes() {
                       <span className="total-label">Despesas:</span>
                       <span className="total-valor">{formatCurrency(despesas)}</span>
                     </div>
-                    <div className={`grupo-total-item saldo ${saldo >= 0 ? 'positivo' : 'negativo'}`}>
-                      <span className="total-label">Saldo:</span>
-                      <span className="total-valor">{formatCurrency(saldo)}</span>
+                    <div className={`grupo-total-item saldo ${saldoAtual >= 0 ? 'positivo' : 'negativo'}`}>
+                      <span className="total-label">Saldo Atual:</span>
+                      <span className="total-valor">{formatCurrency(saldoAtual)}</span>
                     </div>
                   </div>
                 </div>
