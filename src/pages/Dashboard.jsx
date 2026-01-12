@@ -51,6 +51,15 @@ export default function Dashboard() {
   })
   const [loadingInvestimentos, setLoadingInvestimentos] = useState(true)
   const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear())
+  
+  // Filtros para análise de categorias
+  const [filtroReceitasPor, setFiltroReceitasPor] = useState('categoria') // 'categoria' ou 'subcategoria'
+  const [filtroReceitasMes, setFiltroReceitasMes] = useState(new Date().getMonth() + 1)
+  const [filtroReceitasAno, setFiltroReceitasAno] = useState(new Date().getFullYear())
+  
+  const [filtroDespesasPor, setFiltroDespesasPor] = useState('categoria')
+  const [filtroDespesasMes, setFiltroDespesasMes] = useState(new Date().getMonth() + 1)
+  const [filtroDespesasAno, setFiltroDespesasAno] = useState(new Date().getFullYear())
 
   useEffect(() => {
     if (user) {
@@ -343,6 +352,106 @@ export default function Dashboard() {
 
   const anosDisponiveis = getAnosDisponiveis()
   const dadosMensais = calcularDadosMensais()
+
+  // Calcular receitas por categoria ou subcategoria
+  const calcularReceitasPorCategoria = () => {
+    const primeiroDia = `${filtroReceitasAno}-${String(filtroReceitasMes).padStart(2, '0')}-01`
+    const ultimoDia = new Date(filtroReceitasAno, filtroReceitasMes, 0).toISOString().split('T')[0]
+
+    const transacoesFiltradas = dados.transacoes.filter(t =>
+      t.data_transacao >= primeiroDia &&
+      t.data_transacao <= ultimoDia &&
+      t.tipo === 'receita' &&
+      t.pago &&
+      !t.is_transferencia
+    )
+
+    const agrupamento = {}
+
+    transacoesFiltradas.forEach(t => {
+      let chave, nome
+
+      if (filtroReceitasPor === 'categoria') {
+        chave = t.categoria_id
+        nome = t.categorias?.nome || 'Sem categoria'
+      } else {
+        chave = t.subcategoria_id || 'sem_subcategoria'
+        nome = t.subcategorias?.nome || 'Sem subcategoria'
+      }
+
+      if (!agrupamento[chave]) {
+        agrupamento[chave] = {
+          nome,
+          valor: 0,
+          cor: t.categorias?.cor || '#999',
+          icone: t.categorias?.icone || '📦'
+        }
+      }
+      agrupamento[chave].valor += t.valor
+    })
+
+    return Object.values(agrupamento).sort((a, b) => b.valor - a.valor)
+  }
+
+  // Calcular despesas por categoria ou subcategoria
+  const calcularDespesasPorCategoria = () => {
+    const primeiroDia = `${filtroDespesasAno}-${String(filtroDespesasMes).padStart(2, '0')}-01`
+    const ultimoDia = new Date(filtroDespesasAno, filtroDespesasMes, 0).toISOString().split('T')[0]
+
+    const transacoesFiltradas = dados.transacoes.filter(t =>
+      t.data_transacao >= primeiroDia &&
+      t.data_transacao <= ultimoDia &&
+      t.tipo === 'despesa' &&
+      t.pago &&
+      !t.is_transferencia
+    )
+
+    const agrupamento = {}
+
+    transacoesFiltradas.forEach(t => {
+      let chave, nome
+
+      if (filtroDespesasPor === 'categoria') {
+        chave = t.categoria_id
+        nome = t.categorias?.nome || 'Sem categoria'
+      } else {
+        chave = t.subcategoria_id || 'sem_subcategoria'
+        nome = t.subcategorias?.nome || 'Sem subcategoria'
+      }
+
+      if (!agrupamento[chave]) {
+        agrupamento[chave] = {
+          nome,
+          valor: 0,
+          cor: t.categorias?.cor || '#999',
+          icone: t.categorias?.icone || '📦'
+        }
+      }
+      agrupamento[chave].valor += t.valor
+    })
+
+    return Object.values(agrupamento).sort((a, b) => b.valor - a.valor)
+  }
+
+  const receitasPorCategoria = calcularReceitasPorCategoria()
+  const despesasPorCategoria = calcularDespesasPorCategoria()
+  const totalReceitas = receitasPorCategoria.reduce((acc, c) => acc + c.valor, 0)
+  const totalDespesas = despesasPorCategoria.reduce((acc, c) => acc + c.valor, 0)
+
+  const mesesOptions = [
+    { value: 1, label: 'Janeiro' },
+    { value: 2, label: 'Fevereiro' },
+    { value: 3, label: 'Março' },
+    { value: 4, label: 'Abril' },
+    { value: 5, label: 'Maio' },
+    { value: 6, label: 'Junho' },
+    { value: 7, label: 'Julho' },
+    { value: 8, label: 'Agosto' },
+    { value: 9, label: 'Setembro' },
+    { value: 10, label: 'Outubro' },
+    { value: 11, label: 'Novembro' },
+    { value: 12, label: 'Dezembro' }
+  ]
 
   if (loading) {
     return (
@@ -639,6 +748,252 @@ export default function Dashboard() {
               <div className="legenda-item">
                 <span className="legenda-cor despesa"></span>
                 <span>Despesas</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Análise por Categorias */}
+      <div className="analise-categorias-container">
+        <h2 className="secao-titulo">📊 Análise por Categoria</h2>
+        
+        <div className="analise-categorias">
+          {/* Receitas por Categoria */}
+          <div className="analise-card receitas">
+            <div className="analise-header">
+              <h3>💰 Receitas</h3>
+              <div className="filtros-categorias">
+                <select
+                  value={filtroReceitasPor}
+                  onChange={(e) => setFiltroReceitasPor(e.target.value)}
+                  className="filtro-mini"
+                >
+                  <option value="categoria">Por Categoria</option>
+                  <option value="subcategoria">Por Subcategoria</option>
+                </select>
+                
+                <select
+                  value={filtroReceitasMes}
+                  onChange={(e) => setFiltroReceitasMes(Number(e.target.value))}
+                  className="filtro-mes"
+                >
+                  {mesesOptions.map(m => (
+                    <option key={m.value} value={m.value}>{m.label}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={filtroReceitasAno}
+                  onChange={(e) => setFiltroReceitasAno(Number(e.target.value))}
+                  className="filtro-ano"
+                >
+                  {anosDisponiveis.length > 0 ? (
+                    anosDisponiveis.map(ano => (
+                      <option key={ano} value={ano}>{ano}</option>
+                    ))
+                  ) : (
+                    <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
+                  )}
+                </select>
+              </div>
+            </div>
+
+            <div className="categoria-analise-content">
+              {receitasPorCategoria.length === 0 ? (
+                <div className="analise-empty">
+                  <span>Nenhuma receita neste período</span>
+                </div>
+              ) : (
+                <div className="categorias-list">
+                  {receitasPorCategoria.map((item, index) => {
+                    const percentual = totalReceitas > 0 ? (item.valor / totalReceitas) * 100 : 0
+                    
+                    return (
+                      <div key={index} className="categoria-analise-item">
+                        <div className="categoria-info-analise">
+                          <div 
+                            className="categoria-icon-analise"
+                            style={{ backgroundColor: item.cor }}
+                          >
+                            {item.icone}
+                          </div>
+                          <span className="categoria-nome-analise">{item.nome}</span>
+                        </div>
+                        <div className="categoria-valores">
+                          <span className="categoria-valor-principal">{formatCurrency(item.valor)}</span>
+                          <div className="categoria-barra-container">
+                            <div 
+                              className="categoria-barra categoria-barra-receita"
+                              style={{ width: `${totalReceitas > 0 ? (item.valor / totalReceitas) * 100 : 0}%` }}
+                            ></div>
+                          </div>
+                          <span className="categoria-percentual">
+                            {totalReceitas > 0 ? ((item.valor / totalReceitas) * 100).toFixed(1) : 0}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Despesas por Categoria/Subcategoria */}
+              <div className="analise-categorias-card">
+                <div className="analise-header">
+                  <h3>📊 Despesas por {filtroDespesasPor === 'categoria' ? 'Categoria' : 'Subcategoria'}</h3>
+                  <div className="filtros-categorias">
+                    <select
+                      value={filtroDespesasPor}
+                      onChange={(e) => setFiltroDespesasPor(e.target.value)}
+                      className="filtro-select-small"
+                    >
+                      <option value="categoria">Por Categoria</option>
+                      <option value="subcategoria">Por Subcategoria</option>
+                    </select>
+                    <select
+                      value={filtroDespesasMes}
+                      onChange={(e) => setFiltroDespesasMes(Number(e.target.value))}
+                      className="filtro-select-mes"
+                    >
+                      {mesesOptions.map(mes => (
+                        <option key={mes.value} value={mes.value}>{mes.label}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={filtroDespesasAno}
+                      onChange={(e) => setFiltroDespesasAno(Number(e.target.value))}
+                      className="filtro-ano-small"
+                    >
+                      {anosDisponiveis.length > 0 ? (
+                        anosDisponiveis.map(ano => (
+                          <option key={ano} value={ano}>{ano}</option>
+                        ))
+                      ) : (
+                        <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
+                      )}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="analise-lista">
+                  {receitasPorCategoria.length === 0 ? (
+                    <div className="lista-vazia">
+                      <p>Nenhuma receita neste período</p>
+                    </div>
+                  ) : (
+                    <>
+                      {receitasPorCategoria.map((item, index) => {
+                        const percentual = totalReceitas > 0 ? (item.valor / totalReceitas) * 100 : 0
+                        return (
+                          <div key={index} className="categoria-analise-item">
+                            <div className="categoria-info-detalhada">
+                              <div 
+                                className="categoria-icon-small"
+                                style={{ backgroundColor: item.cor }}
+                              >
+                                {item.icone}
+                              </div>
+                              <span className="categoria-nome">{item.nome}</span>
+                            </div>
+                            <div className="categoria-valores">
+                              <span className="categoria-valor">{formatCurrency(item.valor)}</span>
+                              <span className="categoria-percentual">
+                                {totalReceitas > 0 ? ((item.valor / totalReceitas) * 100).toFixed(1) : 0}%
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="categorias-empty">
+                      <span>Nenhuma receita neste período</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Card Despesas por Categoria */}
+              <div className="analise-categoria-card">
+                <div className="categoria-header">
+                  <h3>📊 Despesas por {filtroDespesasPor === 'categoria' ? 'Categoria' : 'Subcategoria'}</h3>
+                  <div className="categoria-filtros">
+                    <select
+                      value={filtroDespesasPor}
+                      onChange={(e) => setFiltroDespesasPor(e.target.value)}
+                      className="filtro-select-small"
+                    >
+                      <option value="categoria">Por Categoria</option>
+                      <option value="subcategoria">Por Subcategoria</option>
+                    </select>
+                    <select
+                      value={filtroDespesasMes}
+                      onChange={(e) => setFiltroDespesasMes(Number(e.target.value))}
+                      className="filtro-select-small"
+                    >
+                      {mesesOptions.map(m => (
+                        <option key={m.value} value={m.value}>{m.label}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={filtroDespesasAno}
+                      onChange={(e) => setFiltroDespesasAno(Number(e.target.value))}
+                      className="filtro-select-small"
+                    >
+                      {anosDisponiveis.length > 0 ? (
+                        anosDisponiveis.map(ano => (
+                          <option key={ano} value={ano}>{ano}</option>
+                        ))
+                      ) : (
+                        <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
+                      )}
+                    </select>
+                  </div>
+                </div>
+                <div className="analise-content">
+                  {despesasPorCategoria.length === 0 ? (
+                    <div className="analise-empty">
+                      <span>Nenhuma despesa neste período</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="analise-list">
+                        {despesasPorCategoria.map((cat, index) => {
+                          const percentual = totalDespesas > 0 ? (cat.valor / totalDespesas) * 100 : 0
+                          return (
+                            <div key={index} className="analise-item">
+                              <div className="analise-item-info">
+                                <div 
+                                  className="analise-icon"
+                                  style={{ backgroundColor: cat.cor }}
+                                >
+                                  {cat.icone}
+                                </div>
+                                <span className="analise-nome">{cat.nome}</span>
+                              </div>
+                              <div className="analise-valores">
+                                <span className="analise-valor despesa">{formatCurrency(cat.valor)}</span>
+                                <span className="analise-percent">{percentual.toFixed(1)}%</span>
+                              </div>
+                              <div 
+                                className="analise-barra"
+                                style={{ 
+                                  width: `${percentual}%`,
+                                  background: cat.cor
+                                }}
+                              ></div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                      <div className="analise-total">
+                        <span>Total:</span>
+                        <strong className="despesa">{formatCurrency(totalDespesas)}</strong>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
