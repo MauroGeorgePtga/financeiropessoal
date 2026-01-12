@@ -18,6 +18,7 @@ export default function Transacoes() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filtroTipo, setFiltroTipo] = useState('todos')
   const [filtroPago, setFiltroPago] = useState('todos')
+  const [filtroConta, setFiltroConta] = useState('todas')
   
   const [formData, setFormData] = useState({
     tipo: 'despesa',
@@ -342,8 +343,9 @@ export default function Transacoes() {
     const matchPago = filtroPago === 'todos' || 
                       (filtroPago === 'pago' && trans.pago) ||
                       (filtroPago === 'pendente' && !trans.pago)
+    const matchConta = filtroConta === 'todas' || trans.conta_id === filtroConta
     
-    return matchSearch && matchTipo && matchPago
+    return matchSearch && matchTipo && matchPago && matchConta
   })
 
   const subcategoriasFiltradas = subcategorias.filter(
@@ -495,6 +497,19 @@ export default function Transacoes() {
             <option value="todos">Todos os status</option>
             <option value="pago">Pagos</option>
             <option value="pendente">Pendentes</option>
+          </select>
+
+          <select 
+            value={filtroConta} 
+            onChange={(e) => setFiltroConta(e.target.value)}
+            className="filtro-select"
+          >
+            <option value="todas">Todas as contas</option>
+            {contas.map(conta => (
+              <option key={conta.id} value={conta.id}>
+                {conta.icone} {conta.nome}
+              </option>
+            ))}
           </select>
         </div>
       </div>
