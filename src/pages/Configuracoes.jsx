@@ -65,10 +65,21 @@ export default function Configuracoes() {
       } 
     },
     { 
+      id: 'grafite', 
+      nome: 'Grafite Escuro', 
+      cores: { 
+        primaria: '#2d3748', 
+        secundaria: '#1a202c',
+        sucesso: '#48bb78',
+        erro: '#f56565',
+        aviso: '#ed8936'
+      } 
+    },
+    { 
       id: 'azul', 
       nome: 'Azul Oceano', 
       cores: { 
-        primaria: '#3182ce', 
+        primaria: '#2b6cb0', 
         secundaria: '#2c5282',
         sucesso: '#38b2ac',
         erro: '#e53e3e',
@@ -77,10 +88,10 @@ export default function Configuracoes() {
     },
     { 
       id: 'verde', 
-      nome: 'Verde Natureza', 
+      nome: 'Verde Floresta', 
       cores: { 
-        primaria: '#38a169', 
-        secundaria: '#2f855a',
+        primaria: '#2f855a', 
+        secundaria: '#276749',
         sucesso: '#48bb78',
         erro: '#f56565',
         aviso: '#ed8936'
@@ -90,8 +101,8 @@ export default function Configuracoes() {
       id: 'roxo', 
       nome: 'Roxo Real', 
       cores: { 
-        primaria: '#805ad5', 
-        secundaria: '#6b46c1',
+        primaria: '#6b46c1', 
+        secundaria: '#553c9a',
         sucesso: '#48bb78',
         erro: '#f56565',
         aviso: '#ed8936'
@@ -101,8 +112,8 @@ export default function Configuracoes() {
       id: 'laranja', 
       nome: 'Laranja Vibrante', 
       cores: { 
-        primaria: '#dd6b20', 
-        secundaria: '#c05621',
+        primaria: '#c05621', 
+        secundaria: '#9c4221',
         sucesso: '#48bb78',
         erro: '#f56565',
         aviso: '#ed8936'
@@ -112,8 +123,8 @@ export default function Configuracoes() {
       id: 'rosa', 
       nome: 'Rosa Moderno', 
       cores: { 
-        primaria: '#d53f8c', 
-        secundaria: '#b83280',
+        primaria: '#b83280', 
+        secundaria: '#97266d',
         sucesso: '#48bb78',
         erro: '#f56565',
         aviso: '#ed8936'
@@ -183,6 +194,25 @@ export default function Configuracoes() {
     root.style.setProperty('--cor-sucesso', prefs.cor_sucesso)
     root.style.setProperty('--cor-erro', prefs.cor_erro)
     root.style.setProperty('--cor-aviso', prefs.cor_aviso)
+    
+    // Calcular se deve usar texto claro ou escuro
+    const corTexto = getContrastColor(prefs.cor_primaria)
+    root.style.setProperty('--cor-texto-primaria', corTexto)
+  }
+
+  // Função para calcular contraste (retorna #ffffff ou #000000)
+  const getContrastColor = (hexColor) => {
+    // Converter hex para RGB
+    const hex = hexColor.replace('#', '')
+    const r = parseInt(hex.substr(0, 2), 16)
+    const g = parseInt(hex.substr(2, 2), 16)
+    const b = parseInt(hex.substr(4, 2), 16)
+    
+    // Calcular luminosidade
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    
+    // Se luminosidade < 0.5, usar texto claro, senão texto escuro
+    return luminance < 0.5 ? '#ffffff' : '#000000'
   }
 
   const handleSelecionarTema = async (temaId) => {
