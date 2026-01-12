@@ -42,6 +42,85 @@ export default function Configuracoes() {
     confirmar: false
   })
 
+  const [preferencias, setPreferencias] = useState({
+    tema: 'padrao',
+    modo: 'claro',
+    cor_primaria: '#667eea',
+    cor_secundaria: '#764ba2',
+    cor_sucesso: '#48bb78',
+    cor_erro: '#f56565',
+    cor_aviso: '#ed8936'
+  })
+
+  const temasPredefinidos = [
+    { 
+      id: 'padrao', 
+      nome: 'Padrão', 
+      cores: { 
+        primaria: '#667eea', 
+        secundaria: '#764ba2',
+        sucesso: '#48bb78',
+        erro: '#f56565',
+        aviso: '#ed8936'
+      } 
+    },
+    { 
+      id: 'azul', 
+      nome: 'Azul Oceano', 
+      cores: { 
+        primaria: '#3182ce', 
+        secundaria: '#2c5282',
+        sucesso: '#38b2ac',
+        erro: '#e53e3e',
+        aviso: '#dd6b20'
+      } 
+    },
+    { 
+      id: 'verde', 
+      nome: 'Verde Natureza', 
+      cores: { 
+        primaria: '#38a169', 
+        secundaria: '#2f855a',
+        sucesso: '#48bb78',
+        erro: '#f56565',
+        aviso: '#ed8936'
+      } 
+    },
+    { 
+      id: 'roxo', 
+      nome: 'Roxo Real', 
+      cores: { 
+        primaria: '#805ad5', 
+        secundaria: '#6b46c1',
+        sucesso: '#48bb78',
+        erro: '#f56565',
+        aviso: '#ed8936'
+      } 
+    },
+    { 
+      id: 'laranja', 
+      nome: 'Laranja Vibrante', 
+      cores: { 
+        primaria: '#dd6b20', 
+        secundaria: '#c05621',
+        sucesso: '#48bb78',
+        erro: '#f56565',
+        aviso: '#ed8936'
+      } 
+    },
+    { 
+      id: 'rosa', 
+      nome: 'Rosa Moderno', 
+      cores: { 
+        primaria: '#d53f8c', 
+        secundaria: '#b83280',
+        sucesso: '#48bb78',
+        erro: '#f56565',
+        aviso: '#ed8936'
+      } 
+    }
+  ]
+
   useEffect(() => {
     if (user) {
       carregarDados()
@@ -60,6 +139,30 @@ export default function Configuracoes() {
         id: userData?.id || ''
       })
 
+      // Buscar preferências de tema
+      const { data: prefsData, error: prefsError } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+      if (prefsError && prefsError.code !== 'PGRST116') {
+        console.error('Erro ao buscar preferências:', prefsError)
+      }
+
+      if (prefsData) {
+        setPreferencias({
+          tema: prefsData.tema || 'padrao',
+          modo: prefsData.modo || 'claro',
+          cor_primaria: prefsData.cor_primaria || '#667eea',
+          cor_secundaria: prefsData.cor_secundaria || '#764ba2',
+          cor_sucesso: prefsData.cor_sucesso || '#48bb78',
+          cor_erro: prefsData.cor_erro || '#f56565',
+          cor_aviso: prefsData.cor_aviso || '#ed8936'
+        })
+        aplicarTema(prefsData)
+      }
+
     } catch (error) {
       console.error('Erro ao carregar configurações:', error)
       showMessage('error', 'Erro ao carregar configurações')
@@ -71,6 +174,68 @@ export default function Configuracoes() {
   const showMessage = (type, text) => {
     setMessage({ type, text })
     setTimeout(() => setMessage({ type: '', text: '' }), 5000)
+  }
+
+  const aplicarTema = (prefs) => {
+    const root = document.documentElement
+    root.style.setProperty('--cor-primaria', prefs.cor_primaria)
+    root.style.setProperty('--cor-secundaria', prefs.cor_secundaria)
+    root.style.setProperty('--cor-sucesso', prefs.cor_sucesso)
+    root.style.setProperty('--cor-erro', prefs.cor_erro)
+    root.style.setProperty('--cor-aviso', prefs.cor_aviso)
+  }
+
+  const handleSelecionarTema = async (temaId) => {
+    const tema = temasPredefinidos.find(t => t.id === temaId)
+    if (!tema) return
+
+    const novasPrefs = {
+      ...preferencias,
+      tema: temaId,
+      cor_primaria: tema.cores.primaria,
+      cor_secundaria: tema.cores.secundaria,
+      cor_sucesso: tema.cores.sucesso,
+      cor_erro: tema.cores.erro,
+      cor_aviso: tema.cores.aviso
+    }
+
+    setPreferencias(novasPrefs)
+    aplicarTema(novasPrefs)
+    await salvarPreferencias(novasPrefs)
+  }
+
+  const handleMudarModo = async (modo) => {
+    const novasPrefs = { ...preferencias, modo }
+    setPreferencias(novasPrefs)
+    await salvarPreferencias(novasPrefs)
+  }
+
+  const salvarPreferencias = async (prefs) => {
+    try {
+      setSaving(true)
+
+      const { error } = await supabase
+        .from('user_preferences')
+        .upsert({
+          user_id: user.id,
+          tema: prefs.tema,
+          modo: prefs.modo,
+          cor_primaria: prefs.cor_primaria,
+          cor_secundaria: prefs.cor_secundaria,
+          cor_sucesso: prefs.cor_sucesso,
+          cor_erro: prefs.cor_erro,
+          cor_aviso: prefs.cor_aviso
+        })
+
+      if (error) throw error
+
+      showMessage('success', 'Preferências salvas com sucesso!')
+    } catch (error) {
+      console.error('Erro ao salvar preferências:', error)
+      showMessage('error', 'Erro ao salvar preferências')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleAlterarSenha = async (e) => {
@@ -184,13 +349,92 @@ export default function Configuracoes() {
               <div className="check-box"></div>
               <span>Categorias padrão</span>
             </div>
-            <div className="recurso-item disabled">
-              <div className="check-box"></div>
+            <div className="recurso-item ativo">
+              <CheckCircle size={18} className="check-icon" />
               <span>Temas e cores</span>
             </div>
             <div className="recurso-item disabled">
               <div className="check-box"></div>
               <span>Backup de dados</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Temas e Cores */}
+      <div className="config-section">
+        <div className="config-section-header">
+          <Palette size={24} />
+          <h2>Temas e Cores</h2>
+        </div>
+        <div className="config-section-content">
+          <div className="temas-container">
+            <div className="temas-grid">
+              {temasPredefinidos.map(tema => (
+                <div
+                  key={tema.id}
+                  className={`tema-card ${preferencias.tema === tema.id ? 'ativo' : ''}`}
+                  onClick={() => handleSelecionarTema(tema.id)}
+                >
+                  <div className="tema-preview">
+                    <div 
+                      className="cor-preview primaria" 
+                      style={{ backgroundColor: tema.cores.primaria }}
+                    ></div>
+                    <div 
+                      className="cor-preview secundaria" 
+                      style={{ backgroundColor: tema.cores.secundaria }}
+                    ></div>
+                  </div>
+                  <div className="tema-info">
+                    <span className="tema-nome">{tema.nome}</span>
+                    {preferencias.tema === tema.id && (
+                      <CheckCircle size={18} className="tema-check" />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="cores-personalizadas">
+              <h3>Cores Atuais</h3>
+              <div className="cores-preview-grid">
+                <div className="cor-item">
+                  <div 
+                    className="cor-box" 
+                    style={{ backgroundColor: preferencias.cor_primaria }}
+                  ></div>
+                  <span>Primária</span>
+                </div>
+                <div className="cor-item">
+                  <div 
+                    className="cor-box" 
+                    style={{ backgroundColor: preferencias.cor_secundaria }}
+                  ></div>
+                  <span>Secundária</span>
+                </div>
+                <div className="cor-item">
+                  <div 
+                    className="cor-box" 
+                    style={{ backgroundColor: preferencias.cor_sucesso }}
+                  ></div>
+                  <span>Sucesso</span>
+                </div>
+                <div className="cor-item">
+                  <div 
+                    className="cor-box" 
+                    style={{ backgroundColor: preferencias.cor_erro }}
+                  ></div>
+                  <span>Erro</span>
+                </div>
+                <div className="cor-item">
+                  <div 
+                    className="cor-box" 
+                    style={{ backgroundColor: preferencias.cor_aviso }}
+                  ></div>
+                  <span>Aviso</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
