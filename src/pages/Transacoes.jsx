@@ -304,14 +304,14 @@ export default function Transacoes() {
     return acc
   }, {})
 
-  // Calcular totais por conta
+  // Calcular totais por conta (INCLUINDO transferências)
   const calcularTotaisConta = (transacoesDaConta) => {
     const receitas = transacoesDaConta
-      .filter(t => t.tipo === 'receita' && t.pago && !t.is_transferencia)
+      .filter(t => t.tipo === 'receita' && t.pago)
       .reduce((acc, t) => acc + t.valor, 0)
     
     const despesas = transacoesDaConta
-      .filter(t => t.tipo === 'despesa' && t.pago && !t.is_transferencia)
+      .filter(t => t.tipo === 'despesa' && t.pago)
       .reduce((acc, t) => acc + t.valor, 0)
     
     const saldo = receitas - despesas
