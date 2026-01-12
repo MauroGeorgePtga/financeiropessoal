@@ -166,7 +166,23 @@ export default function ContasBancarias() {
     conta.banco?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  // Calcular saldos separados
+  const saldoPositivo = contas
+    .filter(conta => (conta.saldo_atual || 0) > 0)
+    .reduce((acc, conta) => acc + conta.saldo_atual, 0)
+  
+  const saldoNegativo = contas
+    .filter(conta => (conta.saldo_atual || 0) < 0)
+    .reduce((acc, conta) => acc + conta.saldo_atual, 0)
+  
   const saldoTotal = contas.reduce((acc, conta) => acc + (conta.saldo_atual || 0), 0)
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value)
+  }
 
   if (loading) {
     return (
@@ -203,20 +219,32 @@ export default function ContasBancarias() {
         </div>
       )}
 
-      {/* Resumo */}
-      <div className="resumo-card">
-        <div className="resumo-item">
-          <span className="resumo-label">Total de Contas</span>
-          <span className="resumo-value">{contas.length}</span>
+      {/* Cards de Resumo */}
+      <div className="cards-resumo">
+        <div className="card-resumo card-positivo">
+          <div className="card-icon">💰</div>
+          <div className="card-content">
+            <span className="card-label">Saldos Positivos</span>
+            <span className="card-value">{formatCurrency(saldoPositivo)}</span>
+          </div>
         </div>
-        <div className="resumo-item">
-          <span className="resumo-label">Saldo Total</span>
-          <span className="resumo-value saldo-positivo">
-            {new Intl.NumberFormat('pt-BR', {
-              style: 'currency',
-              currency: 'BRL'
-            }).format(saldoTotal)}
-          </span>
+
+        <div className="card-resumo card-negativo">
+          <div className="card-icon">📉</div>
+          <div className="card-content">
+            <span className="card-label">Saldos Negativos</span>
+            <span className="card-value">{formatCurrency(saldoNegativo)}</span>
+          </div>
+        </div>
+
+        <div className="card-resumo card-total">
+          <div className="card-icon">💳</div>
+          <div className="card-content">
+            <span className="card-label">Saldo Total</span>
+            <span className={`card-value ${saldoTotal >= 0 ? 'positivo' : 'negativo'}`}>
+              {formatCurrency(saldoTotal)}
+            </span>
+          </div>
         </div>
       </div>
 
