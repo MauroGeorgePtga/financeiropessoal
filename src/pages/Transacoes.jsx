@@ -302,15 +302,15 @@ export default function Transacoes() {
   )
 
   const totalReceitas = transacoes
-    .filter(t => t.tipo === 'receita' && t.pago)
+    .filter(t => t.tipo === 'receita' && t.pago && !t.is_transferencia)
     .reduce((acc, t) => acc + t.valor, 0)
   
   const totalDespesas = transacoes
-    .filter(t => t.tipo === 'despesa' && t.pago)
+    .filter(t => t.tipo === 'despesa' && t.pago && !t.is_transferencia)
     .reduce((acc, t) => acc + t.valor, 0)
   
   const totalPendente = transacoes
-    .filter(t => !t.pago)
+    .filter(t => !t.pago && !t.is_transferencia)
     .reduce((acc, t) => acc + (t.tipo === 'receita' ? t.valor : -t.valor), 0)
 
   const saldo = totalReceitas - totalDespesas
