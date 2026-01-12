@@ -19,6 +19,7 @@ export default function Transacoes() {
   const [filtroTipo, setFiltroTipo] = useState('todos')
   const [filtroPago, setFiltroPago] = useState('todos')
   const [filtroConta, setFiltroConta] = useState('todas')
+  const [gruposExpandidos, setGruposExpandidos] = useState({})
   
   const [formData, setFormData] = useState({
     tipo: 'despesa',
@@ -293,6 +294,31 @@ export default function Transacoes() {
     return matchSearch && matchTipo && matchPago && matchConta
   })
 
+  // Agrupar transações por conta
+  const transacoesPorConta = transacoesFiltradas.reduce((acc, trans) => {
+    const chave = trans.conta_id || 'dinheiro'
+    if (!acc[chave]) {
+      acc[chave] = []
+    }
+    acc[chave].push(trans)
+    return acc
+  }, {})
+
+  // Calcular totais por conta
+  const calcularTotaisConta = (transacoesDaConta) => {
+    const receitas = transacoesDaConta
+      .filter(t => t.tipo === 'receita' && t.pago && !t.is_transferencia)
+      .reduce((acc, t) => acc + t.valor, 0)
+    
+    const despesas = transacoesDaConta
+      .filter(t => t.tipo === 'despesa' && t.pago && !t.is_transferencia)
+      .reduce((acc, t) => acc + t.valor, 0)
+    
+    const saldo = receitas - despesas
+    
+    return { receitas, despesas, saldo }
+  }
+
   const subcategoriasFiltradas = subcategorias.filter(
     sub => sub.categoria_id === formData.categoria_id
   )
@@ -328,6 +354,19 @@ export default function Transacoes() {
       month: 'short',
       year: 'numeric'
     })
+  }
+
+  const toggleGrupo = (chave) => {
+    setGruposExpandidos(prev => ({
+      ...prev,
+      [chave]: !prev[chave]
+    }))
+  }
+
+  const getNomeConta = (chave) => {
+    if (chave === 'dinheiro') return 'Dinheiro'
+    const conta = contas.find(c => c.id === chave)
+    return conta ? `${conta.icone || '💳'} ${conta.nome}` : 'Conta Desconhecida'
   }
 
   if (loading) {
@@ -470,92 +509,117 @@ export default function Transacoes() {
           </button>
         </div>
       ) : (
-        <div className="transacoes-list">
-          {transacoesFiltradas.map((trans) => (
-            <div 
-              key={trans.id} 
-              className={`transacao-card ${trans.tipo} ${trans.pago ? 'pago' : 'pendente'}`}
-            >
-              <div className="transacao-left">
+        <div className="transacoes-agrupadas">
+          {Object.entries(transacoesPorConta).map(([chave, transacoesDaConta]) => {
+            const { receitas, despesas, saldo } = calcularTotaisConta(transacoesDaConta)
+            const isExpanded = gruposExpandidos[chave] !== false // Por padrão todos expandidos
+            
+            return (
+              <div key={chave} className="grupo-conta">
                 <div 
-                  className="transacao-icone"
-                  style={{ backgroundColor: trans.categorias?.cor }}
+                  className="grupo-conta-header"
+                  onClick={() => toggleGrupo(chave)}
                 >
-                  {trans.categorias?.icone || '📦'}
-                </div>
-
-                <div className="transacao-info">
-                  <h3 className="transacao-titulo">{trans.descricao}</h3>
+                  <div className="grupo-info">
+                    <span className="grupo-icone">{isExpanded ? '▼' : '▶'}</span>
+                    <h3 className="grupo-nome">{getNomeConta(chave)}</h3>
+                    <span className="grupo-qtd">({transacoesDaConta.length})</span>
+                  </div>
                   
-                  <div className="transacao-detalhes">
-                    <span className="transacao-categoria">
-                      {trans.categorias?.nome}
-                      {trans.subcategorias && ` • ${trans.subcategorias.nome}`}
-                    </span>
-
-                    <span className="transacao-separador">•</span>
-
-                    {trans.conta_id ? (
-                      <span className="transacao-conta">
-                        <Landmark size={14} />
-                        {trans.contas_bancarias?.nome}
-                      </span>
-                    ) : (
-                      <span className="transacao-dinheiro">
-                        <Banknote size={14} />
-                        Dinheiro
-                      </span>
-                    )}
-
-                    <span className="transacao-separador">•</span>
-
-                    <span className="transacao-data">
-                      <Calendar size={14} />
-                      {formatDate(trans.data_transacao)}
-                    </span>
+                  <div className="grupo-totais">
+                    <div className="grupo-total-item receitas">
+                      <span className="total-label">Receitas:</span>
+                      <span className="total-valor">{formatCurrency(receitas)}</span>
+                    </div>
+                    <div className="grupo-total-item despesas">
+                      <span className="total-label">Despesas:</span>
+                      <span className="total-valor">{formatCurrency(despesas)}</span>
+                    </div>
+                    <div className={`grupo-total-item saldo ${saldo >= 0 ? 'positivo' : 'negativo'}`}>
+                      <span className="total-label">Saldo:</span>
+                      <span className="total-valor">{formatCurrency(saldo)}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="transacao-right">
-                <div className="transacao-valor-container">
-                  <span className={`transacao-valor ${trans.tipo}`}>
-                    {trans.tipo === 'receita' ? '+' : '-'}
-                    {formatCurrency(trans.valor)}
-                  </span>
-                  <span className={`transacao-status ${trans.pago ? 'pago' : 'pendente'}`}>
-                    {trans.pago ? 'Pago' : 'Pendente'}
-                  </span>
-                </div>
+                {isExpanded && (
+                  <div className="transacoes-list">
+                    {transacoesDaConta.map((trans) => (
+                      <div 
+                        key={trans.id} 
+                        className={`transacao-card ${trans.tipo} ${trans.pago ? 'pago' : 'pendente'}`}
+                      >
+                        <div className="transacao-left">
+                          <div 
+                            className="transacao-icone"
+                            style={{ backgroundColor: trans.categorias?.cor }}
+                          >
+                            {trans.categorias?.icone || '📦'}
+                          </div>
 
-                <div className="transacao-acoes">
-                  {!trans.pago && (
-                    <button
-                      className="btn-acao btn-check"
-                      onClick={() => handleDarBaixa(trans)}
-                      title="Dar Baixa"
-                    >
-                      <Check size={16} />
-                    </button>
-                  )}
-                  <button
-                    className="btn-acao btn-edit"
-                    onClick={() => handleEditar(trans)}
-                    title="Editar"
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                  <button
-                    className="btn-acao btn-delete"
-                    onClick={() => handleExcluir(trans)}
-                    title="Excluir"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+                          <div className="transacao-info">
+                            <h3 className="transacao-titulo">{trans.descricao}</h3>
+                            
+                            <div className="transacao-detalhes">
+                              <span className="transacao-categoria">
+                                {trans.categorias?.nome}
+                                {trans.subcategorias && ` • ${trans.subcategorias.nome}`}
+                              </span>
+
+                              <span className="transacao-separador">•</span>
+
+                              <span className="transacao-data">
+                                <Calendar size={14} />
+                                {formatDate(trans.data_transacao)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="transacao-right">
+                          <div className="transacao-valor-container">
+                            <span className={`transacao-valor ${trans.tipo}`}>
+                              {trans.tipo === 'receita' ? '+' : '-'}
+                              {formatCurrency(trans.valor)}
+                            </span>
+                            <span className={`transacao-status ${trans.pago ? 'pago' : 'pendente'}`}>
+                              {trans.pago ? 'Pago' : 'Pendente'}
+                            </span>
+                          </div>
+
+                          <div className="transacao-acoes">
+                            {!trans.pago && (
+                              <button
+                                className="btn-acao btn-check"
+                                onClick={() => handleDarBaixa(trans)}
+                                title="Dar Baixa"
+                              >
+                                <Check size={16} />
+                              </button>
+                            )}
+                            <button
+                              className="btn-acao btn-edit"
+                              onClick={() => handleEditar(trans)}
+                              title="Editar"
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                            <button
+                              className="btn-acao btn-delete"
+                              onClick={() => handleExcluir(trans)}
+                              title="Excluir"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
