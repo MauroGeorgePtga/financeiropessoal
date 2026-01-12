@@ -69,6 +69,8 @@ export default function Transacoes() {
         .order('nome')
 
       if (contasError) throw contasError
+      
+      console.log('🔄 Contas recarregadas:', contasData?.map(c => ({ nome: c.nome, saldo: c.saldo_atual })))
 
       const { data: catData, error: catError } = await supabase
         .from('categorias')
