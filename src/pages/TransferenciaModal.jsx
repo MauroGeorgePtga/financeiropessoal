@@ -135,33 +135,8 @@ export default function TransferenciaModal({ onClose, onSuccess }) {
 
       if (receitaError) throw receitaError
 
-      // Atualizar saldo da conta origem (diminuir)
-      const { data: contaOrigemData } = await supabase
-        .from('contas_bancarias')
-        .select('saldo_atual')
-        .eq('id', formData.conta_origem)
-        .single()
-
-      if (contaOrigemData) {
-        await supabase
-          .from('contas_bancarias')
-          .update({ saldo_atual: contaOrigemData.saldo_atual - valor })
-          .eq('id', formData.conta_origem)
-      }
-
-      // Atualizar saldo da conta destino (aumentar)
-      const { data: contaDestinoData } = await supabase
-        .from('contas_bancarias')
-        .select('saldo_atual')
-        .eq('id', formData.conta_destino)
-        .single()
-
-      if (contaDestinoData) {
-        await supabase
-          .from('contas_bancarias')
-          .update({ saldo_atual: contaDestinoData.saldo_atual + valor })
-          .eq('id', formData.conta_destino)
-      }
+      // Não atualizar saldo manualmente
+      // O sistema já calcula baseado nas transacoes
 
       onSuccess()
       onClose()
