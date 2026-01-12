@@ -587,6 +587,278 @@
   color: #f56565;
 }
 
+/* Visão Anual - Tabela e Gráfico */
+.visao-anual-container {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+}
+
+.visao-anual-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 3px solid #f0f0f0;
+}
+
+.visao-anual-header h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ano-select {
+  padding: 12px 24px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.ano-select:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+}
+
+.ano-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+}
+
+.visao-anual-content {
+  display: grid;
+  grid-template-columns: 500px 1fr;
+  gap: 40px;
+  min-height: 500px;
+}
+
+/* Tabela de Meses */
+.tabela-meses {
+  overflow-x: auto;
+}
+
+.tabela-mensal {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 2px solid #f0f0f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tabela-mensal thead th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 16px 12px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+  border: none;
+}
+
+.tabela-mensal thead th:first-child {
+  border-radius: 10px 0 0 0;
+}
+
+.tabela-mensal thead th:last-child {
+  border-radius: 0 10px 0 0;
+}
+
+.tabela-mensal tbody tr {
+  border-bottom: 1px solid #f5f5f5;
+  transition: all 0.2s;
+}
+
+.tabela-mensal tbody tr:hover {
+  background: #f9fafb;
+  transform: scale(1.01);
+}
+
+.tabela-mensal tbody tr:last-child {
+  border-bottom: none;
+}
+
+.tabela-mensal td {
+  padding: 14px 12px;
+  font-size: 14px;
+  border: none;
+}
+
+.tabela-mensal .mes-nome {
+  font-weight: 700;
+  color: #333;
+  font-size: 14px;
+}
+
+.tabela-mensal .valor {
+  text-align: right;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.tabela-mensal .valor.receita {
+  color: #48bb78;
+}
+
+.tabela-mensal .valor.despesa {
+  color: #f56565;
+}
+
+.tabela-mensal .valor.resultado.positivo {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.tabela-mensal .valor.resultado.negativo {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.tabela-mensal tfoot .total-row {
+  background: linear-gradient(135deg, #f7f9fc 0%, #e8eef5 100%);
+  border-top: 3px solid #e0e0e0;
+}
+
+.tabela-mensal tfoot td {
+  padding: 16px 12px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* Gráfico de Barras */
+.grafico-barras {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 16px;
+  padding: 25px;
+}
+
+.grafico-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 420px;
+  padding: 30px 20px;
+  background: white;
+  border-radius: 12px;
+  gap: 10px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.barra-grupo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.barras {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  height: 100%;
+  width: 100%;
+  min-height: 50px;
+}
+
+.barra {
+  flex: 1;
+  min-height: 8px;
+  border-radius: 8px 8px 0 0;
+  position: relative;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.barra:hover {
+  opacity: 0.85;
+  transform: translateY(-5px);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.barra-receita {
+  background: linear-gradient(180deg, #48bb78 0%, #38a169 100%);
+}
+
+.barra-despesa {
+  background: linear-gradient(180deg, #f56565 0%, #e53e3e 100%);
+}
+
+.barra-valor {
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.barra-mes {
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  text-align: center;
+}
+
+.grafico-legenda {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  padding: 18px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.legenda-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #555;
+}
+
+.legenda-cor {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.legenda-cor.receita {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.legenda-cor.despesa {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .dashboard-header {
@@ -612,6 +884,23 @@
 
   .dashboard-grid {
     grid-template-columns: 1fr;
+  }
+
+  .visao-anual-content {
+    grid-template-columns: 1fr;
+  }
+
+  .grafico-container {
+    height: 250px;
+    padding: 15px 10px;
+  }
+
+  .barra-valor {
+    font-size: 8px;
+  }
+
+  .barra-mes {
+    font-size: 9px;
   }
 
   .contas-grid {
