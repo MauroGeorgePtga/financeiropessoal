@@ -140,13 +140,45 @@
 }
 
 .card-saldo-total .card-title,
-.card-saldo-total .card-footer,
 .card-saldo-total .card-icon {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .card-saldo-total .card-value span {
   color: white;
+}
+
+/* Footer do card de saldo total - mais visível */
+.card-saldo-total .card-footer-split {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card-saldo-total .footer-item {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.card-saldo-total .footer-item svg {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.card-saldo-total .footer-label {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.card-saldo-total .footer-value {
+  font-weight: 700;
+  color: white;
+  font-size: 14px;
+}
+
+.card-saldo-total .footer-value.positivo {
+  color: #9effc4;
+}
+
+.card-saldo-total .footer-value.negativo {
+  color: #ffb3ba;
 }
 
 .card-saldo-total .card-link {
