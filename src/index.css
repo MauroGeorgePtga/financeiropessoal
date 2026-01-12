@@ -11,6 +11,7 @@
   --cor-sucesso: #48bb78;
   --cor-erro: #f56565;
   --cor-aviso: #ed8936;
+  --cor-texto-primaria: #ffffff; /* Branco por padrão */
 }
 
 body {
