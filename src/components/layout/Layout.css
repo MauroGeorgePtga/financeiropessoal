@@ -193,7 +193,8 @@
 .visibility-header {
   position: fixed;
   top: 20px;
-  right: 30px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 999;
 }
 
@@ -222,15 +223,9 @@
 @media (max-width: 768px) {
   .visibility-header {
     top: 15px;
-    right: 15px;
   }
   
   .btn-visibility-toggle {
-    padding: 8px 12px;
-    font-size: 0;
-  }
-  
-  .btn-visibility-toggle svg {
-    margin: 0;
+    padding: 8px 16px;
   }
 }
