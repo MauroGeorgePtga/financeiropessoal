@@ -905,65 +905,97 @@ export default function Investimentos() {
 
   // Calcular dados para o gráfico de evolução
   const calcularDadosGrafico = () => {
-    // Filtrar operações por tipo de ativo
-    let operacoesFiltradas = operacoes
+    // Filtrar por tipo de ativo se necessário
+    let todasOperacoes = operacoes
     if (filtroGraficoTipo !== 'todos') {
-      operacoesFiltradas = operacoes.filter(op => op.tipo_ativo === filtroGraficoTipo)
+      todasOperacoes = todasOperacoes.filter(op => op.tipo_ativo === filtroGraficoTipo)
     }
 
-    // Filtrar por período
+    // Definir período de exibição
     const hoje = new Date()
-    let dataInicio = new Date('2000-01-01')
+    let dataInicio
     
     if (filtroGraficoPeriodo === 'ano_atual') {
       dataInicio = new Date(hoje.getFullYear(), 0, 1)
     } else if (filtroGraficoPeriodo === '2_anos') {
-      dataInicio = new Date(hoje.getFullYear() - 2, hoje.getMonth(), 1)
+      dataInicio = new Date(hoje.getFullYear() - 2, 0, 1)
+    } else {
+      // Pegar a data da primeira operação
+      if (todasOperacoes.length > 0) {
+        const primeiraData = todasOperacoes
+          .map(op => new Date(op.data_operacao))
+          .sort((a, b) => a - b)[0]
+        dataInicio = new Date(primeiraData.getFullYear(), primeiraData.getMonth(), 1)
+      } else {
+        dataInicio = new Date(hoje.getFullYear(), 0, 1)
+      }
     }
 
-    operacoesFiltradas = operacoesFiltradas.filter(op => 
-      new Date(op.data_operacao) >= dataInicio
+    // PASSO 1: Calcular saldo ANTES do período (saldo inicial)
+    const operacoesAnteriores = todasOperacoes.filter(op => 
+      new Date(op.data_operacao) < dataInicio
     )
-
-    // Agrupar por mês
-    const dadosPorMes = {}
     
-    operacoesFiltradas.forEach(op => {
-      const data = new Date(op.data_operacao)
-      const chave = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`
-      
-      if (!dadosPorMes[chave]) {
-        dadosPorMes[chave] = {
-          mes: chave,
-          valorAplicado: 0
-        }
-      }
-
+    let saldoInicial = 0
+    operacoesAnteriores.forEach(op => {
       const custoTotal = (op.preco_unitario * op.quantidade) + 
                          (op.taxa_corretagem || 0) + 
                          (op.emolumentos || 0) + 
                          (op.outros_custos || 0)
-
-      if (op.tipo_operacao === 'compra') {
-        dadosPorMes[chave].valorAplicado += custoTotal
-      } else if (op.tipo_operacao === 'venda') {
-        // Na venda, recebe o dinheiro de volta (valor negativo)
-        dadosPorMes[chave].valorAplicado -= custoTotal
-      }
-    })
-
-    // Calcular acumulado
-    const dadosOrdenados = Object.values(dadosPorMes).sort((a, b) => a.mes.localeCompare(b.mes))
-    let valorAcumulado = 0
-
-    return dadosOrdenados.map(dados => {
-      valorAcumulado += dados.valorAplicado
       
-      return {
-        mes: formatarMesGrafico(dados.mes),
-        valorAplicado: Math.round(valorAcumulado)
+      if (op.tipo_operacao === 'compra') {
+        saldoInicial += custoTotal
+      } else if (op.tipo_operacao === 'venda') {
+        saldoInicial -= custoTotal
       }
     })
+
+    // PASSO 2: Gerar lista de todos os meses do período
+    const mesesPeriodo = []
+    let dataAtual = new Date(dataInicio)
+    const dataFim = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
+    
+    while (dataAtual <= dataFim) {
+      mesesPeriodo.push(`${dataAtual.getFullYear()}-${String(dataAtual.getMonth() + 1).padStart(2, '0')}`)
+      dataAtual.setMonth(dataAtual.getMonth() + 1)
+    }
+
+    // PASSO 3: Calcular saldo para cada mês
+    let saldoAcumulado = saldoInicial
+    const resultado = []
+
+    mesesPeriodo.forEach(mesChave => {
+      const [ano, mes] = mesChave.split('-')
+      const mesNumero = parseInt(mes)
+      
+      // Buscar operações deste mês
+      const operacoesDoMes = todasOperacoes.filter(op => {
+        const dataOp = new Date(op.data_operacao)
+        return dataOp.getFullYear() === parseInt(ano) && 
+               (dataOp.getMonth() + 1) === mesNumero
+      })
+
+      // Somar/subtrair operações do mês
+      operacoesDoMes.forEach(op => {
+        const custoTotal = (op.preco_unitario * op.quantidade) + 
+                           (op.taxa_corretagem || 0) + 
+                           (op.emolumentos || 0) + 
+                           (op.outros_custos || 0)
+        
+        if (op.tipo_operacao === 'compra') {
+          saldoAcumulado += custoTotal
+        } else if (op.tipo_operacao === 'venda') {
+          saldoAcumulado -= custoTotal
+        }
+      })
+
+      resultado.push({
+        mes: formatarMesGrafico(mesChave),
+        valorAplicado: Math.round(saldoAcumulado)
+      })
+    })
+
+    return resultado
   }
 
   const formatarMesGrafico = (mesAno) => {
