@@ -849,11 +849,13 @@ export default function Dashboard() {
                             {totalReceitas > 0 ? ((item.valor / totalReceitas) * 100).toFixed(1) : 0}%
                           </span>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      </div>
+                    )
+                  })}
                 </div>
-              </div>
+              )}
+            </div>
+          </div>
 
               {/* Despesas por Categoria/Subcategoria */}
               <div className="analise-categorias-card">
