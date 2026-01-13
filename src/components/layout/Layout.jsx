@@ -86,14 +86,6 @@ export default function Layout({ children }) {
             )}
           </div>
           <button 
-            className="visibility-btn"
-            onClick={toggleVisibilidade}
-            title={valoresVisiveis ? 'Ocultar valores' : 'Mostrar valores'}
-          >
-            {valoresVisiveis ? <Eye size={20} /> : <EyeOff size={20} />}
-            {sidebarOpen && <span>{valoresVisiveis ? 'Ocultar' : 'Mostrar'}</span>}
-          </button>
-          <button 
             className="logout-btn"
             onClick={handleLogout}
             title="Sair"
@@ -106,6 +98,17 @@ export default function Layout({ children }) {
 
       {/* Main Content */}
       <main className={`main-content ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+        {/* Botão de Visibilidade no Header */}
+        <div className="visibility-header">
+          <button 
+            className="btn-visibility-toggle"
+            onClick={toggleVisibilidade}
+            title={valoresVisiveis ? 'Ocultar valores' : 'Mostrar valores'}
+          >
+            {valoresVisiveis ? <EyeOff size={20} /> : <Eye size={20} />}
+            {valoresVisiveis ? 'Ocultar' : 'Mostrar'}
+          </button>
+        </div>
         {children}
       </main>
     </div>
