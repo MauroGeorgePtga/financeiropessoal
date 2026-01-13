@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
+import { VisibilityProvider } from './contexts/VisibilityContext'
 import Login from './components/auth/Login'
 import Layout from './components/layout/Layout'
 import Dashboard from './pages/Dashboard'
@@ -54,22 +55,24 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/transacoes" element={<Transacoes />} />
-          <Route path="/contas" element={<ContasBancarias />} />
-          <Route path="/categorias" element={<Categorias />} />
-          <Route path="/investimentos" element={<Investimentos />} />
-          <Route path="/cadastro-ativos" element={<CadastroAtivos />} />
-          <Route path="/patrimonio" element={<Patrimonio />} />
-          <Route path="/relatorios" element={<Relatorios />} />
-          <Route path="/configuracoes" element={<Configuracoes />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Layout>
-    </BrowserRouter>
+    <VisibilityProvider>
+      <BrowserRouter>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/transacoes" element={<Transacoes />} />
+            <Route path="/contas" element={<ContasBancarias />} />
+            <Route path="/categorias" element={<Categorias />} />
+            <Route path="/investimentos" element={<Investimentos />} />
+            <Route path="/cadastro-ativos" element={<CadastroAtivos />} />
+            <Route path="/patrimonio" element={<Patrimonio />} />
+            <Route path="/relatorios" element={<Relatorios />} />
+            <Route path="/configuracoes" element={<Configuracoes />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
+    </VisibilityProvider>
   )
 }
 
