@@ -189,43 +189,28 @@
   }
 }
 
-/* Botão de visibilidade no header */
-.visibility-header {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 999;
-}
-
-.btn-visibility-toggle {
+/* Botão de visibilidade no sidebar */
+.visibility-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  color: #333;
+  gap: 12px;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  color: var(--cor-texto-primaria, white);
   cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
   font-size: 14px;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s;
+  text-align: left;
 }
 
-.btn-visibility-toggle:hover {
-  border-color: #667eea;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
+.visibility-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 @media (max-width: 768px) {
-  .visibility-header {
-    top: 15px;
-  }
-  
-  .btn-visibility-toggle {
-    padding: 8px 16px;
+  .sidebar.closed .visibility-btn span {
+    display: none;
   }
 }
