@@ -993,3 +993,94 @@
     width: 100%;
   }
 }
+
+/* Gráfico de Evolução Patrimonial */
+.grafico-evolucao-container {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.grafico-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.grafico-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+}
+
+.grafico-filtros {
+  display: flex;
+  gap: 12px;
+}
+
+.filtro-grafico-select {
+  padding: 8px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filtro-grafico-select:hover {
+  border-color: #667eea;
+}
+
+.filtro-grafico-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.grafico-content {
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grafico-empty {
+  text-align: center;
+  color: #999;
+  padding: 60px 20px;
+}
+
+.grafico-empty p {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .grafico-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .grafico-filtros {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .filtro-grafico-select {
+    width: 100%;
+  }
+
+  .grafico-content {
+    min-height: 300px;
+  }
+}
