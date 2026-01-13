@@ -620,7 +620,7 @@ export default function Dashboard() {
                 </span>
               </div>
               <div className={`invest-rentabilidade ${investimentos.rentabilidade >= 0 ? 'positivo' : 'negativo'}`}>
-                {investimentos.rentabilidade >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                {investimentos.rentabilidade >= 0 ? <TrendingUp size={24} /> : <TrendingDown size={24} />}
                 <span>
                   {investimentos.rentabilidade >= 0 ? '+' : ''}{investimentos.rentabilidade.toFixed(2)}%
                 </span>
