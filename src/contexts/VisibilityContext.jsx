@@ -3,7 +3,7 @@ import { createContext, useContext, useState } from 'react'
 const VisibilityContext = createContext()
 
 export function VisibilityProvider({ children }) {
-  const [valoresVisiveis, setValoresVisiveis] = useState(true)
+  const [valoresVisiveis, setValoresVisiveis] = useState(false) // Padrão: OCULTO
 
   const toggleVisibilidade = () => {
     setValoresVisiveis(prev => !prev)
