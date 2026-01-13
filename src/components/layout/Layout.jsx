@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../hooks/useTheme'
+import { useVisibility } from '../../contexts/VisibilityContext'
 import { 
   LayoutDashboard, 
   ArrowLeftRight, 
@@ -14,13 +15,16 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 import './Layout.css'
 
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const { user, signOut } = useAuth()
+  const { valoresVisiveis, toggleVisibilidade } = useVisibility()
   const location = useLocation()
   
   // Carregar tema automaticamente
@@ -81,6 +85,14 @@ export default function Layout({ children }) {
               </div>
             )}
           </div>
+          <button 
+            className="visibility-btn"
+            onClick={toggleVisibilidade}
+            title={valoresVisiveis ? 'Ocultar valores' : 'Mostrar valores'}
+          >
+            {valoresVisiveis ? <Eye size={20} /> : <EyeOff size={20} />}
+            {sidebarOpen && <span>{valoresVisiveis ? 'Ocultar' : 'Mostrar'}</span>}
+          </button>
           <button 
             className="logout-btn"
             onClick={handleLogout}
