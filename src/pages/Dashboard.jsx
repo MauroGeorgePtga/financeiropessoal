@@ -511,14 +511,14 @@ export default function Dashboard() {
               <TrendingUp size={14} />
               <span className="footer-label">Positivo:</span>
               <span className="footer-value positivo">
-                <ValorOculto valor={formatCurrency(dados.saldoPositivo || 0)} />
+                <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.saldoPositivo || 0)} /> />
               </span>
             </div>
             <div className="footer-item">
               <TrendingDown size={14} />
               <span className="footer-label">Negativo:</span>
               <span className="footer-value negativo">
-                <ValorOculto valor={formatCurrency(dados.saldoNegativo || 0)} />
+                <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.saldoNegativo || 0)} /> />
               </span>
             </div>
           </div>
@@ -531,7 +531,7 @@ export default function Dashboard() {
           </div>
           <div className="card-value">
             <span className="positivo">
-              <ValorOculto valor={formatCurrency(dados.receitasMes)} />
+              <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.receitasMes)} /> />
             </span>
           </div>
           <div className="card-footer-split">
@@ -539,14 +539,14 @@ export default function Dashboard() {
               <Landmark size={14} />
               <span className="footer-label">Banco:</span>
               <span className="footer-value">
-                <ValorOculto valor={formatCurrency(dados.receitasBanco)} />
+                <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.receitasBanco)} /> />
               </span>
             </div>
             <div className="footer-item">
               <Banknote size={14} />
               <span className="footer-label">Dinheiro:</span>
               <span className="footer-value">
-                <ValorOculto valor={formatCurrency(dados.receitasDinheiro)} />
+                <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.receitasDinheiro)} /> />
               </span>
             </div>
           </div>
@@ -559,7 +559,7 @@ export default function Dashboard() {
           </div>
           <div className="card-value">
             <span className="negativo">
-              <ValorOculto valor={formatCurrency(dados.despesasMes)} />
+              <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.despesasMes)} /> />
             </span>
           </div>
           <div className="card-footer-split">
@@ -567,14 +567,14 @@ export default function Dashboard() {
               <Landmark size={14} />
               <span className="footer-label">Banco:</span>
               <span className="footer-value">
-                <ValorOculto valor={formatCurrency(dados.despesasBanco)} />
+                <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.despesasBanco)} /> />
               </span>
             </div>
             <div className="footer-item">
               <Banknote size={14} />
               <span className="footer-label">Dinheiro:</span>
               <span className="footer-value">
-                <ValorOculto valor={formatCurrency(dados.despesasDinheiro)} />
+                <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.despesasDinheiro)} /> />
               </span>
             </div>
           </div>
@@ -765,254 +765,6 @@ export default function Dashboard() {
               <div className="legenda-item">
                 <span className="legenda-cor despesa"></span>
                 <span>Despesas</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Análise por Categorias */}
-      <div className="analise-categorias-container">
-        <h2 className="secao-titulo">📊 Análise por Categoria</h2>
-        
-        <div className="analise-categorias">
-          {/* Receitas por Categoria */}
-          <div className="analise-card receitas">
-            <div className="analise-header">
-              <h3>💰 Receitas</h3>
-              <div className="filtros-categorias">
-                <select
-                  value={filtroReceitasPor}
-                  onChange={(e) => setFiltroReceitasPor(e.target.value)}
-                  className="filtro-mini"
-                >
-                  <option value="categoria">Por Categoria</option>
-                  <option value="subcategoria">Por Subcategoria</option>
-                </select>
-                
-                <select
-                  value={filtroReceitasMes}
-                  onChange={(e) => setFiltroReceitasMes(Number(e.target.value))}
-                  className="filtro-mes"
-                >
-                  {mesesOptions.map(m => (
-                    <option key={m.value} value={m.value}>{m.label}</option>
-                  ))}
-                </select>
-
-                <select
-                  value={filtroReceitasAno}
-                  onChange={(e) => setFiltroReceitasAno(Number(e.target.value))}
-                  className="filtro-ano"
-                >
-                  {anosDisponiveis.length > 0 ? (
-                    anosDisponiveis.map(ano => (
-                      <option key={ano} value={ano}>{ano}</option>
-                    ))
-                  ) : (
-                    <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
-                  )}
-                </select>
-              </div>
-            </div>
-
-            <div className="categoria-analise-content">
-              {receitasPorCategoria.length === 0 ? (
-                <div className="analise-empty">
-                  <span>Nenhuma receita neste período</span>
-                </div>
-              ) : (
-                <div className="categorias-list">
-                  {receitasPorCategoria.map((item, index) => {
-                    const percentual = totalReceitas > 0 ? (item.valor / totalReceitas) * 100 : 0
-                    
-                    return (
-                      <div key={index} className="categoria-analise-item">
-                        <div className="categoria-info-analise">
-                          <div 
-                            className="categoria-icon-analise"
-                            style={{ backgroundColor: item.cor }}
-                          >
-                            {item.icone}
-                          </div>
-                          <span className="categoria-nome-analise">{item.nome}</span>
-                        </div>
-                        <div className="categoria-valores">
-                          <span className="categoria-valor-principal">{formatCurrency(item.valor)}</span>
-                          <div className="categoria-barra-container">
-                            <div 
-                              className="categoria-barra categoria-barra-receita"
-                              style={{ width: `${totalReceitas > 0 ? (item.valor / totalReceitas) * 100 : 0}%` }}
-                            ></div>
-                          </div>
-                          <span className="categoria-percentual">
-                            {totalReceitas > 0 ? ((item.valor / totalReceitas) * 100).toFixed(1) : 0}%
-                          </span>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-              {/* Despesas por Categoria/Subcategoria */}
-              <div className="analise-categorias-card">
-                <div className="analise-header">
-                  <h3>📊 Despesas por {filtroDespesasPor === 'categoria' ? 'Categoria' : 'Subcategoria'}</h3>
-                  <div className="filtros-categorias">
-                    <select
-                      value={filtroDespesasPor}
-                      onChange={(e) => setFiltroDespesasPor(e.target.value)}
-                      className="filtro-select-small"
-                    >
-                      <option value="categoria">Por Categoria</option>
-                      <option value="subcategoria">Por Subcategoria</option>
-                    </select>
-                    <select
-                      value={filtroDespesasMes}
-                      onChange={(e) => setFiltroDespesasMes(Number(e.target.value))}
-                      className="filtro-select-mes"
-                    >
-                      {mesesOptions.map(mes => (
-                        <option key={mes.value} value={mes.value}>{mes.label}</option>
-                      ))}
-                    </select>
-                    <select
-                      value={filtroDespesasAno}
-                      onChange={(e) => setFiltroDespesasAno(Number(e.target.value))}
-                      className="filtro-ano-small"
-                    >
-                      {anosDisponiveis.length > 0 ? (
-                        anosDisponiveis.map(ano => (
-                          <option key={ano} value={ano}>{ano}</option>
-                        ))
-                      ) : (
-                        <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
-                      )}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="analise-lista">
-                  {receitasPorCategoria.length === 0 ? (
-                    <div className="lista-vazia">
-                      <p>Nenhuma receita neste período</p>
-                    </div>
-                  ) : (
-                    <>
-                      {receitasPorCategoria.map((item, index) => {
-                        const percentual = totalReceitas > 0 ? (item.valor / totalReceitas) * 100 : 0
-                        return (
-                          <div key={index} className="categoria-analise-item">
-                            <div className="categoria-info-detalhada">
-                              <div 
-                                className="categoria-icon-small"
-                                style={{ backgroundColor: item.cor }}
-                              >
-                                {item.icone}
-                              </div>
-                              <span className="categoria-nome">{item.nome}</span>
-                            </div>
-                            <div className="categoria-valores">
-                              <span className="categoria-valor">{formatCurrency(item.valor)}</span>
-                              <span className="categoria-percentual">
-                                {totalReceitas > 0 ? ((item.valor / totalReceitas) * 100).toFixed(1) : 0}%
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="categorias-empty">
-                      <span>Nenhuma receita neste período</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Card Despesas por Categoria */}
-              <div className="analise-categoria-card">
-                <div className="categoria-header">
-                  <h3>📊 Despesas por {filtroDespesasPor === 'categoria' ? 'Categoria' : 'Subcategoria'}</h3>
-                  <div className="categoria-filtros">
-                    <select
-                      value={filtroDespesasPor}
-                      onChange={(e) => setFiltroDespesasPor(e.target.value)}
-                      className="filtro-select-small"
-                    >
-                      <option value="categoria">Por Categoria</option>
-                      <option value="subcategoria">Por Subcategoria</option>
-                    </select>
-                    <select
-                      value={filtroDespesasMes}
-                      onChange={(e) => setFiltroDespesasMes(Number(e.target.value))}
-                      className="filtro-select-small"
-                    >
-                      {mesesOptions.map(m => (
-                        <option key={m.value} value={m.value}>{m.label}</option>
-                      ))}
-                    </select>
-                    <select
-                      value={filtroDespesasAno}
-                      onChange={(e) => setFiltroDespesasAno(Number(e.target.value))}
-                      className="filtro-select-small"
-                    >
-                      {anosDisponiveis.length > 0 ? (
-                        anosDisponiveis.map(ano => (
-                          <option key={ano} value={ano}>{ano}</option>
-                        ))
-                      ) : (
-                        <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
-                      )}
-                    </select>
-                  </div>
-                </div>
-                <div className="analise-content">
-                  {despesasPorCategoria.length === 0 ? (
-                    <div className="analise-empty">
-                      <span>Nenhuma despesa neste período</span>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="analise-list">
-                        {despesasPorCategoria.map((cat, index) => {
-                          const percentual = totalDespesas > 0 ? (cat.valor / totalDespesas) * 100 : 0
-                          return (
-                            <div key={index} className="analise-item">
-                              <div className="analise-item-info">
-                                <div 
-                                  className="analise-icon"
-                                  style={{ backgroundColor: cat.cor }}
-                                >
-                                  {cat.icone}
-                                </div>
-                                <span className="analise-nome">{cat.nome}</span>
-                              </div>
-                              <div className="analise-valores">
-                                <span className="analise-valor despesa">{formatCurrency(cat.valor)}</span>
-                                <span className="analise-percent">{percentual.toFixed(1)}%</span>
-                              </div>
-                              <div 
-                                className="analise-barra"
-                                style={{ 
-                                  width: `${percentual}%`,
-                                  background: cat.cor
-                                }}
-                              ></div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                      <div className="analise-total">
-                        <span>Total:</span>
-                        <strong className="despesa">{formatCurrency(totalDespesas)}</strong>
-                      </div>
-                    </>
-                  )}
-                </div>
               </div>
             </div>
           </div>
