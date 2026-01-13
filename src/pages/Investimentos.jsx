@@ -18,6 +18,16 @@ import {
   FileText,
   Loader
 } from 'lucide-react'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts'
 import './Investimentos.css'
 import './ImportarInvestimentos.css'
 
@@ -335,6 +345,10 @@ export default function Investimentos() {
     cripto: true
   })
   const [ordenacaoCarteira, setOrdenacaoCarteira] = useState('valor_desc') // valor_desc, valor_asc, alfabetica
+  
+  // Estados para o gráfico de evolução
+  const [filtroGraficoPeriodo, setFiltroGraficoPeriodo] = useState('todos') // ano_atual, 2_anos, todos
+  const [filtroGraficoTipo, setFiltroGraficoTipo] = useState('todos') // todos, acao, fii, etc
 
   const [formData, setFormData] = useState({
     tipo_operacao: 'compra',
@@ -889,6 +903,91 @@ export default function Investimentos() {
     return (qtd * preco) + corretagem + emol + outros
   }
 
+  // Calcular dados para o gráfico de evolução
+  const calcularDadosGrafico = () => {
+    // Filtrar operações por tipo de ativo
+    let operacoesFiltradas = operacoes
+    if (filtroGraficoTipo !== 'todos') {
+      operacoesFiltradas = operacoes.filter(op => op.tipo_ativo === filtroGraficoTipo)
+    }
+
+    // Filtrar por período
+    const hoje = new Date()
+    let dataInicio = new Date('2000-01-01')
+    
+    if (filtroGraficoPeriodo === 'ano_atual') {
+      dataInicio = new Date(hoje.getFullYear(), 0, 1)
+    } else if (filtroGraficoPeriodo === '2_anos') {
+      dataInicio = new Date(hoje.getFullYear() - 2, hoje.getMonth(), 1)
+    }
+
+    operacoesFiltradas = operacoesFiltradas.filter(op => 
+      new Date(op.data_operacao) >= dataInicio
+    )
+
+    // Agrupar por mês
+    const dadosPorMes = {}
+    
+    operacoesFiltradas.forEach(op => {
+      const data = new Date(op.data_operacao)
+      const chave = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`
+      
+      if (!dadosPorMes[chave]) {
+        dadosPorMes[chave] = {
+          mes: chave,
+          valorAplicado: 0,
+          ganhoCapital: 0
+        }
+      }
+
+      const custoTotal = (op.preco_unitario * op.quantidade) + 
+                         (op.taxa_corretagem || 0) + 
+                         (op.emolumentos || 0) + 
+                         (op.outros_custos || 0)
+
+      if (op.tipo_operacao === 'compra') {
+        dadosPorMes[chave].valorAplicado += custoTotal
+      } else if (op.tipo_operacao === 'venda') {
+        // Na venda, subtrai do valor aplicado
+        dadosPorMes[chave].valorAplicado -= custoTotal
+      }
+    })
+
+    // Calcular acumulado
+    const dadosOrdenados = Object.values(dadosPorMes).sort((a, b) => a.mes.localeCompare(b.mes))
+    let valorAcumulado = 0
+
+    return dadosOrdenados.map(dados => {
+      valorAcumulado += dados.valorAplicado
+      
+      // Calcular ganho de capital (baseado na carteira atual)
+      const tickersNoMes = operacoesFiltradas
+        .filter(op => {
+          const opData = new Date(op.data_operacao)
+          return `${opData.getFullYear()}-${String(opData.getMonth() + 1).padStart(2, '0')}` <= dados.mes
+        })
+        .map(op => op.ticker)
+      
+      const ativosDoMes = carteira.filter(a => tickersNoMes.includes(a.ticker))
+      const valorAtualMes = ativosDoMes.reduce((acc, a) => acc + (a.valor_atual || 0), 0)
+      const ganhoCapital = valorAtualMes - valorAcumulado
+
+      return {
+        mes: formatarMesGrafico(dados.mes),
+        valorAplicado: Math.round(valorAcumulado),
+        ganhoCapital: Math.round(ganhoCapital > 0 ? ganhoCapital : 0)
+      }
+    })
+  }
+
+  const formatarMesGrafico = (mesAno) => {
+    const [ano, mes] = mesAno.split('-')
+    const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+    return `${meses[parseInt(mes) - 1]}/${ano.substring(2)}`
+  }
+
+  const dadosGrafico = calcularDadosGrafico()
+
   if (loading) {
     return (
       <div className="page-container">
@@ -958,6 +1057,86 @@ export default function Investimentos() {
             <span className="resumo-label">Ativos na Carteira</span>
             <span className="resumo-valor">{carteira.length}</span>
           </div>
+        </div>
+      </div>
+
+      {/* Gráfico de Evolução Patrimonial */}
+      <div className="grafico-evolucao-container">
+        <div className="grafico-header">
+          <h2>📈 Evolução Patrimonial</h2>
+          <div className="grafico-filtros">
+            <select 
+              value={filtroGraficoPeriodo}
+              onChange={(e) => setFiltroGraficoPeriodo(e.target.value)}
+              className="filtro-grafico-select"
+            >
+              <option value="ano_atual">Ano Atual</option>
+              <option value="2_anos">Últimos 2 Anos</option>
+              <option value="todos">Todos os Períodos</option>
+            </select>
+            
+            <select 
+              value={filtroGraficoTipo}
+              onChange={(e) => setFiltroGraficoTipo(e.target.value)}
+              className="filtro-grafico-select"
+            >
+              <option value="todos">Todos os Tipos</option>
+              {tiposAtivo.map(tipo => (
+                <option key={tipo.value} value={tipo.value}>
+                  {tipo.emoji} {tipo.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="grafico-content">
+          {dadosGrafico.length === 0 ? (
+            <div className="grafico-empty">
+              <p>Nenhum dado para exibir no período selecionado</p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={dadosGrafico}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis 
+                  dataKey="mes" 
+                  tick={{ fontSize: 12 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={70}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                />
+                <Tooltip 
+                  formatter={(value) => formatCurrency(value)}
+                  contentStyle={{ 
+                    background: 'white', 
+                    border: '1px solid #ccc',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Legend 
+                  wrapperStyle={{ paddingTop: '20px' }}
+                  iconType="square"
+                />
+                <Bar 
+                  dataKey="valorAplicado" 
+                  name="Valor Aplicado" 
+                  fill="#48bb78" 
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar 
+                  dataKey="ganhoCapital" 
+                  name="Ganho Capital" 
+                  fill="#90ee90" 
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
 
