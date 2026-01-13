@@ -923,3 +923,9 @@
     min-width: 50px;
   }
 }
+
+/* Garantir tamanho do texto mesmo com ValorOculto */
+.card-investimentos .secondary-value strong,
+.card-investimentos .secondary-value strong > span {
+  font-size: 36px !important;
+}
