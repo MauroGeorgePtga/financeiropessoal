@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { useTheme } from '../../hooks/useTheme'
 import { 
   LayoutDashboard, 
   ArrowLeftRight, 
@@ -21,6 +22,9 @@ export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const { user, signOut } = useAuth()
   const location = useLocation()
+  
+  // Carregar tema automaticamente
+  useTheme()
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
