@@ -397,7 +397,7 @@ export default function Transacoes() {
           <div className="resumo-info">
             <span className="resumo-label">Saldo</span>
             <span className={`resumo-valor ${saldo >= 0 ? 'positivo' : 'negativo'}`}>
-              {formatCurrency(saldo)}
+              <ValorOculto valor={formatCurrency(saldo)} />
             </span>
           </div>
         </div>
@@ -407,7 +407,7 @@ export default function Transacoes() {
           <div className="resumo-info">
             <span className="resumo-label">Pendentes</span>
             <span className="resumo-valor">
-              {formatCurrency(Math.abs(totalPendente))}
+              <ValorOculto valor={formatCurrency(Math.abs(totalPendente))} />
             </span>
           </div>
         </div>
