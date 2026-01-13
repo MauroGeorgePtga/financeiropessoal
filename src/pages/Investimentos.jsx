@@ -935,8 +935,7 @@ export default function Investimentos() {
       if (!dadosPorMes[chave]) {
         dadosPorMes[chave] = {
           mes: chave,
-          valorAplicado: 0,
-          ganhoCapital: 0
+          valorAplicado: 0
         }
       }
 
@@ -948,7 +947,7 @@ export default function Investimentos() {
       if (op.tipo_operacao === 'compra') {
         dadosPorMes[chave].valorAplicado += custoTotal
       } else if (op.tipo_operacao === 'venda') {
-        // Na venda, subtrai do valor aplicado
+        // Na venda, recebe o dinheiro de volta (valor negativo)
         dadosPorMes[chave].valorAplicado -= custoTotal
       }
     })
@@ -960,22 +959,9 @@ export default function Investimentos() {
     return dadosOrdenados.map(dados => {
       valorAcumulado += dados.valorAplicado
       
-      // Calcular ganho de capital (baseado na carteira atual)
-      const tickersNoMes = operacoesFiltradas
-        .filter(op => {
-          const opData = new Date(op.data_operacao)
-          return `${opData.getFullYear()}-${String(opData.getMonth() + 1).padStart(2, '0')}` <= dados.mes
-        })
-        .map(op => op.ticker)
-      
-      const ativosDoMes = carteira.filter(a => tickersNoMes.includes(a.ticker))
-      const valorAtualMes = ativosDoMes.reduce((acc, a) => acc + (a.valor_atual || 0), 0)
-      const ganhoCapital = valorAtualMes - valorAcumulado
-
       return {
         mes: formatarMesGrafico(dados.mes),
-        valorAplicado: Math.round(valorAcumulado),
-        ganhoCapital: Math.round(ganhoCapital > 0 ? ganhoCapital : 0)
+        valorAplicado: Math.round(valorAcumulado)
       }
     })
   }
@@ -1126,12 +1112,6 @@ export default function Investimentos() {
                   dataKey="valorAplicado" 
                   name="Valor Aplicado" 
                   fill="#48bb78" 
-                  radius={[4, 4, 0, 0]}
-                />
-                <Bar 
-                  dataKey="ganhoCapital" 
-                  name="Ganho Capital" 
-                  fill="#90ee90" 
                   radius={[4, 4, 0, 0]}
                 />
               </BarChart>
