@@ -290,8 +290,8 @@
 }
 
 .invest-rentabilidade.positivo {
-  background: rgba(0, 255, 170, 0.25);  //Mauro alterou
-  color: #00ffae;                       //Mauro alterou
+  background: rgba(255, 255, 170, 0.25);  //Mauro alterou
+  color: #61dafb;                       //Mauro alterou
 }
 
 .invest-rentabilidade.negativo {
