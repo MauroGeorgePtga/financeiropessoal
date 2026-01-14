@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { 
+import { ValorOculto } from '../components/ValorOculto'
   Plus, 
   Edit2, 
   Trash2, 
@@ -1052,7 +1053,7 @@ export default function Investimentos() {
           <div className="resumo-info">
             <span className="resumo-label">Investimentos</span>
             <span className="resumo-valor">{formatCurrency(totalAtual)}</span>
-            <span className="resumo-sub-investido">Investido: {formatCurrency(totalInvestido)}</span>
+            <span className="resumo-sub-investido">Investido: <ValorOculto valor={formatCurrency(totalInvestido)} /></span>
           </div>
         </div>
 
@@ -1065,7 +1066,7 @@ export default function Investimentos() {
             <span className="resumo-valor">
               {rentabilidadeTotal >= 0 ? '+' : ''}{rentabilidadeTotal.toFixed(2)}%
             </span>
-            <span className="resumo-sub">{formatCurrency(lucroTotal)}</span>
+            <span className="resumo-sub"><ValorOculto valor={formatCurrency(lucroTotal)} /></span>
           </div>
         </div>
 
