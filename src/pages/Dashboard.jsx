@@ -870,7 +870,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="contas-grid">
-                {dados.contas.slice(0, 4).map((conta) => (
+                {dados.contas.slice(0, 6).map((conta) => (
                   <div key={conta.id} className="conta-mini">
                     <div 
                       className="conta-mini-icon"
