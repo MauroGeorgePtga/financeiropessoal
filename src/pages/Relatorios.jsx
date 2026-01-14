@@ -237,6 +237,29 @@ export default function Relatorios() {
       }))
   }
 
+  // Despesas agrupadas por subcategoria
+  const getDespesasPorSubcategoria = () => {
+    const despesas = dados.transacoes.filter(t => t.tipo === 'despesa' && !t.is_transferencia)
+    
+    const agrupado = despesas.reduce((acc, t) => {
+      const subKey = t.subcategorias?.nome || 'Sem subcategoria'
+      const catNome = t.categorias?.nome || 'Sem categoria'
+      
+      if (!acc[subKey]) {
+        acc[subKey] = {
+          nome: subKey,
+          categoriaNome: catNome,
+          valor: 0
+        }
+      }
+      acc[subKey].valor += t.valor
+      return acc
+    }, {})
+
+    return Object.values(agrupado)
+      .sort((a, b) => b.valor - a.valor)
+  }
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -490,6 +513,58 @@ export default function Relatorios() {
                   <Bar dataKey="valor" fill="#f56565" name="Valor" />
                 </BarChart>
               </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+
+        {/* Despesas por Subcategoria */}
+        <div className="grafico-card">
+          <div className="grafico-header">
+            <h3>
+              <BarChart3 size={20} />
+              Despesas por Subcategoria
+            </h3>
+            <select 
+              value={periodo}
+              onChange={(e) => setPeriodo(e.target.value)}
+              className="filtro-periodo-small"
+            >
+              <option value="mes_atual">Mês Atual</option>
+              <option value="ultimos_3_meses">Últimos 3 Meses</option>
+              <option value="ultimos_6_meses">Últimos 6 Meses</option>
+              <option value="ano_atual">Ano Atual</option>
+            </select>
+          </div>
+          <div className="grafico-content">
+            {getDespesasPorSubcategoria().length === 0 ? (
+              <div className="grafico-empty">Nenhuma despesa no período</div>
+            ) : (
+              <div className="subcategorias-list">
+                {getDespesasPorSubcategoria().map((item, index) => {
+                  const percentual = resumo.totalDespesas > 0 
+                    ? (item.valor / resumo.totalDespesas) * 100 
+                    : 0
+                  
+                  return (
+                    <div key={index} className="subcategoria-item">
+                      <div className="subcategoria-info">
+                        <span className="subcategoria-nome">{item.nome}</span>
+                        <span className="subcategoria-categoria-parent">{item.categoriaNome}</span>
+                      </div>
+                      <div className="subcategoria-valores">
+                        <span className="subcategoria-valor">{formatCurrency(item.valor)}</span>
+                        <div className="subcategoria-barra-container">
+                          <div 
+                            className="subcategoria-barra"
+                            style={{ width: `${percentual}%` }}
+                          ></div>
+                        </div>
+                        <span className="subcategoria-percentual">{percentual.toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             )}
           </div>
         </div>
