@@ -515,8 +515,8 @@ export default function Relatorios() {
             ) : (
               <>
                 <div className="subcategoria-total">
-                  <strong>Total de Despesas:</strong>
-                  <span className="total-valor">{formatCurrency(resumo.totalDespesas)}</span>
+                //<strong>Total de Despesas:</strong>
+                //<span className="total-valor">{formatCurrency(resumo.totalDespesas)}</span>
                 </div>
                 <div className="subcategorias-list-scroll">
                   <div className="subcategorias-list">
