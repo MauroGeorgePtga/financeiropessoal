@@ -290,13 +290,13 @@
 }
 
 .invest-rentabilidade.positivo {
-  background: #ccffff; /* verde */
-  color: #33ff99;
+  background: rgba(255, 255, 255, 0.2);
+  color: #48bb78;
 }
 
 .invest-rentabilidade.negativo {
-  background: #ef4444; /* vermelho forte */
-  color: #ffffff;
+  background: rgba(255, 100, 100, 0.3);
+  color: #f56565;
 }
 
 .card-investimentos .secondary-link {
@@ -495,7 +495,7 @@
 /* Contas Grid */
 .contas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 15px;
 }
 
