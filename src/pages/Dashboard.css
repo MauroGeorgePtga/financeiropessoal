@@ -291,8 +291,8 @@
 }
 
 .invest-rentabilidade.positivo {
-  background: #00FFFF; /* magenta */
-  color: #ffffff;
+  background: #ccffff; /* verde */
+  color: #33ff99;
 }
 
 .invest-rentabilidade.negativo {
