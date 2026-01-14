@@ -451,7 +451,7 @@
 
 .grupo-totais {
   display: flex;
-  gap: 24px;
+  gap: 18px;
   align-items: center;
 }
 
@@ -491,7 +491,7 @@
 .grupo-total-item.saldo .total-valor {
   color: #333;
   font-weight: 800;
-  font-size: 12px;
+  font-size: 17px;
 }
 
 .grupo-total-item.saldo.positivo .total-valor {
