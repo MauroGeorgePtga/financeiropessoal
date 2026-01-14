@@ -278,16 +278,15 @@
 }
 
 .invest-rentabilidade {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  border-radius: 999px;
+  border-radius: 6px;
   font-size: 13px;
   font-weight: 700;
+  width: fit-content;
   margin-bottom: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  letter-spacing: 0.3px;
 }
 
 .invest-rentabilidade.positivo {
