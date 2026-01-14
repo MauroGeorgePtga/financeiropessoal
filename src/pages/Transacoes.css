@@ -36,7 +36,7 @@
 }
 
 .resumo-valor {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: #333;
 }
@@ -151,7 +151,7 @@
 
 .transacao-titulo {
   margin: 0;
-  font-size: 30px;
+  font-size: 15px;
   font-weight: 600;
   color: #333;
   overflow: hidden;
