@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { ValorOculto } from '../components/ValorOculto'
 import { 
   Plus, 
   Edit2, 
