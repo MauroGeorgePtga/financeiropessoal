@@ -392,7 +392,7 @@ export default function Relatorios() {
         </div>
 
         {/* Despesas por Categoria */}
-        <div className="grafico-card">
+        <div className="grafico-card grafico-pizza-largo">
           <div className="grafico-header">
             <h3>
               <PieChartIcon size={20} />
@@ -403,15 +403,15 @@ export default function Relatorios() {
             {getDadosPizzaCategorias().length === 0 ? (
               <div className="grafico-empty">Nenhuma despesa no período</div>
             ) : (
-              <ResponsiveContainer width="100%" height={400}>
+              <ResponsiveContainer width="100%" height={850}>
                 <PieChart>
                   <Pie
                     data={getDadosPizzaCategorias()}
-                    cx="40%"
+                    cx="25%"
                     cy="50%"
                     labelLine={false}
-                    label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
-                    outerRadius={100}
+                    label={({ percent }) => percent > 0.02 ? `${(percent * 100).toFixed(0)}%` : ''}
+                    outerRadius={200}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -424,7 +424,11 @@ export default function Relatorios() {
                     layout="vertical"
                     verticalAlign="middle" 
                     align="right"
-                    wrapperStyle={{ paddingLeft: '20px' }}
+                    wrapperStyle={{ 
+                      paddingLeft: '40px',
+                      fontSize: '14px',
+                      maxWidth: '50%'
+                    }}
                     formatter={(value, entry) => `${value}: ${formatCurrency(entry.payload.value)}`}
                   />
                 </PieChart>
@@ -528,20 +532,28 @@ export default function Relatorios() {
         {/* Despesas por Subcategoria */}
         <div className="grafico-card">
           <div className="grafico-header">
-            <h3>
-              <BarChart3 size={20} />
-              Despesas por Subcategoria
-            </h3>
-            <select 
-              value={periodo}
-              onChange={(e) => setPeriodo(e.target.value)}
-              className="filtro-periodo-small"
-            >
-              <option value="mes_atual">Mês Atual</option>
-              <option value="ultimos_3_meses">Últimos 3 Meses</option>
-              <option value="ultimos_6_meses">Últimos 6 Meses</option>
-              <option value="ano_atual">Ano Atual</option>
-            </select>
+            <div className="header-left">
+              <h3>
+                <BarChart3 size={20} />
+                Despesas por Subcategoria
+              </h3>
+            </div>
+            <div className="header-right">
+              <div className="total-despesas-badge">
+                <span className="total-label">Total:</span>
+                <span className="total-valor-badge">{formatCurrency(resumo.totalDespesas)}</span>
+              </div>
+              <select 
+                value={periodo}
+                onChange={(e) => setPeriodo(e.target.value)}
+                className="filtro-periodo-small"
+              >
+                <option value="mes_atual">Mês Atual</option>
+                <option value="ultimos_3_meses">Últimos 3 Meses</option>
+                <option value="ultimos_6_meses">Últimos 6 Meses</option>
+                <option value="ano_atual">Ano Atual</option>
+              </select>
+            </div>
           </div>
           <div className="grafico-content">
             {getDespesasPorSubcategoria().length === 0 ? (
@@ -579,8 +591,6 @@ export default function Relatorios() {
                   )
                 })}
               </div>
-            </div>
-            </>
             )}
           </div>
         </div>
