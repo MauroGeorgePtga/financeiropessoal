@@ -588,9 +588,11 @@ export default function Relatorios() {
                             <span className="subcategoria-percentual">{percentual.toFixed(1)}%</span>
                           </div>
                         </div>
-                  )
-                })}
-              </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>
