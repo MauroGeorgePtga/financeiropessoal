@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { ValorOculto } from '../components/ValorOculto'
 import { Plus, Edit2, Trash2, Search, Check, X, Calendar, Banknote, Landmark, ArrowRightLeft } from 'lucide-react'
 import TransferenciaModal from './TransferenciaModal'
 import './Transacoes.css'
@@ -429,7 +430,7 @@ export default function Transacoes() {
           <div className="resumo-info">
             <span className="resumo-label">Receitas</span>
             <span className="resumo-valor">
-              {formatCurrency(totalReceitas)}
+              <ValorOculto valor={formatCurrency(totalReceitas)} />
             </span>
           </div>
         </div>
@@ -439,7 +440,7 @@ export default function Transacoes() {
           <div className="resumo-info">
             <span className="resumo-label">Despesas</span>
             <span className="resumo-valor">
-              {formatCurrency(totalDespesas)}
+              <ValorOculto valor={formatCurrency(totalDespesas)} />
             </span>
           </div>
         </div>
@@ -449,7 +450,7 @@ export default function Transacoes() {
           <div className="resumo-info">
             <span className="resumo-label">Saldo</span>
             <span className={`resumo-valor ${saldo >= 0 ? 'positivo' : 'negativo'}`}>
-              {formatCurrency(saldo)}
+              <ValorOculto valor={formatCurrency(saldo)} />
             </span>
           </div>
         </div>
@@ -459,7 +460,7 @@ export default function Transacoes() {
           <div className="resumo-info">
             <span className="resumo-label">Pendentes</span>
             <span className="resumo-valor">
-              {formatCurrency(Math.abs(totalPendente))}
+              <ValorOculto valor={formatCurrency(totalPendente)} />
             </span>
           </div>
         </div>
