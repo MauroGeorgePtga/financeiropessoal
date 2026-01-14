@@ -278,25 +278,26 @@
 }
 
 .invest-rentabilidade {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 6px;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
   font-size: 13px;
-  font-weight: 700;
-  width: fit-content;
-  margin-bottom: 12px;
+  font-weight: 800;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  letter-spacing: 0.3px;
 }
 
 .invest-rentabilidade.positivo {
-  background: rgba(255, 255, 255, 0.2);
-  color: #48bb78;
+  background: #22c55e; /* verde forte */
+  color: #ffffff;
 }
 
 .invest-rentabilidade.negativo {
-  background: rgba(255, 100, 100, 0.3);
-  color: #f56565;
+  background: #ef4444; /* vermelho forte */
+  color: #ffffff;
 }
 
 .card-investimentos .secondary-link {
