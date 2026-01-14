@@ -386,7 +386,7 @@
 .subcategoria-barra-container {
   flex: 1;
   height: 8px;
-  background: #e0e0e0;
+  background: #cc9933;
   border-radius: 4px;
   overflow: hidden;
 }
