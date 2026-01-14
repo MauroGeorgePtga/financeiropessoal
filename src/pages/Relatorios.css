@@ -263,6 +263,50 @@
 }
 
 /* Despesas por Subcategoria */
+.subcategoria-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: linear-gradient(135deg, #f56565 0%, #fc8181 100%);
+  border-radius: 8px;
+  margin-bottom: 15px;
+  color: white;
+}
+
+.subcategoria-total strong {
+  font-size: 16px;
+}
+
+.total-valor {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.subcategorias-list-scroll {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.subcategorias-list-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.subcategorias-list-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.subcategorias-list-scroll::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.subcategorias-list-scroll::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 .subcategorias-list {
   display: flex;
   flex-direction: column;
