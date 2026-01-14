@@ -1052,7 +1052,7 @@ export default function Investimentos() {
           <div className="resumo-icon">💰</div>
           <div className="resumo-info">
             <span className="resumo-label">Investimentos</span>
-            <span className="resumo-valor">{formatCurrency(totalAtual)}</span>
+            <span className="resumo-valor"><ValorOculto valor={formatCurrency(totalAtual)}></span>
             <span className="resumo-sub-investido">Investido: <ValorOculto valor={formatCurrency(totalInvestido)} /></span>
           </div>
         </div>
