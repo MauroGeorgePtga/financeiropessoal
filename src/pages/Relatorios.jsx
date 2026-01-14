@@ -407,7 +407,7 @@ export default function Relatorios() {
                 <PieChart>
                   <Pie
                     data={getDadosPizzaCategorias()}
-                    cx="50%"
+                    cx="40%"
                     cy="50%"
                     labelLine={false}
                     label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
@@ -421,8 +421,10 @@ export default function Relatorios() {
                   </Pie>
                   <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Legend 
-                    verticalAlign="bottom" 
-                    height={60}
+                    layout="vertical"
+                    verticalAlign="middle" 
+                    align="right"
+                    wrapperStyle={{ paddingLeft: '20px' }}
                     formatter={(value, entry) => `${value}: ${formatCurrency(entry.payload.value)}`}
                   />
                 </PieChart>
@@ -545,32 +547,40 @@ export default function Relatorios() {
             {getDespesasPorSubcategoria().length === 0 ? (
               <div className="grafico-empty">Nenhuma despesa no período</div>
             ) : (
-              <div className="subcategorias-list">
-                {getDespesasPorSubcategoria().map((item, index) => {
-                  const percentual = resumo.totalDespesas > 0 
-                    ? (item.valor / resumo.totalDespesas) * 100 
-                    : 0
-                  
-                  return (
-                    <div key={index} className="subcategoria-item">
-                      <div className="subcategoria-info">
-                        <span className="subcategoria-nome">{item.nome}</span>
-                        <span className="subcategoria-categoria-parent">{item.categoriaNome}</span>
-                      </div>
-                      <div className="subcategoria-valores">
-                        <span className="subcategoria-valor">{formatCurrency(item.valor)}</span>
-                        <div className="subcategoria-barra-container">
-                          <div 
-                            className="subcategoria-barra"
-                            style={{ width: `${percentual}%` }}
-                          ></div>
+              <>
+                <div className="subcategoria-total">
+                  <strong>Total de Despesas:</strong>
+                  <span className="total-valor">{formatCurrency(resumo.totalDespesas)}</span>
+                </div>
+                <div className="subcategorias-list-scroll">
+                  <div className="subcategorias-list">
+                    {getDespesasPorSubcategoria().map((item, index) => {
+                      const percentual = resumo.totalDespesas > 0 
+                        ? (item.valor / resumo.totalDespesas) * 100 
+                        : 0
+                      
+                      return (
+                        <div key={index} className="subcategoria-item">
+                          <div className="subcategoria-info">
+                            <span className="subcategoria-nome">{item.nome}</span>
+                            <span className="subcategoria-categoria-parent">{item.categoriaNome}</span>
+                          </div>
+                          <div className="subcategoria-valores">
+                            <span className="subcategoria-valor">{formatCurrency(item.valor)}</span>
+                            <div className="subcategoria-barra-container">
+                              <div 
+                                className="subcategoria-barra"
+                                style={{ width: `${percentual}%` }}
+                              ></div>
+                            </div>
+                            <span className="subcategoria-percentual">{percentual.toFixed(1)}%</span>
+                          </div>
                         </div>
-                        <span className="subcategoria-percentual">{percentual.toFixed(1)}%</span>
-                      </div>
-                    </div>
                   )
                 })}
               </div>
+            </div>
+            </>
             )}
           </div>
         </div>
