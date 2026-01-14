@@ -360,7 +360,7 @@
 
 .subcategoria-nome {
   font-weight: 600;
-  color: #f56565;
+  color: #333;
   font-size: 14px;
 }
 
@@ -453,4 +453,13 @@
   font-size: 28px;
   font-weight: 700;
   letter-spacing: 0.5px;
+}
+
+/* Garantir que não apareça nenhum ícone/quadrado */
+.subcategoria-item::before,
+.subcategoria-item::after,
+.subcategoria-info::before,
+.subcategoria-info::after {
+  display: none !important;
+  content: none !important;
 }
