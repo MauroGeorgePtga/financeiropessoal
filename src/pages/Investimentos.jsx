@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { ValorOculto } from '../components/ValorOculto'
 import { 
   Plus, 
   Edit2, 
@@ -1050,19 +1049,12 @@ export default function Investimentos() {
       <div className="resumo-cards">
         <div className="resumo-card card-investimentos">
           <div className="resumo-icon">💰</div>
-            <div className="resumo-info">
-           <span className="resumo-label">Investimentos</span>
-          <span className="resumo-valor">
-        <ValorOculto valor={formatCurrency(totalAtual)} />
-      </span>
-
-      <span className="resumo-sub-investido">
-        Investido:{' '}
-        <ValorOculto valor={formatCurrency(totalInvestido)} />
-      </span>
-    </div>
-  </div>
-</div>
+          <div className="resumo-info">
+            <span className="resumo-label">Investimentos</span>
+            <span className="resumo-valor">{formatCurrency(totalAtual)}</span>
+            <span className="resumo-sub-investido">Investido: {formatCurrency(totalInvestido)}</span>
+          </div>
+        </div>
 
         <div className={`resumo-card ${rentabilidadeTotal >= 0 ? 'card-positivo' : 'card-negativo'}`}>
           <div className="resumo-icon">
