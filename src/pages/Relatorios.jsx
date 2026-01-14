@@ -514,13 +514,13 @@ export default function Relatorios() {
               <div className="grafico-empty">Nenhuma despesa no período</div>
             ) : (
               <>
-                <div className="subcategoria-total">
+               
 
 
 
 
-                  
-                </div>
+
+                
                 <div className="subcategorias-list-scroll">
                   <div className="subcategorias-list">
                     {getDespesasPorSubcategoria().map((item, index) => {
