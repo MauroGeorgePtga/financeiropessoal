@@ -391,52 +391,6 @@ export default function Relatorios() {
           </div>
         </div>
 
-        {/* Despesas por Categoria */}
-        <div className="grafico-card grafico-pizza-largo">
-          <div className="grafico-header">
-            <h3>
-              <PieChartIcon size={20} />
-              Despesas por Categoria
-            </h3>
-          </div>
-          <div className="grafico-content">
-            {getDadosPizzaCategorias().length === 0 ? (
-              <div className="grafico-empty">Nenhuma despesa no período</div>
-            ) : (
-              <ResponsiveContainer width="100%" height={850}>
-                <PieChart>
-                  <Pie
-                    data={getDadosPizzaCategorias()}
-                    cx="25%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ percent }) => percent > 0.02 ? `${(percent * 100).toFixed(0)}%` : ''}
-                    outerRadius={200}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {getDadosPizzaCategorias().map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                  <Legend 
-                    layout="vertical"
-                    verticalAlign="middle" 
-                    align="right"
-                    wrapperStyle={{ 
-                      paddingLeft: '40px',
-                      fontSize: '14px',
-                      maxWidth: '50%'
-                    }}
-                    formatter={(value, entry) => `${value}: ${formatCurrency(entry.payload.value)}`}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </div>
-
         {/* Evolução do Saldo */}
         <div className="grafico-card grafico-full">
           <div className="grafico-header">
