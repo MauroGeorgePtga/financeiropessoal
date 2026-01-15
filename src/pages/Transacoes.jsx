@@ -545,7 +545,7 @@ export default function Transacoes() {
                     {chave !== 'dinheiro' && (
                       <div className="grupo-total-item inicial">
                         <span className="total-label">Saldo Inicial:</span>
-                        <span className="total-valor">{formatCurrency(saldoInicial)}</span>
+                        <span className="total-valor"><ValorOculto valor={formatCurrency(saldoInicial)} /></span>
                       </div>
                     )}
                     <div className="grupo-total-item receitas">
