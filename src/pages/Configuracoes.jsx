@@ -14,7 +14,17 @@ import {
   Mail,
   Shield,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Users,
+  UserPlus,
+  UserX,
+  Download,
+  Upload,
+  Trash2,
+  Edit,
+  KeyRound,
+  Power,
+  X
 } from 'lucide-react'
 import './Configuracoes.css'
 
@@ -23,10 +33,12 @@ export default function Configuracoes() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
+  const [isAdmin, setIsAdmin] = useState(false)
   
   const [perfil, setPerfil] = useState({
     email: '',
     nome: '',
+    telefone: '',
     id: ''
   })
 
@@ -50,6 +62,18 @@ export default function Configuracoes() {
     cor_sucesso: '#48bb78',
     cor_erro: '#f56565',
     cor_aviso: '#ed8936'
+  })
+
+  // Estados para gerenciamento de usuários
+  const [usuarios, setUsuarios] = useState([])
+  const [loadingUsuarios, setLoadingUsuarios] = useState(false)
+  const [modalNovoUsuario, setModalNovoUsuario] = useState(false)
+  const [modalResetSenha, setModalResetSenha] = useState({ show: false, userId: null, email: '' })
+  const [novoUsuario, setNovoUsuario] = useState({
+    email: '',
+    senha: '',
+    nome: '',
+    role: 'user'
   })
 
   const temasPredefinidos = [
@@ -144,9 +168,27 @@ export default function Configuracoes() {
       
       const { data: { user: userData } } = await supabase.auth.getUser()
       
+      // Verificar se é admin
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role, is_active')
+        .eq('user_id', user.id)
+        .single()
+
+      const adminStatus = roleData?.role === 'admin' && roleData?.is_active
+      setIsAdmin(adminStatus)
+
+      // Buscar perfil
+      const { data: profileData } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
       setPerfil({
         email: userData?.email || '',
-        nome: userData?.user_metadata?.name || '',
+        nome: profileData?.name || userData?.user_metadata?.name || '',
+        telefone: profileData?.phone || '',
         id: userData?.id || ''
       })
 
@@ -174,11 +216,61 @@ export default function Configuracoes() {
         aplicarTema(prefsData)
       }
 
+      // Se for admin, carregar lista de usuários
+      if (adminStatus) {
+        carregarUsuarios()
+      }
+
     } catch (error) {
       console.error('Erro ao carregar configurações:', error)
       showMessage('error', 'Erro ao carregar configurações')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const carregarUsuarios = async () => {
+    try {
+      setLoadingUsuarios(true)
+
+      // Buscar todos os usuários do auth
+      const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers()
+
+      if (authError) throw authError
+
+      // Buscar perfis e roles
+      const { data: profiles } = await supabase
+        .from('user_profiles')
+        .select('*')
+
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('*')
+
+      // Combinar dados
+      const usuariosCompletos = authUsers.map(authUser => {
+        const profile = profiles?.find(p => p.user_id === authUser.id)
+        const role = roles?.find(r => r.user_id === authUser.id)
+
+        return {
+          id: authUser.id,
+          email: authUser.email,
+          nome: profile?.name || authUser.user_metadata?.name || 'Sem nome',
+          telefone: profile?.phone || '',
+          role: role?.role || 'user',
+          is_active: role?.is_active ?? true,
+          created_at: authUser.created_at,
+          last_sign_in: authUser.last_sign_in_at
+        }
+      })
+
+      setUsuarios(usuariosCompletos)
+
+    } catch (error) {
+      console.error('Erro ao carregar usuários:', error)
+      showMessage('error', 'Erro ao carregar usuários')
+    } finally {
+      setLoadingUsuarios(false)
     }
   }
 
@@ -195,24 +287,47 @@ export default function Configuracoes() {
     root.style.setProperty('--cor-erro', prefs.cor_erro)
     root.style.setProperty('--cor-aviso', prefs.cor_aviso)
     
-    // Calcular se deve usar texto claro ou escuro
     const corTexto = getContrastColor(prefs.cor_primaria)
     root.style.setProperty('--cor-texto-primaria', corTexto)
   }
 
-  // Função para calcular contraste (retorna #ffffff ou #000000)
   const getContrastColor = (hexColor) => {
-    // Converter hex para RGB
     const hex = hexColor.replace('#', '')
     const r = parseInt(hex.substr(0, 2), 16)
     const g = parseInt(hex.substr(2, 2), 16)
     const b = parseInt(hex.substr(4, 2), 16)
     
-    // Calcular luminosidade
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
     
-    // Se luminosidade < 0.5, usar texto claro, senão texto escuro
     return luminance < 0.5 ? '#ffffff' : '#000000'
+  }
+
+  const handleSalvarPerfil = async (e) => {
+    e.preventDefault()
+    
+    try {
+      setSaving(true)
+
+      // Atualizar ou inserir perfil
+      const { error } = await supabase
+        .from('user_profiles')
+        .upsert({
+          user_id: user.id,
+          name: perfil.nome,
+          phone: perfil.telefone
+        }, {
+          onConflict: 'user_id'
+        })
+
+      if (error) throw error
+
+      showMessage('success', 'Perfil atualizado com sucesso!')
+    } catch (error) {
+      console.error('Erro ao salvar perfil:', error)
+      showMessage('error', 'Erro ao salvar perfil')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleSelecionarTema = async (temaId) => {
@@ -307,6 +422,277 @@ export default function Configuracoes() {
     }
   }
 
+  const handleToggleUsuario = async (userId, isActive) => {
+    if (userId === user.id) {
+      showMessage('error', 'Você não pode desativar sua própria conta')
+      return
+    }
+
+    if (!confirm(`Deseja ${isActive ? 'desativar' : 'ativar'} este usuário?`)) {
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .update({ is_active: !isActive })
+        .eq('user_id', userId)
+
+      if (error) throw error
+
+      showMessage('success', `Usuário ${!isActive ? 'ativado' : 'desativado'} com sucesso!`)
+      carregarUsuarios()
+    } catch (error) {
+      console.error('Erro ao alterar status:', error)
+      showMessage('error', 'Erro ao alterar status do usuário')
+    }
+  }
+
+  const handleExcluirUsuario = async (userId, email) => {
+    if (userId === user.id) {
+      showMessage('error', 'Você não pode excluir sua própria conta')
+      return
+    }
+
+    if (!confirm(`Tem certeza que deseja excluir o usuário ${email}? Esta ação não pode ser desfeita!`)) {
+      return
+    }
+
+    try {
+      // Excluir usuário do auth (cascata vai deletar roles e profile)
+      const { error } = await supabase.auth.admin.deleteUser(userId)
+
+      if (error) throw error
+
+      showMessage('success', 'Usuário excluído com sucesso!')
+      carregarUsuarios()
+    } catch (error) {
+      console.error('Erro ao excluir usuário:', error)
+      showMessage('error', 'Erro ao excluir usuário')
+    }
+  }
+
+  const handleResetSenhaUsuario = async (senha) => {
+    try {
+      const { error } = await supabase.auth.admin.updateUserById(
+        modalResetSenha.userId,
+        { password: senha }
+      )
+
+      if (error) throw error
+
+      showMessage('success', 'Senha alterada com sucesso!')
+      setModalResetSenha({ show: false, userId: null, email: '' })
+    } catch (error) {
+      console.error('Erro ao resetar senha:', error)
+      showMessage('error', 'Erro ao resetar senha')
+    }
+  }
+
+  const handleCriarUsuario = async (e) => {
+    e.preventDefault()
+
+    if (!novoUsuario.email || !novoUsuario.senha) {
+      showMessage('error', 'Preencha email e senha')
+      return
+    }
+
+    if (novoUsuario.senha.length < 6) {
+      showMessage('error', 'A senha deve ter pelo menos 6 caracteres')
+      return
+    }
+
+    try {
+      setSaving(true)
+
+      // Criar usuário no auth
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: novoUsuario.email,
+        password: novoUsuario.senha,
+        email_confirm: true,
+        user_metadata: { name: novoUsuario.nome }
+      })
+
+      if (authError) throw authError
+
+      // Criar perfil
+      await supabase
+        .from('user_profiles')
+        .insert({
+          user_id: authData.user.id,
+          name: novoUsuario.nome
+        })
+
+      // Criar role
+      await supabase
+        .from('user_roles')
+        .insert({
+          user_id: authData.user.id,
+          role: novoUsuario.role,
+          created_by: user.id
+        })
+
+      showMessage('success', 'Usuário criado com sucesso!')
+      setModalNovoUsuario(false)
+      setNovoUsuario({ email: '', senha: '', nome: '', role: 'user' })
+      carregarUsuarios()
+    } catch (error) {
+      console.error('Erro ao criar usuário:', error)
+      showMessage('error', error.message || 'Erro ao criar usuário')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleExportarDados = async () => {
+    try {
+      setSaving(true)
+      showMessage('success', 'Preparando exportação...')
+
+      // Buscar todos os dados do usuário
+      const [
+        { data: contas },
+        { data: transacoes },
+        { data: categorias },
+        { data: investimentosOp },
+        { data: investimentosCot },
+        { data: preferences },
+        { data: profile }
+      ] = await Promise.all([
+        supabase.from('contas_bancarias').select('*').eq('user_id', user.id),
+        supabase.from('transacoes').select('*').eq('user_id', user.id),
+        supabase.from('categorias').select('*').eq('user_id', user.id),
+        supabase.from('investimentos_operacoes').select('*').eq('user_id', user.id),
+        supabase.from('investimentos_cotacoes').select('*').eq('user_id', user.id),
+        supabase.from('user_preferences').select('*').eq('user_id', user.id),
+        supabase.from('user_profiles').select('*').eq('user_id', user.id)
+      ])
+
+      const dadosCompletos = {
+        versao: '1.0',
+        data_exportacao: new Date().toISOString(),
+        user_id: user.id,
+        email: perfil.email,
+        dados: {
+          profile: profile?.[0] || null,
+          preferences: preferences?.[0] || null,
+          contas_bancarias: contas || [],
+          transacoes: transacoes || [],
+          categorias: categorias || [],
+          investimentos_operacoes: investimentosOp || [],
+          investimentos_cotacoes: investimentosCot || []
+        }
+      }
+
+      // Criar arquivo para download
+      const dataStr = JSON.stringify(dadosCompletos, null, 2)
+      const dataBlob = new Blob([dataStr], { type: 'application/json' })
+      const url = URL.createObjectURL(dataBlob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `backup_financeiro_${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      showMessage('success', 'Dados exportados com sucesso!')
+    } catch (error) {
+      console.error('Erro ao exportar dados:', error)
+      showMessage('error', 'Erro ao exportar dados')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleImportarDados = async (event) => {
+    const file = event.target.files[0]
+    if (!file) return
+
+    if (!confirm('ATENÇÃO: A importação irá SUBSTITUIR todos os seus dados atuais. Deseja continuar?')) {
+      event.target.value = ''
+      return
+    }
+
+    try {
+      setSaving(true)
+      showMessage('success', 'Processando importação...')
+
+      const text = await file.text()
+      const dados = JSON.parse(text)
+
+      // Validar estrutura
+      if (!dados.versao || !dados.dados) {
+        throw new Error('Arquivo de backup inválido')
+      }
+
+      // Deletar dados atuais
+      await Promise.all([
+        supabase.from('transacoes').delete().eq('user_id', user.id),
+        supabase.from('investimentos_operacoes').delete().eq('user_id', user.id),
+        supabase.from('investimentos_cotacoes').delete().eq('user_id', user.id),
+        supabase.from('contas_bancarias').delete().eq('user_id', user.id),
+        supabase.from('categorias').delete().eq('user_id', user.id)
+      ])
+
+      // Importar novos dados
+      const { dados: novos } = dados
+
+      if (novos.categorias?.length) {
+        await supabase.from('categorias').insert(
+          novos.categorias.map(c => ({ ...c, user_id: user.id }))
+        )
+      }
+
+      if (novos.contas_bancarias?.length) {
+        await supabase.from('contas_bancarias').insert(
+          novos.contas_bancarias.map(c => ({ ...c, user_id: user.id }))
+        )
+      }
+
+      if (novos.transacoes?.length) {
+        await supabase.from('transacoes').insert(
+          novos.transacoes.map(t => ({ ...t, user_id: user.id }))
+        )
+      }
+
+      if (novos.investimentos_operacoes?.length) {
+        await supabase.from('investimentos_operacoes').insert(
+          novos.investimentos_operacoes.map(i => ({ ...i, user_id: user.id }))
+        )
+      }
+
+      if (novos.investimentos_cotacoes?.length) {
+        await supabase.from('investimentos_cotacoes').insert(
+          novos.investimentos_cotacoes.map(i => ({ ...i, user_id: user.id }))
+        )
+      }
+
+      if (novos.preferences) {
+        await supabase.from('user_preferences').upsert({
+          ...novos.preferences,
+          user_id: user.id
+        }, { onConflict: 'user_id' })
+      }
+
+      if (novos.profile) {
+        await supabase.from('user_profiles').upsert({
+          ...novos.profile,
+          user_id: user.id
+        }, { onConflict: 'user_id' })
+      }
+
+      showMessage('success', 'Dados importados com sucesso! Recarregando página...')
+      setTimeout(() => window.location.reload(), 2000)
+    } catch (error) {
+      console.error('Erro ao importar dados:', error)
+      showMessage('error', error.message || 'Erro ao importar dados')
+    } finally {
+      setSaving(false)
+      event.target.value = ''
+    }
+  }
+
   if (loading) {
     return (
       <div className="page-container">
@@ -332,62 +718,212 @@ export default function Configuracoes() {
         </div>
       )}
 
-      {/* Informações da Conta */}
+      {/* Meu Perfil */}
       <div className="config-section">
         <div className="config-section-header">
           <User size={24} />
-          <h2>Informações da Conta</h2>
+          <h2>Meu Perfil</h2>
         </div>
         <div className="config-section-content">
-          <div className="info-item">
-            <label>
-              <Mail size={16} />
-              Email:
-            </label>
-            <span>{perfil.email}</span>
-          </div>
-          <div className="info-item">
-            <label>
-              <Shield size={16} />
-              ID:
-            </label>
-            <span className="id-text">{perfil.id}</span>
-          </div>
+          <form onSubmit={handleSalvarPerfil} className="config-form">
+            <div className="form-group-config">
+              <label>
+                <Mail size={16} />
+                Email
+              </label>
+              <input
+                type="email"
+                value={perfil.email}
+                disabled
+                className="input-disabled"
+              />
+              <small>O email não pode ser alterado</small>
+            </div>
+
+            <div className="form-group-config">
+              <label>
+                <User size={16} />
+                Nome
+              </label>
+              <input
+                type="text"
+                value={perfil.nome}
+                onChange={(e) => setPerfil({ ...perfil, nome: e.target.value })}
+                placeholder="Seu nome completo"
+              />
+            </div>
+
+            <div className="form-group-config">
+              <label>
+                <Mail size={16} />
+                Telefone
+              </label>
+              <input
+                type="tel"
+                value={perfil.telefone}
+                onChange={(e) => setPerfil({ ...perfil, telefone: e.target.value })}
+                placeholder="(00) 00000-0000"
+              />
+            </div>
+
+            <div className="info-item">
+              <label>
+                <Shield size={16} />
+                ID:
+              </label>
+              <span className="id-text">{perfil.id}</span>
+            </div>
+
+            <button 
+              type="submit" 
+              className="btn-primary btn-salvar"
+              disabled={saving}
+            >
+              <Save size={18} />
+              {saving ? 'Salvando...' : 'Salvar Perfil'}
+            </button>
+          </form>
         </div>
       </div>
 
-      {/* Em Desenvolvimento */}
-      <div className="config-section desenvolvimento">
+      {/* Gerenciamento de Usuários (apenas para admins) */}
+      {isAdmin && (
+        <div className="config-section">
+          <div className="config-section-header">
+            <Users size={24} />
+            <h2>Gerenciamento de Usuários</h2>
+            <button 
+              className="btn-primary btn-novo-usuario"
+              onClick={() => setModalNovoUsuario(true)}
+            >
+              <UserPlus size={18} />
+              Novo Usuário
+            </button>
+          </div>
+          <div className="config-section-content">
+            {loadingUsuarios ? (
+              <div className="loading-small">Carregando usuários...</div>
+            ) : (
+              <div className="usuarios-table-container">
+                <table className="usuarios-table">
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>Email</th>
+                      <th>Função</th>
+                      <th>Status</th>
+                      <th>Último Acesso</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {usuarios.map(usuario => (
+                      <tr key={usuario.id} className={!usuario.is_active ? 'usuario-inativo' : ''}>
+                        <td>{usuario.nome}</td>
+                        <td>{usuario.email}</td>
+                        <td>
+                          <span className={`badge badge-${usuario.role}`}>
+                            {usuario.role === 'admin' ? 'Administrador' : 'Usuário'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`status-badge ${usuario.is_active ? 'ativo' : 'inativo'}`}>
+                            {usuario.is_active ? 'Ativo' : 'Inativo'}
+                          </span>
+                        </td>
+                        <td>
+                          {usuario.last_sign_in 
+                            ? new Date(usuario.last_sign_in).toLocaleDateString('pt-BR')
+                            : 'Nunca'
+                          }
+                        </td>
+                        <td>
+                          <div className="acoes-usuario">
+                            <button
+                              className="btn-icon btn-toggle"
+                              onClick={() => handleToggleUsuario(usuario.id, usuario.is_active)}
+                              title={usuario.is_active ? 'Desativar' : 'Ativar'}
+                              disabled={usuario.id === user.id}
+                            >
+                              <Power size={16} />
+                            </button>
+                            <button
+                              className="btn-icon btn-reset"
+                              onClick={() => setModalResetSenha({ 
+                                show: true, 
+                                userId: usuario.id,
+                                email: usuario.email 
+                              })}
+                              title="Resetar senha"
+                            >
+                              <KeyRound size={16} />
+                            </button>
+                            <button
+                              className="btn-icon btn-delete"
+                              onClick={() => handleExcluirUsuario(usuario.id, usuario.email)}
+                              title="Excluir"
+                              disabled={usuario.id === user.id}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Backup de Dados */}
+      <div className="config-section">
         <div className="config-section-header">
-          <AlertCircle size={24} />
-          <h2>Em Desenvolvimento</h2>
+          <Database size={24} />
+          <h2>Backup de Dados</h2>
         </div>
         <div className="config-section-content">
-          <p className="desenvolvimento-text">Em breve você poderá configurar:</p>
-          <div className="recursos-futuros">
-            <div className="recurso-item ativo">
-              <CheckCircle size={18} className="check-icon" />
-              <span>Alterar senha</span>
+          <div className="backup-container">
+            <div className="backup-item">
+              <div className="backup-info">
+                <Download size={24} />
+                <div>
+                  <h3>Exportar Dados</h3>
+                  <p>Faça download de todos os seus dados em formato JSON</p>
+                </div>
+              </div>
+              <button 
+                className="btn-primary"
+                onClick={handleExportarDados}
+                disabled={saving}
+              >
+                <Download size={18} />
+                Exportar
+              </button>
             </div>
-            <div className="recurso-item disabled">
-              <div className="check-box"></div>
-              <span>Editar perfil</span>
-            </div>
-            <div className="recurso-item disabled">
-              <div className="check-box"></div>
-              <span>Preferências de notificação</span>
-            </div>
-            <div className="recurso-item disabled">
-              <div className="check-box"></div>
-              <span>Categorias padrão</span>
-            </div>
-            <div className="recurso-item ativo">
-              <CheckCircle size={18} className="check-icon" />
-              <span>Temas e cores</span>
-            </div>
-            <div className="recurso-item disabled">
-              <div className="check-box"></div>
-              <span>Backup de dados</span>
+
+            <div className="backup-item">
+              <div className="backup-info">
+                <Upload size={24} />
+                <div>
+                  <h3>Importar Dados</h3>
+                  <p>Restaure seus dados de um backup anterior</p>
+                  <small className="warning-text">⚠️ Isso substituirá todos os dados atuais</small>
+                </div>
+              </div>
+              <label className="btn-primary btn-file-input">
+                <Upload size={18} />
+                Importar
+                <input 
+                  type="file" 
+                  accept=".json"
+                  onChange={handleImportarDados}
+                  disabled={saving}
+                  style={{ display: 'none' }}
+                />
+              </label>
             </div>
           </div>
         </div>
@@ -531,6 +1067,141 @@ export default function Configuracoes() {
           </form>
         </div>
       </div>
+
+      {/* Modal Novo Usuário */}
+      {modalNovoUsuario && (
+        <div className="modal-overlay" onClick={() => setModalNovoUsuario(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <UserPlus size={24} />
+                Novo Usuário
+              </h2>
+              <button className="btn-close" onClick={() => setModalNovoUsuario(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleCriarUsuario}>
+              <div className="form-group-config">
+                <label>Nome</label>
+                <input
+                  type="text"
+                  value={novoUsuario.nome}
+                  onChange={(e) => setNovoUsuario({ ...novoUsuario, nome: e.target.value })}
+                  placeholder="Nome completo"
+                  required
+                />
+              </div>
+
+              <div className="form-group-config">
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={novoUsuario.email}
+                  onChange={(e) => setNovoUsuario({ ...novoUsuario, email: e.target.value })}
+                  placeholder="email@exemplo.com"
+                  required
+                />
+              </div>
+
+              <div className="form-group-config">
+                <label>Senha</label>
+                <input
+                  type="password"
+                  value={novoUsuario.senha}
+                  onChange={(e) => setNovoUsuario({ ...novoUsuario, senha: e.target.value })}
+                  placeholder="Mínimo 6 caracteres"
+                  required
+                />
+              </div>
+
+              <div className="form-group-config">
+                <label>Função</label>
+                <select
+                  value={novoUsuario.role}
+                  onChange={(e) => setNovoUsuario({ ...novoUsuario, role: e.target.value })}
+                >
+                  <option value="user">Usuário</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn-secondary"
+                  onClick={() => setModalNovoUsuario(false)}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-primary"
+                  disabled={saving}
+                >
+                  <UserPlus size={18} />
+                  {saving ? 'Criando...' : 'Criar Usuário'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Reset Senha */}
+      {modalResetSenha.show && (
+        <div className="modal-overlay" onClick={() => setModalResetSenha({ show: false, userId: null, email: '' })}>
+          <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <KeyRound size={24} />
+                Resetar Senha
+              </h2>
+              <button 
+                className="btn-close" 
+                onClick={() => setModalResetSenha({ show: false, userId: null, email: '' })}
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              const senha = e.target.senha.value
+              if (senha.length < 6) {
+                showMessage('error', 'A senha deve ter pelo menos 6 caracteres')
+                return
+              }
+              handleResetSenhaUsuario(senha)
+            }}>
+              <div className="form-group-config">
+                <label>Usuário: <strong>{modalResetSenha.email}</strong></label>
+              </div>
+              <div className="form-group-config">
+                <label>Nova Senha</label>
+                <input
+                  type="password"
+                  name="senha"
+                  placeholder="Mínimo 6 caracteres"
+                  required
+                />
+              </div>
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn-secondary"
+                  onClick={() => setModalResetSenha({ show: false, userId: null, email: '' })}
+                >
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-primary">
+                  <KeyRound size={18} />
+                  Resetar Senha
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
