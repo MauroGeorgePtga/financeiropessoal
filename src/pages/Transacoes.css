@@ -149,9 +149,10 @@
   flex: 1;
 }
 
+/*Texto do cabeçalho dos registros de transação */
 .transacao-titulo {
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #333;
   overflow: hidden;
@@ -488,10 +489,11 @@
   font-weight: 600;
 }
 
+/*Campo do Saldo Total no Cabeçalho das transações */
 .grupo-total-item.saldo .total-valor {
   color: #333;
   font-weight: 800;
-  font-size: 24px;
+  font-size: 15px;
 }
 
 .grupo-total-item.saldo.positivo .total-valor {
