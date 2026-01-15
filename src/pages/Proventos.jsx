@@ -159,11 +159,14 @@ export default function Proventos() {
       
       const { data: ops } = await supabase
         .from('investimentos_operacoes')
-        .select('ticker, quantidade, tipo')
+        .select('ticker, quantidade, tipo, user_id')
         .eq('user_id', user.id)
       
+      console.log('Operações encontradas:', ops)
+      console.log('User ID atual:', user.id)
+      
       if (!ops || ops.length === 0) {
-        showMessage('error', 'Cadastre operações primeiro')
+        showMessage('error', 'Nenhuma operação encontrada para seu usuário')
         return
       }
       
