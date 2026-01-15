@@ -233,36 +233,24 @@ export default function Configuracoes() {
     try {
       setLoadingUsuarios(true)
 
-      // Buscar todos os usuários do auth
-      const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers()
-
-      if (authError) throw authError
-
-      // Buscar perfis e roles
-      const { data: profiles } = await supabase
-        .from('user_profiles')
+      // Buscar todos os usuários da view
+      const { data: usuariosData, error } = await supabase
+        .from('vw_usuarios_completos')
         .select('*')
 
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('*')
+      if (error) throw error
 
-      // Combinar dados
-      const usuariosCompletos = authUsers.map(authUser => {
-        const profile = profiles?.find(p => p.user_id === authUser.id)
-        const role = roles?.find(r => r.user_id === authUser.id)
-
-        return {
-          id: authUser.id,
-          email: authUser.email,
-          nome: profile?.name || authUser.user_metadata?.name || 'Sem nome',
-          telefone: profile?.phone || '',
-          role: role?.role || 'user',
-          is_active: role?.is_active ?? true,
-          created_at: authUser.created_at,
-          last_sign_in: authUser.last_sign_in_at
-        }
-      })
+      // Formatar dados
+      const usuariosCompletos = (usuariosData || []).map(u => ({
+        id: u.id,
+        email: u.email,
+        nome: u.name || 'Sem nome',
+        telefone: u.phone || '',
+        role: u.role || 'user',
+        is_active: u.is_active ?? true,
+        created_at: u.created_at,
+        last_sign_in: u.last_sign_in_at
+      }))
 
       setUsuarios(usuariosCompletos)
 
@@ -454,94 +442,18 @@ export default function Configuracoes() {
       return
     }
 
-    if (!confirm(`Tem certeza que deseja excluir o usuário ${email}? Esta ação não pode ser desfeita!`)) {
-      return
-    }
-
-    try {
-      // Excluir usuário do auth (cascata vai deletar roles e profile)
-      const { error } = await supabase.auth.admin.deleteUser(userId)
-
-      if (error) throw error
-
-      showMessage('success', 'Usuário excluído com sucesso!')
-      carregarUsuarios()
-    } catch (error) {
-      console.error('Erro ao excluir usuário:', error)
-      showMessage('error', 'Erro ao excluir usuário')
-    }
+    showMessage('error', 'Função de exclusão em desenvolvimento. Use o painel do Supabase para excluir usuários.')
   }
 
   const handleResetSenhaUsuario = async (senha) => {
-    try {
-      const { error } = await supabase.auth.admin.updateUserById(
-        modalResetSenha.userId,
-        { password: senha }
-      )
-
-      if (error) throw error
-
-      showMessage('success', 'Senha alterada com sucesso!')
-      setModalResetSenha({ show: false, userId: null, email: '' })
-    } catch (error) {
-      console.error('Erro ao resetar senha:', error)
-      showMessage('error', 'Erro ao resetar senha')
-    }
+    showMessage('error', 'Função de reset de senha em desenvolvimento. Use o painel do Supabase.')
+    setModalResetSenha({ show: false, userId: null, email: '' })
   }
 
   const handleCriarUsuario = async (e) => {
     e.preventDefault()
-
-    if (!novoUsuario.email || !novoUsuario.senha) {
-      showMessage('error', 'Preencha email e senha')
-      return
-    }
-
-    if (novoUsuario.senha.length < 6) {
-      showMessage('error', 'A senha deve ter pelo menos 6 caracteres')
-      return
-    }
-
-    try {
-      setSaving(true)
-
-      // Criar usuário no auth
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: novoUsuario.email,
-        password: novoUsuario.senha,
-        email_confirm: true,
-        user_metadata: { name: novoUsuario.nome }
-      })
-
-      if (authError) throw authError
-
-      // Criar perfil
-      await supabase
-        .from('user_profiles')
-        .insert({
-          user_id: authData.user.id,
-          name: novoUsuario.nome
-        })
-
-      // Criar role
-      await supabase
-        .from('user_roles')
-        .insert({
-          user_id: authData.user.id,
-          role: novoUsuario.role,
-          created_by: user.id
-        })
-
-      showMessage('success', 'Usuário criado com sucesso!')
-      setModalNovoUsuario(false)
-      setNovoUsuario({ email: '', senha: '', nome: '', role: 'user' })
-      carregarUsuarios()
-    } catch (error) {
-      console.error('Erro ao criar usuário:', error)
-      showMessage('error', error.message || 'Erro ao criar usuário')
-    } finally {
-      setSaving(false)
-    }
+    showMessage('error', 'Função de criar usuário em desenvolvimento. Use o painel do Supabase Auth para criar novos usuários.')
+    setModalNovoUsuario(false)
   }
 
   const handleExportarDados = async () => {
