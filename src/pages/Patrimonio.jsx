@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { Plus, Edit2, Trash2, Search, TrendingUp, TrendingDown, Home, Car, MapPin, Package, X } from 'lucide-react'
 import './Patrimonio.css'
+import { ValorOculto } from '../components/ValorOculto'
 
 export default function Patrimonio() {
   const { user } = useAuth()
@@ -221,7 +222,7 @@ export default function Patrimonio() {
           <div className="resumo-icon">🏷️</div>
           <div className="resumo-info">
             <span className="resumo-label">Valor de Compra</span>
-            <span className="resumo-valor">{formatCurrency(totalValorCompra)}</span>
+            <span className="resumo-valor"><ValorOculto valor={formatCurrency(totalValorCompra)}/></span>
           </div>
         </div>
 
@@ -229,7 +230,7 @@ export default function Patrimonio() {
           <div className="resumo-icon">💎</div>
           <div className="resumo-info">
             <span className="resumo-label">Valor Atual</span>
-            <span className="resumo-valor">{formatCurrency(totalValorAtual)}</span>
+            <span className="resumo-valor"><ValorOculto valor={formatCurrency(totalValorAtual)}/></span>
           </div>
         </div>
 
