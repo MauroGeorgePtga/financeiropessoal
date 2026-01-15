@@ -9,6 +9,7 @@ import ContasBancarias from './pages/ContasBancarias'
 import Categorias from './pages/Categorias'
 import Investimentos from './pages/Investimentos'
 import CadastroAtivos from './pages/CadastroAtivos'
+import Proventos from './pages/Proventos'
 import Patrimonio from './pages/Patrimonio'
 import Relatorios from './pages/Relatorios'
 import Configuracoes from './pages/Configuracoes'
@@ -65,6 +66,7 @@ function App() {
             <Route path="/categorias" element={<Categorias />} />
             <Route path="/investimentos" element={<Investimentos />} />
             <Route path="/cadastro-ativos" element={<CadastroAtivos />} />
+            <Route path="/proventos" element={<Proventos />} />
             <Route path="/patrimonio" element={<Patrimonio />} />
             <Route path="/relatorios" element={<Relatorios />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
