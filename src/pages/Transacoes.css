@@ -463,17 +463,17 @@
   gap: 4px;
 }
 
+/*TEXTE DE VALOR - 11px */
 .total-label {
-  font-size: 11px;
+  font-size: 20px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #999;
 }
 
-/*TEXTE DE VALOR - 17px */
 .total-valor {
-  font-size: 25px;
+  font-size: 17px;
   font-weight: 700;
 }
 
