@@ -164,7 +164,7 @@ export default function Proventos() {
       
       const { data: ops, error } = await supabase
         .from('investimentos_operacoes')
-        .select('ticker, quantidade, tipo, user_id')
+        .select('ticker, quantidade, tipo_operacao, user_id')
         .eq('user_id', user.id)
       
       console.log('Query error:', error)
@@ -180,7 +180,7 @@ export default function Proventos() {
       const tickers = {}
       ops.forEach(op => {
         if (!tickers[op.ticker]) tickers[op.ticker] = 0
-        tickers[op.ticker] += op.tipo === 'COMPRA' ? op.quantidade : -op.quantidade
+        tickers[op.ticker] += op.tipo_operacao === 'compra' ? op.quantidade : -op.quantidade
       })
       
       let inseridos = 0
