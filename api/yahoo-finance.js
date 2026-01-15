@@ -1,7 +1,16 @@
 // api/yahoo-finance.js
-// Vercel Serverless Function
+// Vercel Serverless Function para buscar dividendos
 
 export default async function handler(req, res) {
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end()
+  }
+
   const { ticker, from } = req.query
 
   if (!ticker) {
@@ -29,9 +38,16 @@ export default async function handler(req, res) {
     const dividends = data?.chart?.result?.[0]?.events?.dividends || {}
 
     res.setHeader('Cache-Control', 's-maxage=3600')
-    res.status(200).json({ dividends })
+    res.status(200).json({ 
+      success: true,
+      ticker,
+      dividends 
+    })
 
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    })
   }
 }
