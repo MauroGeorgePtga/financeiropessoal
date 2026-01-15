@@ -550,15 +550,15 @@ export default function Transacoes() {
                     )}
                     <div className="grupo-total-item receitas">
                       <span className="total-label">Receitas:</span>
-                      <span className="total-valor">{formatCurrency(receitas)}</span>
+                      <span className="total-valor"><ValorOculto valor={formatCurrency(receitas)}/></span>
                     </div>
                     <div className="grupo-total-item despesas">
                       <span className="total-label">Despesas:</span>
-                      <span className="total-valor">{formatCurrency(despesas)}</span>
+                      <span className="total-valor"><ValorOculto valor={formatCurrency(despesas)}/></span>
                     </div>
                     <div className={`grupo-total-item saldo ${saldoAtual >= 0 ? 'positivo' : 'negativo'}`}>
                       <span className="total-label">Saldo Atual:</span>
-                      <span className="total-valor">{formatCurrency(saldoAtual)}</span>
+                      <span className="total-valor"><ValorOculto valor={formatCurrency(saldoAtual)}/></span>
                     </div>
                   </div>
                 </div>
