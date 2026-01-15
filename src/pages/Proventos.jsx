@@ -152,6 +152,83 @@ export default function Proventos() {
     }
   }
 
+  const gerarDadosTeste = async () => {
+    try {
+      setAtualizando(true)
+      showMessage('success', 'Gerando dados de teste...')
+      
+      const { data: ops } = await supabase
+        .from('investimentos_operacoes')
+        .select('ticker, quantidade, tipo')
+        .eq('user_id', user.id)
+      
+      if (!ops || ops.length === 0) {
+        showMessage('error', 'Cadastre operações primeiro')
+        return
+      }
+      
+      const tickers = {}
+      ops.forEach(op => {
+        if (!tickers[op.ticker]) tickers[op.ticker] = 0
+        tickers[op.ticker] += op.tipo === 'COMPRA' ? op.quantidade : -op.quantidade
+      })
+      
+      let inseridos = 0
+      const hoje = new Date()
+      
+      for (const [ticker, qtd] of Object.entries(tickers)) {
+        if (qtd <= 0) continue
+        
+        // Provento recebido
+        const { error: err1 } = await supabase.from('investimentos_proventos').insert({
+          user_id: user.id,
+          ticker,
+          tipo: 'DIVIDENDO',
+          data_com: new Date(hoje - 30*86400000).toISOString().split('T')[0],
+          data_pagamento: new Date(hoje - 15*86400000).toISOString().split('T')[0],
+          valor_por_cota: 0.50,
+          quantidade_cotas: qtd,
+          valor_bruto: qtd * 0.50,
+          percentual_ir: 0,
+          valor_ir: 0,
+          valor_liquido: qtd * 0.50,
+          status: 'RECEBIDO',
+          fonte: 'exemplo'
+        })
+        
+        if (!err1) inseridos++
+        
+        // Provento previsto
+        const { error: err2 } = await supabase.from('investimentos_proventos').insert({
+          user_id: user.id,
+          ticker,
+          tipo: 'DIVIDENDO',
+          data_com: new Date(hoje).toISOString().split('T')[0],
+          data_pagamento: new Date(hoje.getTime() + 15*86400000).toISOString().split('T')[0],
+          valor_por_cota: 0.60,
+          quantidade_cotas: qtd,
+          valor_bruto: qtd * 0.60,
+          percentual_ir: 0,
+          valor_ir: 0,
+          valor_liquido: qtd * 0.60,
+          status: 'PREVISTO',
+          fonte: 'exemplo'
+        })
+        
+        if (!err2) inseridos++
+      }
+      
+      showMessage('success', `✅ ${inseridos} proventos criados!`)
+      carregarDados()
+      
+    } catch (error) {
+      console.error(error)
+      showMessage('error', 'Erro: ' + error.message)
+    } finally {
+      setAtualizando(false)
+    }
+  }
+
   const buscarProventosTicker = async (ticker) => {
     try {
       const { data: syncData } = await supabase
@@ -390,6 +467,14 @@ export default function Proventos() {
           <p>Dividendos, JCP e rendimentos</p>
         </div>
         <div className="header-actions">
+          <button 
+            className="btn-secondary"
+            onClick={gerarDadosTeste}
+            disabled={atualizando}
+          >
+            <TrendingUp size={18} />
+            Gerar Teste
+          </button>
           <button 
             className="btn-primary"
             onClick={handleAtualizarProventos}
