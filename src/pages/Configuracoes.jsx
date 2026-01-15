@@ -252,6 +252,15 @@ export default function Configuracoes() {
         last_sign_in: u.last_sign_in_at
       }))
 
+      // Ordenar: admin primeiro, depois por nome
+      usuariosCompletos.sort((a, b) => {
+        // Admin sempre vem primeiro
+        if (a.role === 'admin' && b.role !== 'admin') return -1
+        if (a.role !== 'admin' && b.role === 'admin') return 1
+        // Se ambos são admin ou ambos são user, ordenar por nome
+        return a.nome.localeCompare(b.nome)
+      })
+
       setUsuarios(usuariosCompletos)
 
     } catch (error) {
