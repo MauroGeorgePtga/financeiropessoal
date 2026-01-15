@@ -471,8 +471,9 @@
   color: #999;
 }
 
+/*TEXTE DE VALOR - 17px */
 .total-valor {
-  font-size: 17px;
+  font-size: 25px;
   font-weight: 700;
 }
 
@@ -493,7 +494,7 @@
 .grupo-total-item.saldo .total-valor {
   color: #333;
   font-weight: 800;
-  font-size: 15px;
+  font-size: 22px;
 }
 
 .grupo-total-item.saldo.positivo .total-valor {
