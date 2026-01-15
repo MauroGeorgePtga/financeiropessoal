@@ -307,76 +307,41 @@ export default function Proventos() {
 
   const buscarAPI = async (ticker, dataInicial) => {
     try {
-      // Tentar BrAPI primeiro (melhor para Brasil)
-      const brapi = await buscarBrAPI(ticker, dataInicial)
-      if (brapi.length > 0) {
-        console.log(`${ticker}: ${brapi.length} via BrAPI`)
-        return brapi
-      }
-
-      // Fallback: Yahoo Finance
-      const yahoo = await buscarYahoo(ticker, dataInicial)
-      if (yahoo.length > 0) {
-        console.log(`${ticker}: ${yahoo.length} via Yahoo`)
-        return yahoo
-      }
-
-      console.log(`${ticker}: nenhum provento encontrado`)
-      return []
-      
-    } catch (error) {
-      console.error(`Erro API ${ticker}:`, error)
-      return []
-    }
-  }
-
-  const buscarBrAPI = async (ticker, dataInicial) => {
-    try {
-      const tickerClean = ticker.replace('.SA', '')
-      const res = await fetch(`/api/dividendos-br?ticker=${tickerClean}`)
-      
-      if (!res.ok) return []
-      
-      const data = await res.json()
-      
-      if (!data.success || !data.dividends) return []
-      
-      const proventos = []
-      
-      data.dividends.forEach(div => {
-        const dataCom = div.date || div.paymentDate
-        
-        if (new Date(dataCom) >= new Date(dataInicial)) {
-          proventos.push({
-            tipo: div.type === 'JCP' ? 'JCP' : 'DIVIDENDO',
-            data_com: dataCom,
-            data_pagamento: div.paymentDate || dataCom,
-            valor_por_cota: parseFloat(div.rate || div.value),
-            fonte: 'brapi'
-          })
-        }
-      })
-      
-      return proventos
-    } catch (error) {
-      return []
-    }
-  }
-
-  const buscarYahoo = async (ticker, dataInicial) => {
-    try {
       const tickerYahoo = ticker.includes('.SA') ? ticker : `${ticker}.SA`
-      const res = await fetch(`/api/yahoo-finance?ticker=${tickerYahoo}&from=${dataInicial}`)
       
-      if (!res.ok) return []
+      // Buscar dos últimos 2 anos para ter mais chances
+      const dataAmpla = new Date()
+      dataAmpla.setFullYear(dataAmpla.getFullYear() - 2)
+      const from = dataAmpla.toISOString().split('T')[0]
+      
+      const res = await fetch(`/api/yahoo-finance?ticker=${tickerYahoo}&from=${from}`)
+      
+      console.log(`${ticker}: status ${res.status}`)
+      
+      if (!res.ok) {
+        console.error(`${ticker}: erro ${res.status}`)
+        return []
+      }
       
       const data = await res.json()
       
-      if (!data.success || !data.dividends) return []
+      console.log(`${ticker}: resposta`, data)
+      
+      if (!data.success) {
+        console.log(`${ticker}: API falhou`)
+        return []
+      }
+      
+      const dividends = data.dividends || {}
+      
+      if (Object.keys(dividends).length === 0) {
+        console.log(`${ticker}: sem dividendos na API`)
+        return []
+      }
       
       const proventos = []
       
-      Object.entries(data.dividends).forEach(([timestamp, info]) => {
+      Object.entries(dividends).forEach(([timestamp, info]) => {
         const date = new Date(parseInt(timestamp) * 1000).toISOString().split('T')[0]
         
         if (new Date(date) >= new Date(dataInicial)) {
@@ -390,8 +355,12 @@ export default function Proventos() {
         }
       })
       
+      console.log(`${ticker}: ${proventos.length} encontrados`)
+      
       return proventos
+      
     } catch (error) {
+      console.error(`${ticker}: erro`, error)
       return []
     }
   }
