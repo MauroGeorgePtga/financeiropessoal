@@ -310,28 +310,43 @@ export default function Proventos() {
       const tickerYahoo = ticker.includes('.SA') ? ticker : `${ticker}.SA`
       const res = await fetch(`/api/yahoo-finance?ticker=${tickerYahoo}&from=${dataInicial}`)
       
-      if (!res.ok) return []
+      console.log(`API ${ticker}: status ${res.status}`)
+      
+      if (!res.ok) {
+        console.error(`API erro: ${res.status}`)
+        return []
+      }
       
       const data = await res.json()
+      
+      console.log(`API ${ticker} resposta:`, data)
+      
+      if (!data.success || !data.dividends) {
+        console.log(`${ticker}: sem dividendos`)
+        return []
+      }
+      
       const proventos = []
       
-      if (data.dividends) {
-        Object.entries(data.dividends).forEach(([date, value]) => {
-          if (new Date(date) >= new Date(dataInicial)) {
-            proventos.push({
-              tipo: 'DIVIDENDO',
-              data_com: date,
-              data_pagamento: date,
-              valor_por_cota: parseFloat(value),
-              fonte: 'yahoo_finance'
-            })
-          }
-        })
-      }
+      Object.entries(data.dividends).forEach(([timestamp, info]) => {
+        const date = new Date(parseInt(timestamp) * 1000).toISOString().split('T')[0]
+        
+        if (new Date(date) >= new Date(dataInicial)) {
+          proventos.push({
+            tipo: 'DIVIDENDO',
+            data_com: date,
+            data_pagamento: date,
+            valor_por_cota: parseFloat(info.amount),
+            fonte: 'yahoo_finance'
+          })
+        }
+      })
+      
+      console.log(`${ticker}: ${proventos.length} proventos encontrados`)
       
       return proventos
     } catch (error) {
-      console.error('Erro API:', error)
+      console.error(`Erro API ${ticker}:`, error)
       return []
     }
   }
