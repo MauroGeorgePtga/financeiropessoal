@@ -290,13 +290,13 @@
 }
 
 .invest-rentabilidade.positivo {
-  background: rgba(255, 255, 255, 0.2);
-  color: #48bb78;
+  background: #ffffcc;
+  color: #33ff33;
 }
 
 .invest-rentabilidade.negativo {
-  background: rgba(255, 100, 100, 0.3);
-  color: #f56565;
+  background: #ffffcc;
+  color: #ff3300;
 }
 
 .card-investimentos .secondary-link {
