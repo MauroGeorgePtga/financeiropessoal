@@ -157,16 +157,23 @@ export default function Proventos() {
       setAtualizando(true)
       showMessage('success', 'Gerando dados de teste...')
       
-      const { data: ops } = await supabase
+      console.log('=== DEBUG INICIO ===')
+      console.log('User do contexto:', user)
+      console.log('User ID:', user.id)
+      console.log('User email:', user.email)
+      
+      const { data: ops, error } = await supabase
         .from('investimentos_operacoes')
         .select('ticker, quantidade, tipo, user_id')
         .eq('user_id', user.id)
       
-      console.log('Operações encontradas:', ops)
-      console.log('User ID atual:', user.id)
+      console.log('Query error:', error)
+      console.log('Operações retornadas:', ops)
+      console.log('Quantidade:', ops?.length)
+      console.log('=== DEBUG FIM ===')
       
       if (!ops || ops.length === 0) {
-        showMessage('error', 'Nenhuma operação encontrada para seu usuário')
+        showMessage('error', 'Nenhuma operação encontrada. Veja console (F12)')
         return
       }
       
