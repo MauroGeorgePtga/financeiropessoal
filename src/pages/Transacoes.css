@@ -471,7 +471,7 @@
 }
 
 .total-valor {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -491,7 +491,7 @@
 .grupo-total-item.saldo .total-valor {
   color: #333;
   font-weight: 800;
-  font-size: 17px;
+  font-size: 15px;
 }
 
 .grupo-total-item.saldo.positivo .total-valor {
@@ -534,16 +534,4 @@
   .grupo-total-item {
     align-items: center;
   }
-}
-
-/* Reduzir todos os valores grandes */
-.transacoes-container span[style*="font-size: 20px"],
-.transacoes-container span[style*="font-size: 22px"],
-.transacoes-container span[style*="font-size: 24px"],
-.transacoes-container span[style*="font-size: 26px"],
-.transacoes-container span[style*="font-size: 28px"],
-.transacoes-container div[style*="font-size: 20px"],
-.transacoes-container div[style*="font-size: 22px"],
-.transacoes-container div[style*="font-size: 24px"] {
-  font-size: 16px !important;
 }
