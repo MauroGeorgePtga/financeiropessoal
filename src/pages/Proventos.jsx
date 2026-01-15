@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useVisibility } from '../contexts/VisibilityContext'
 import { ValorOculto } from '../components/ValorOculto'
+import { proventosAPI } from '../services/proventosAPI'
 import { 
   TrendingUp,
   DollarSign,
@@ -16,7 +17,8 @@ import {
   Eye,
   EyeOff,
   Info,
-  Percent
+  Percent,
+  Trash2
 } from 'lucide-react'
 import './Proventos.css'
 
@@ -126,9 +128,9 @@ export default function Proventos() {
   const handleAtualizarProventos = async () => {
     try {
       setAtualizando(true)
-      showMessage('success', 'Iniciando atualização de proventos...')
+      showMessage('success', 'Buscando proventos reais...')
 
-      // Buscar todos os tickers do usuário
+      // Buscar tickers do usuário
       const { data: operacoes } = await supabase
         .from('investimentos_operacoes')
         .select('ticker')
@@ -136,19 +138,171 @@ export default function Proventos() {
 
       const tickersUnicos = [...new Set(operacoes?.map(o => o.ticker) || [])]
 
-      // Para cada ticker, buscar proventos
-      for (const ticker of tickersUnicos) {
-        await buscarProventosTicker(ticker)
+      if (tickersUnicos.length === 0) {
+        showMessage('error', 'Nenhum ativo encontrado. Cadastre operações primeiro.')
+        return
       }
 
-      showMessage('success', 'Proventos atualizados com sucesso!')
+      let totalNovos = 0
+
+      for (const ticker of tickersUnicos) {
+        const novos = await buscarProventosTicker(ticker)
+        totalNovos += novos
+      }
+
+      if (totalNovos > 0) {
+        showMessage('success', `✅ ${totalNovos} novos proventos encontrados!`)
+      } else {
+        showMessage('success', '✅ Atualização concluída. Nenhum provento novo.')
+      }
+
       carregarDados()
 
     } catch (error) {
-      console.error('Erro ao atualizar proventos:', error)
-      showMessage('error', 'Erro ao atualizar proventos')
+      console.error('Erro:', error)
+      showMessage('error', 'Erro ao buscar proventos: ' + error.message)
     } finally {
       setAtualizando(false)
+    }
+  }
+
+  const buscarProventosTicker = async (ticker) => {
+    try {
+      // Verificar última sync
+      const { data: syncData } = await supabase
+        .from('investimentos_proventos_sync')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('ticker', ticker)
+        .single()
+
+      // Definir data inicial
+      let dataInicial
+      if (syncData?.ultima_sincronizacao) {
+        const ultima = new Date(syncData.ultima_sincronizacao)
+        ultima.setDate(ultima.getDate() - 1)
+        dataInicial = ultima.toISOString().split('T')[0]
+      } else {
+        const { data: primeiraOp } = await supabase
+          .from('investimentos_operacoes')
+          .select('data_operacao')
+          .eq('user_id', user.id)
+          .eq('ticker', ticker)
+          .order('data_operacao', { ascending: true })
+          .limit(1)
+          .single()
+
+        dataInicial = primeiraOp?.data_operacao || '2024-01-01'
+      }
+
+      // Buscar nas APIs
+      const proventos = await proventosAPI.buscarProventos(ticker, dataInicial)
+
+      let novosInseridos = 0
+
+      // Processar cada provento
+      for (const prov of proventos) {
+        const inseriu = await processarProvento(ticker, prov)
+        if (inseriu) novosInseridos++
+      }
+
+      // Atualizar sync
+      await supabase
+        .from('investimentos_proventos_sync')
+        .upsert({
+          user_id: user.id,
+          ticker: ticker,
+          ultima_sincronizacao: new Date().toISOString(),
+          proxima_sincronizacao: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          data_inicial_busca: dataInicial,
+          status_ultima_sync: 'SUCESSO',
+          total_proventos_encontrados: proventos.length
+        }, {
+          onConflict: 'user_id,ticker'
+        })
+
+      return novosInseridos
+
+    } catch (error) {
+      console.error(`Erro ${ticker}:`, error)
+      
+      await supabase
+        .from('investimentos_proventos_sync')
+        .upsert({
+          user_id: user.id,
+          ticker: ticker,
+          ultima_sincronizacao: new Date().toISOString(),
+          status_ultima_sync: 'ERRO',
+          erro_ultima_sync: error.message
+        }, {
+          onConflict: 'user_id,ticker'
+        })
+
+      return 0
+    }
+  }
+
+  const processarProvento = async (ticker, provento) => {
+    try {
+      // Calcular cotas
+      const { data: cotasData } = await supabase
+        .rpc('calcular_cotas_na_data', {
+          p_user_id: user.id,
+          p_ticker: ticker,
+          p_data_com: provento.data_com
+        })
+
+      const quantidadeCotas = parseFloat(cotasData || 0)
+
+      if (quantidadeCotas <= 0) return false
+
+      const valorBruto = quantidadeCotas * parseFloat(provento.valor_por_cota)
+      
+      // Calcular IR
+      const { data: irData } = await supabase
+        .rpc('calcular_ir_provento', {
+          p_tipo: provento.tipo,
+          p_valor_bruto: valorBruto
+        })
+
+      const ir = irData?.[0] || { percentual_ir: 0, valor_ir: 0, valor_liquido: valorBruto }
+
+      // Verificar duplicata
+      const { data: existente } = await supabase
+        .from('investimentos_proventos')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('ticker', ticker)
+        .eq('data_com', provento.data_com)
+        .eq('tipo', provento.tipo)
+        .single()
+
+      if (existente) return false
+
+      // Inserir
+      await supabase
+        .from('investimentos_proventos')
+        .insert({
+          user_id: user.id,
+          ticker: ticker,
+          tipo: provento.tipo,
+          data_com: provento.data_com,
+          data_pagamento: provento.data_pagamento,
+          valor_por_cota: provento.valor_por_cota,
+          quantidade_cotas: quantidadeCotas,
+          valor_bruto: valorBruto,
+          percentual_ir: ir.percentual_ir,
+          valor_ir: ir.valor_ir,
+          valor_liquido: ir.valor_liquido,
+          status: new Date(provento.data_pagamento) <= new Date() ? 'RECEBIDO' : 'PREVISTO',
+          fonte: provento.fonte
+        })
+
+      return true
+
+    } catch (error) {
+      console.error('Erro processar:', error)
+      return false
     }
   }
 
@@ -480,7 +634,7 @@ export default function Proventos() {
             disabled={atualizando}
           >
             <RefreshCw size={18} className={atualizando ? 'spinning' : ''} />
-            {atualizando ? 'Atualizando...' : 'Atualizar Proventos'}
+            {atualizando ? 'Buscando...' : 'Atualizar Proventos'}
           </button>
         </div>
       </div>
