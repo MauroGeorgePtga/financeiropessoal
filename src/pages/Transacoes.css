@@ -373,12 +373,13 @@
     grid-template-columns: 1fr;
   }
 
+  /* TEXTE TAMANHO TEXTO - 14px*/
   .transacao-titulo {
-    font-size: 14px;
+    font-size: 18px;
   }
 
   .transacao-valor {
-    font-size: 14px;
+    font-size: 16px;
   }
 }
 
@@ -463,9 +464,8 @@
   gap: 4px;
 }
 
-/*TEXTE DE VALOR - 11px */
 .total-label {
-  font-size: 20px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
