@@ -472,28 +472,28 @@
 
 /* FORÇAR tamanho menor nos totais */
 .total-valor {
-  font-size: 14px !important;
+  font-size: 17px !important;
   font-weight: 700;
 }
 
 .grupo-total-item.receitas .total-valor {
-  font-size: 14px !important;
+  font-size: 17px !important;
   color: #48bb78;
 }
 
 .grupo-total-item.despesas .total-valor {
-  font-size: 14px !important;
+  font-size: 17px !important;
   color: #f56565;
 }
 
 .grupo-total-item.inicial .total-valor {
-  font-size: 14px !important;
+  font-size: 17px !important;
   color: #667eea;
   font-weight: 600;
 }
 
 .grupo-total-item.saldo .total-valor {
-  font-size: 14px !important;
+  font-size: 17px !important;
   color: #333;
   font-weight: 800;
 }
