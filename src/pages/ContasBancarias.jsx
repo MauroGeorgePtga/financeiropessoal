@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { Plus, Edit2, Trash2, Search, X } from 'lucide-react'
 import './ContasBancarias.css'
+import { ValorOculto } from '../components/ValorOculto'
 
 export default function ContasBancarias() {
   const { user } = useAuth()
@@ -225,7 +226,7 @@ export default function ContasBancarias() {
           <div className="card-icon">💰</div>
           <div className="card-content">
             <span className="card-label">Saldos Positivos</span>
-            <span className="card-value">{formatCurrency(saldoPositivo)}</span>
+            <span className="card-value"><ValorOculto valor={formatCurrency(saldoPositivo)}/></span>
           </div>
         </div>
 
@@ -233,7 +234,7 @@ export default function ContasBancarias() {
           <div className="card-icon">📉</div>
           <div className="card-content">
             <span className="card-label">Saldos Negativos</span>
-            <span className="card-value">{formatCurrency(saldoNegativo)}</span>
+            <span className="card-value"><ValorOculto valor={formatCurrency(saldoNegativo)}/></span>
           </div>
         </div>
 
@@ -242,7 +243,7 @@ export default function ContasBancarias() {
           <div className="card-content">
             <span className="card-label">Saldo Total</span>
             <span className={`card-value ${saldoTotal >= 0 ? 'positivo' : 'negativo'}`}>
-              {formatCurrency(saldoTotal)}
+              <ValorOculto valor={formatCurrency(saldoTotal)}/>
             </span>
           </div>
         </div>
