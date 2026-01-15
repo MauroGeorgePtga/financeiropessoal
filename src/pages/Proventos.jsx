@@ -122,12 +122,18 @@ export default function Proventos() {
       setAtualizando(true)
       showMessage('success', 'Buscando proventos...')
 
+      console.log('=== ATUALIZAR INICIO ===')
+
       const { data: operacoes } = await supabase
         .from('investimentos_operacoes')
         .select('ticker')
         .eq('user_id', user.id)
 
+      console.log('Operações:', operacoes?.length)
+
       const tickersUnicos = [...new Set(operacoes?.map(o => o.ticker) || [])]
+
+      console.log('Tickers únicos:', tickersUnicos)
 
       if (tickersUnicos.length === 0) {
         showMessage('error', 'Cadastre operações primeiro')
@@ -137,11 +143,16 @@ export default function Proventos() {
       let totalNovos = 0
 
       for (const ticker of tickersUnicos) {
+        console.log(`Buscando ${ticker}...`)
         const novos = await buscarProventosTicker(ticker)
+        console.log(`${ticker}: ${novos} novos`)
         totalNovos += novos
       }
 
-      showMessage('success', totalNovos > 0 ? `✅ ${totalNovos} novos!` : '✅ Atualizado')
+      console.log('Total novos:', totalNovos)
+      console.log('=== ATUALIZAR FIM ===')
+
+      showMessage('success', totalNovos > 0 ? `✅ ${totalNovos} novos!` : '✅ Nenhum novo encontrado')
       carregarDados()
 
     } catch (error) {
