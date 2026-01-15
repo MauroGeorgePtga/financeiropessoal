@@ -173,14 +173,14 @@ export default function Proventos() {
         // Primeira vez: buscar desde a primeira operação
         const { data: primeiraOp } = await supabase
           .from('investimentos_operacoes')
-          .select('data')
+          .select('data_operacao')
           .eq('user_id', user.id)
           .eq('ticker', ticker)
-          .order('data', { ascending: true })
+          .order('data_operacao', { ascending: true })
           .limit(1)
           .single()
 
-        dataInicial = primeiraOp?.data || new Date().toISOString().split('T')[0]
+        dataInicial = primeiraOp?.data_operacao || new Date().toISOString().split('T')[0]
       }
 
       // Buscar proventos da API (aqui vamos integrar múltiplas fontes)
