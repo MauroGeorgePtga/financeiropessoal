@@ -3,7 +3,6 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useVisibility } from '../contexts/VisibilityContext'
 import { ValorOculto } from '../components/ValorOculto'
-import { proventosAPI } from '../services/proventosAPI'
 import { 
   TrendingUp,
   DollarSign,
@@ -14,11 +13,8 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Eye,
-  EyeOff,
   Info,
-  Percent,
-  Trash2
+  Percent
 } from 'lucide-react'
 import './Proventos.css'
 
@@ -30,8 +26,8 @@ export default function Proventos() {
   const [message, setMessage] = useState({ type: '', text: '' })
   
   const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear())
-  const [filtroTipo, setFiltroTipo] = useState('TODOS') // TODOS, DIVIDENDO, JCP, RENDIMENTO
-  const [filtroStatus, setFiltroStatus] = useState('TODOS') // TODOS, RECEBIDO, PREVISTO
+  const [filtroTipo, setFiltroTipo] = useState('TODOS')
+  const [filtroStatus, setFiltroStatus] = useState('TODOS')
   
   const [proventos, setProventos] = useState([])
   const [resumo, setResumo] = useState({
@@ -56,7 +52,6 @@ export default function Proventos() {
     try {
       setLoading(true)
 
-      // Buscar proventos do ano selecionado
       const { data: proventosData, error: proventosError } = await supabase
         .from('investimentos_proventos')
         .select('*')
@@ -69,7 +64,6 @@ export default function Proventos() {
 
       setProventos(proventosData || [])
 
-      // Calcular resumo
       const recebidos = (proventosData || []).filter(p => p.status === 'RECEBIDO')
       const previstos = (proventosData || []).filter(p => p.status === 'PREVISTO')
       
@@ -82,7 +76,6 @@ export default function Proventos() {
         quantidade: (proventosData || []).length
       })
 
-      // Agrupar por ticker
       const agrupado = {}
       ;(proventosData || []).forEach(p => {
         if (!agrupado[p.ticker]) {
@@ -103,7 +96,6 @@ export default function Proventos() {
       const tickersArray = Object.values(agrupado).sort((a, b) => b.totalLiquido - a.totalLiquido)
       setPorTicker(tickersArray)
 
-      // Buscar informação de sync
       const { data: syncData } = await supabase
         .from('investimentos_proventos_sync')
         .select('*')
@@ -118,7 +110,7 @@ export default function Proventos() {
       }
 
     } catch (error) {
-      console.error('Erro ao carregar proventos:', error)
+      console.error('Erro:', error)
       showMessage('error', 'Erro ao carregar proventos')
     } finally {
       setLoading(false)
@@ -128,9 +120,8 @@ export default function Proventos() {
   const handleAtualizarProventos = async () => {
     try {
       setAtualizando(true)
-      showMessage('success', 'Buscando proventos reais...')
+      showMessage('success', 'Buscando proventos...')
 
-      // Buscar tickers do usuário
       const { data: operacoes } = await supabase
         .from('investimentos_operacoes')
         .select('ticker')
@@ -139,7 +130,7 @@ export default function Proventos() {
       const tickersUnicos = [...new Set(operacoes?.map(o => o.ticker) || [])]
 
       if (tickersUnicos.length === 0) {
-        showMessage('error', 'Nenhum ativo encontrado. Cadastre operações primeiro.')
+        showMessage('error', 'Cadastre operações primeiro')
         return
       }
 
@@ -150,17 +141,12 @@ export default function Proventos() {
         totalNovos += novos
       }
 
-      if (totalNovos > 0) {
-        showMessage('success', `✅ ${totalNovos} novos proventos encontrados!`)
-      } else {
-        showMessage('success', '✅ Atualização concluída. Nenhum provento novo.')
-      }
-
+      showMessage('success', totalNovos > 0 ? `✅ ${totalNovos} novos!` : '✅ Atualizado')
       carregarDados()
 
     } catch (error) {
       console.error('Erro:', error)
-      showMessage('error', 'Erro ao buscar proventos: ' + error.message)
+      showMessage('error', 'Erro: ' + error.message)
     } finally {
       setAtualizando(false)
     }
@@ -168,7 +154,6 @@ export default function Proventos() {
 
   const buscarProventosTicker = async (ticker) => {
     try {
-      // Verificar última sync
       const { data: syncData } = await supabase
         .from('investimentos_proventos_sync')
         .select('*')
@@ -176,7 +161,6 @@ export default function Proventos() {
         .eq('ticker', ticker)
         .single()
 
-      // Definir data inicial
       let dataInicial
       if (syncData?.ultima_sincronizacao) {
         const ultima = new Date(syncData.ultima_sincronizacao)
@@ -195,56 +179,67 @@ export default function Proventos() {
         dataInicial = primeiraOp?.data_operacao || '2024-01-01'
       }
 
-      // Buscar nas APIs
-      const proventos = await proventosAPI.buscarProventos(ticker, dataInicial)
+      const proventos = await buscarAPI(ticker, dataInicial)
 
-      let novosInseridos = 0
-
-      // Processar cada provento
+      let novos = 0
       for (const prov of proventos) {
         const inseriu = await processarProvento(ticker, prov)
-        if (inseriu) novosInseridos++
+        if (inseriu) novos++
       }
 
-      // Atualizar sync
       await supabase
         .from('investimentos_proventos_sync')
         .upsert({
           user_id: user.id,
           ticker: ticker,
           ultima_sincronizacao: new Date().toISOString(),
-          proxima_sincronizacao: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          proxima_sincronizacao: new Date(Date.now() + 86400000).toISOString(),
           data_inicial_busca: dataInicial,
           status_ultima_sync: 'SUCESSO',
           total_proventos_encontrados: proventos.length
-        }, {
-          onConflict: 'user_id,ticker'
-        })
+        }, { onConflict: 'user_id,ticker' })
 
-      return novosInseridos
+      return novos
 
     } catch (error) {
       console.error(`Erro ${ticker}:`, error)
-      
-      await supabase
-        .from('investimentos_proventos_sync')
-        .upsert({
-          user_id: user.id,
-          ticker: ticker,
-          ultima_sincronizacao: new Date().toISOString(),
-          status_ultima_sync: 'ERRO',
-          erro_ultima_sync: error.message
-        }, {
-          onConflict: 'user_id,ticker'
-        })
-
       return 0
+    }
+  }
+
+  const buscarAPI = async (ticker, dataInicial) => {
+    try {
+      const tickerYahoo = ticker.includes('.SA') ? ticker : `${ticker}.SA`
+      const res = await fetch(`/api/yahoo-finance?ticker=${tickerYahoo}&from=${dataInicial}`)
+      
+      if (!res.ok) return []
+      
+      const data = await res.json()
+      const proventos = []
+      
+      if (data.dividends) {
+        Object.entries(data.dividends).forEach(([date, value]) => {
+          if (new Date(date) >= new Date(dataInicial)) {
+            proventos.push({
+              tipo: 'DIVIDENDO',
+              data_com: date,
+              data_pagamento: date,
+              valor_por_cota: parseFloat(value),
+              fonte: 'yahoo_finance'
+            })
+          }
+        })
+      }
+      
+      return proventos
+    } catch (error) {
+      console.error('Erro API:', error)
+      return []
     }
   }
 
   const processarProvento = async (ticker, provento) => {
     try {
-      // Calcular cotas
       const { data: cotasData } = await supabase
         .rpc('calcular_cotas_na_data', {
           p_user_id: user.id,
@@ -252,13 +247,11 @@ export default function Proventos() {
           p_data_com: provento.data_com
         })
 
-      const quantidadeCotas = parseFloat(cotasData || 0)
+      const qtd = parseFloat(cotasData || 0)
+      if (qtd <= 0) return false
 
-      if (quantidadeCotas <= 0) return false
-
-      const valorBruto = quantidadeCotas * parseFloat(provento.valor_por_cota)
+      const valorBruto = qtd * parseFloat(provento.valor_por_cota)
       
-      // Calcular IR
       const { data: irData } = await supabase
         .rpc('calcular_ir_provento', {
           p_tipo: provento.tipo,
@@ -267,7 +260,6 @@ export default function Proventos() {
 
       const ir = irData?.[0] || { percentual_ir: 0, valor_ir: 0, valor_liquido: valorBruto }
 
-      // Verificar duplicata
       const { data: existente } = await supabase
         .from('investimentos_proventos')
         .select('id')
@@ -279,7 +271,6 @@ export default function Proventos() {
 
       if (existente) return false
 
-      // Inserir
       await supabase
         .from('investimentos_proventos')
         .insert({
@@ -289,7 +280,7 @@ export default function Proventos() {
           data_com: provento.data_com,
           data_pagamento: provento.data_pagamento,
           valor_por_cota: provento.valor_por_cota,
-          quantidade_cotas: quantidadeCotas,
+          quantidade_cotas: qtd,
           valor_bruto: valorBruto,
           percentual_ir: ir.percentual_ir,
           valor_ir: ir.valor_ir,
@@ -299,235 +290,9 @@ export default function Proventos() {
         })
 
       return true
-
     } catch (error) {
       console.error('Erro processar:', error)
       return false
-    }
-  }
-
-  const buscarProventosTicker = async (ticker) => {
-    try {
-      // Verificar última sincronização
-      const { data: syncData } = await supabase
-        .from('investimentos_proventos_sync')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('ticker', ticker)
-        .single()
-
-      // Definir data inicial de busca
-      let dataInicial
-      if (syncData?.ultima_sincronizacao) {
-        // Buscar desde 1 dia antes da última sync
-        const ultimaSync = new Date(syncData.ultima_sincronizacao)
-        ultimaSync.setDate(ultimaSync.getDate() - 1)
-        dataInicial = ultimaSync.toISOString().split('T')[0]
-      } else {
-        // Primeira vez: buscar desde a primeira operação
-        const { data: primeiraOp } = await supabase
-          .from('investimentos_operacoes')
-          .select('data_operacao')
-          .eq('user_id', user.id)
-          .eq('ticker', ticker)
-          .order('data_operacao', { ascending: true })
-          .limit(1)
-          .single()
-
-        dataInicial = primeiraOp?.data_operacao || new Date().toISOString().split('T')[0]
-      }
-
-      // Buscar proventos da API (aqui vamos integrar múltiplas fontes)
-      const proventosAPI = await buscarProventosAPI(ticker, dataInicial)
-
-      // Processar e salvar cada provento
-      for (const prov of proventosAPI) {
-        await processarProvento(ticker, prov)
-      }
-
-      // Atualizar registro de sync
-      await supabase
-        .from('investimentos_proventos_sync')
-        .upsert({
-          user_id: user.id,
-          ticker: ticker,
-          ultima_sincronizacao: new Date().toISOString(),
-          proxima_sincronizacao: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          data_inicial_busca: dataInicial,
-          status_ultima_sync: 'SUCESSO',
-          total_proventos_encontrados: proventosAPI.length
-        }, {
-          onConflict: 'user_id,ticker'
-        })
-
-    } catch (error) {
-      console.error(`Erro ao buscar proventos de ${ticker}:`, error)
-      
-      // Registrar erro no sync
-      await supabase
-        .from('investimentos_proventos_sync')
-        .upsert({
-          user_id: user.id,
-          ticker: ticker,
-          ultima_sincronizacao: new Date().toISOString(),
-          status_ultima_sync: 'ERRO',
-          erro_ultima_sync: error.message
-        }, {
-          onConflict: 'user_id,ticker'
-        })
-    }
-  }
-
-  const buscarProventosAPI = async (ticker, dataInicial) => {
-    // Esta função vai tentar múltiplas fontes
-    const fontes = ['status_invest', 'brasil_api', 'alpha_vantage']
-    
-    for (const fonte of fontes) {
-      try {
-        let proventos = []
-        
-        switch (fonte) {
-          case 'status_invest':
-            // TODO: Implementar scraping ou API do Status Invest
-            proventos = await buscarStatusInvest(ticker, dataInicial)
-            break
-            
-          case 'brasil_api':
-            // TODO: Implementar Brasil API
-            proventos = await buscarBrasilAPI(ticker, dataInicial)
-            break
-            
-          case 'alpha_vantage':
-            // TODO: Implementar Alpha Vantage
-            proventos = await buscarAlphaVantage(ticker, dataInicial)
-            break
-        }
-
-        if (proventos.length > 0) {
-          return proventos.map(p => ({ ...p, fonte }))
-        }
-        
-      } catch (error) {
-        console.error(`Erro na fonte ${fonte}:`, error)
-        continue
-      }
-    }
-
-    return []
-  }
-
-  const buscarStatusInvest = async (ticker, dataInicial) => {
-    // Implementação futura
-    // Por enquanto retorna array vazio
-    return []
-  }
-
-  const buscarBrasilAPI = async (ticker, dataInicial) => {
-    // Implementação futura
-    return []
-  }
-
-  const buscarAlphaVantage = async (ticker, dataInicial) => {
-    // Implementação futura
-    return []
-  }
-
-  const processarProvento = async (ticker, provento) => {
-    try {
-      // Calcular quantas cotas o usuário tinha na data COM
-      const { data: cotasData, error: cotasError } = await supabase
-        .rpc('calcular_cotas_na_data', {
-          p_user_id: user.id,
-          p_ticker: ticker,
-          p_data_com: provento.data_com
-        })
-
-      if (cotasError) throw cotasError
-
-      const quantidadeCotas = parseFloat(cotasData || 0)
-
-      // Se não tinha cotas, não processar
-      if (quantidadeCotas <= 0) return
-
-      // Calcular valores
-      const valorBruto = quantidadeCotas * parseFloat(provento.valor_por_cota)
-      
-      // Calcular IR
-      const { data: irData } = await supabase
-        .rpc('calcular_ir_provento', {
-          p_tipo: provento.tipo,
-          p_valor_bruto: valorBruto
-        })
-
-      const ir = irData?.[0] || { percentual_ir: 0, valor_ir: 0, valor_liquido: valorBruto }
-
-      // Verificar se já existe
-      const { data: existente } = await supabase
-        .from('investimentos_proventos')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('ticker', ticker)
-        .eq('data_com', provento.data_com)
-        .eq('tipo', provento.tipo)
-        .single()
-
-      if (existente) {
-        // Atualizar
-        await supabase
-          .from('investimentos_proventos')
-          .update({
-            valor_por_cota: provento.valor_por_cota,
-            quantidade_cotas: quantidadeCotas,
-            valor_bruto: valorBruto,
-            percentual_ir: ir.percentual_ir,
-            valor_ir: ir.valor_ir,
-            valor_liquido: ir.valor_liquido,
-            fonte: provento.fonte
-          })
-          .eq('id', existente.id)
-      } else {
-        // Inserir novo
-        await supabase
-          .from('investimentos_proventos')
-          .insert({
-            user_id: user.id,
-            ticker: ticker,
-            tipo: provento.tipo,
-            data_com: provento.data_com,
-            data_pagamento: provento.data_pagamento,
-            valor_por_cota: provento.valor_por_cota,
-            quantidade_cotas: quantidadeCotas,
-            valor_bruto: valorBruto,
-            percentual_ir: ir.percentual_ir,
-            valor_ir: ir.valor_ir,
-            valor_liquido: ir.valor_liquido,
-            status: new Date(provento.data_pagamento) <= new Date() ? 'RECEBIDO' : 'PREVISTO',
-            fonte: provento.fonte
-          })
-      }
-
-      // Registrar log da fonte
-      await supabase
-        .from('investimentos_proventos_fontes')
-        .insert({
-          fonte: provento.fonte,
-          data_consulta: new Date().toISOString(),
-          sucesso: true,
-          dados_brutos: provento
-        })
-
-    } catch (error) {
-      console.error('Erro ao processar provento:', error)
-      
-      // Registrar erro
-      await supabase
-        .from('investimentos_proventos_fontes')
-        .insert({
-          fonte: provento.fonte,
-          data_consulta: new Date().toISOString(),
-          sucesso: false,
-          erro: error.message
-        })
     }
   }
 
@@ -537,12 +302,11 @@ export default function Proventos() {
       Tipo: p.tipo,
       'Data COM': formatarData(p.data_com),
       'Data Pagamento': formatarData(p.data_pagamento),
-      'Valor/Cota': formatarMoeda(p.valor_por_cota),
+      'Valor/Cota': p.valor_por_cota,
       Cotas: p.quantidade_cotas,
-      'Valor Bruto': formatarMoeda(p.valor_bruto),
-      'IR (%)': p.percentual_ir,
-      'Valor IR': formatarMoeda(p.valor_ir),
-      'Valor Líquido': formatarMoeda(p.valor_liquido),
+      'Valor Bruto': p.valor_bruto,
+      'IR': p.valor_ir,
+      'Valor Líquido': p.valor_liquido,
       Status: p.status
     }))
 
@@ -561,7 +325,7 @@ export default function Proventos() {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
 
-    showMessage('success', 'Dados exportados com sucesso!')
+    showMessage('success', 'Exportado!')
   }
 
   const showMessage = (type, text) => {
@@ -585,8 +349,7 @@ export default function Proventos() {
     const labels = {
       'DIVIDENDO': 'Dividendo',
       'JCP': 'JCP',
-      'RENDIMENTO': 'Rendimento',
-      'BONIFICACAO': 'Bonificação'
+      'RENDIMENTO': 'Rendimento'
     }
     return labels[tipo] || tipo
   }
@@ -595,8 +358,7 @@ export default function Proventos() {
     const classes = {
       'DIVIDENDO': 'tipo-dividendo',
       'JCP': 'tipo-jcp',
-      'RENDIMENTO': 'tipo-rendimento',
-      'BONIFICACAO': 'tipo-bonificacao'
+      'RENDIMENTO': 'tipo-rendimento'
     }
     return classes[tipo] || ''
   }
@@ -615,7 +377,7 @@ export default function Proventos() {
   if (loading) {
     return (
       <div className="page-container">
-        <div className="loading">Carregando proventos...</div>
+        <div className="loading">Carregando...</div>
       </div>
     )
   }
@@ -625,7 +387,7 @@ export default function Proventos() {
       <div className="page-header">
         <div>
           <h1>💰 Proventos</h1>
-          <p>Acompanhe seus dividendos, JCP e rendimentos</p>
+          <p>Dividendos, JCP e rendimentos</p>
         </div>
         <div className="header-actions">
           <button 
@@ -634,7 +396,7 @@ export default function Proventos() {
             disabled={atualizando}
           >
             <RefreshCw size={18} className={atualizando ? 'spinning' : ''} />
-            {atualizando ? 'Buscando...' : 'Atualizar Proventos'}
+            {atualizando ? 'Buscando...' : 'Atualizar'}
           </button>
         </div>
       </div>
@@ -647,23 +409,15 @@ export default function Proventos() {
         </div>
       )}
 
-      {/* Status de Sincronização */}
       {ultimaSync && (
         <div className="sync-info">
           <div className="sync-item">
             <Clock size={16} />
-            <span>Última atualização: {new Date(ultimaSync).toLocaleString('pt-BR')}</span>
+            <span>Última: {new Date(ultimaSync).toLocaleString('pt-BR')}</span>
           </div>
-          {proximaSync && (
-            <div className="sync-item">
-              <Calendar size={16} />
-              <span>Próxima atualização: {new Date(proximaSync).toLocaleString('pt-BR')}</span>
-            </div>
-          )}
         </div>
       )}
 
-      {/* Resumo */}
       <div className="resumo-container">
         <div className="resumo-card card-recebido">
           <div className="resumo-icon">
@@ -714,28 +468,16 @@ export default function Proventos() {
         </div>
       </div>
 
-      {/* Filtros */}
       <div className="filtros-container">
         <div className="filtro-group">
-          <label>
-            <Calendar size={16} />
-            Ano
-          </label>
-          <select 
-            value={anoSelecionado} 
-            onChange={(e) => setAnoSelecionado(parseInt(e.target.value))}
-          >
-            {anos.map(ano => (
-              <option key={ano} value={ano}>{ano}</option>
-            ))}
+          <label><Calendar size={16} /> Ano</label>
+          <select value={anoSelecionado} onChange={(e) => setAnoSelecionado(parseInt(e.target.value))}>
+            {anos.map(ano => <option key={ano} value={ano}>{ano}</option>)}
           </select>
         </div>
 
         <div className="filtro-group">
-          <label>
-            <Filter size={16} />
-            Tipo
-          </label>
+          <label><Filter size={16} /> Tipo</label>
           <select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)}>
             <option value="TODOS">Todos</option>
             <option value="DIVIDENDO">Dividendos</option>
@@ -745,10 +487,7 @@ export default function Proventos() {
         </div>
 
         <div className="filtro-group">
-          <label>
-            <Filter size={16} />
-            Status
-          </label>
+          <label><Filter size={16} /> Status</label>
           <select value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value)}>
             <option value="TODOS">Todos</option>
             <option value="RECEBIDO">Recebidos</option>
@@ -762,18 +501,17 @@ export default function Proventos() {
         </button>
       </div>
 
-      {/* Tabela de Proventos */}
       <div className="proventos-section">
         <h2>
-          Histórico de Proventos
+          Histórico
           <span className="count-badge">{proventosFiltrados.length}</span>
         </h2>
         
         {proventosFiltrados.length === 0 ? (
           <div className="empty-state">
             <Info size={48} />
-            <h3>Nenhum provento encontrado</h3>
-            <p>Clique em "Atualizar Proventos" para buscar dados</p>
+            <h3>Nenhum provento</h3>
+            <p>Clique em "Atualizar"</p>
           </div>
         ) : (
           <div className="table-container">
@@ -786,8 +524,6 @@ export default function Proventos() {
                   <th>Pagamento</th>
                   <th>R$/Cota</th>
                   <th>Cotas</th>
-                  <th>Bruto</th>
-                  <th>IR</th>
                   <th>Líquido</th>
                   <th>Status</th>
                 </tr>
@@ -807,12 +543,6 @@ export default function Proventos() {
                       {valoresVisiveis ? formatarMoeda(p.valor_por_cota) : '****'}
                     </td>
                     <td className="quantidade-cell">{p.quantidade_cotas.toFixed(2)}</td>
-                    <td className="valor-cell">
-                      <ValorOculto valor={p.valor_bruto} />
-                    </td>
-                    <td className="valor-cell ir-cell">
-                      <ValorOculto valor={p.valor_ir} />
-                    </td>
                     <td className="valor-cell valor-liquido">
                       <ValorOculto valor={p.valor_liquido} />
                     </td>
@@ -839,32 +569,23 @@ export default function Proventos() {
         )}
       </div>
 
-      {/* Resumo por Ticker */}
       {porTicker.length > 0 && (
         <div className="ticker-resumo-section">
-          <h2>Proventos por Ativo ({anoSelecionado})</h2>
+          <h2>Por Ativo ({anoSelecionado})</h2>
           <div className="ticker-resumo-grid">
             {porTicker.map(t => (
               <div key={t.ticker} className="ticker-resumo-card">
                 <div className="ticker-header">
                   <span className="ticker-name">{t.ticker}</span>
-                  <span className="ticker-count">{t.quantidade} provento{t.quantidade > 1 ? 's' : ''}</span>
+                  <span className="ticker-count">{t.quantidade}</span>
                 </div>
                 <div className="ticker-valores">
                   <div className="ticker-valor-item">
-                    <span className="label">Total Líquido:</span>
+                    <span className="label">Total:</span>
                     <span className="valor">
                       <ValorOculto valor={t.totalLiquido} />
                     </span>
                   </div>
-                  {t.totalIR > 0 && (
-                    <div className="ticker-valor-item ticker-ir">
-                      <span className="label">IR Retido:</span>
-                      <span className="valor">
-                        <ValorOculto valor={t.totalIR} />
-                      </span>
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
