@@ -309,14 +309,12 @@ export default function Proventos() {
     try {
       const tickerYahoo = ticker.includes('.SA') ? ticker : `${ticker}.SA`
       
-      // Buscar dos últimos 2 anos para ter mais chances
-      const dataAmpla = new Date()
-      dataAmpla.setFullYear(dataAmpla.getFullYear() - 2)
-      const from = dataAmpla.toISOString().split('T')[0]
+      // Formato correto do Yahoo Finance
+      const url = `/api/yahoo-finance?ticker=${tickerYahoo}&interval=1mo&range=10y&events=div,split`
       
-      const res = await fetch(`/api/yahoo-finance?ticker=${tickerYahoo}&from=${from}`)
+      console.log(`${ticker}: buscando...`)
       
-      console.log(`${ticker}: status ${res.status}`)
+      const res = await fetch(url)
       
       if (!res.ok) {
         console.error(`${ticker}: erro ${res.status}`)
@@ -325,31 +323,23 @@ export default function Proventos() {
       
       const data = await res.json()
       
-      console.log(`${ticker}: resposta`, data)
-      
-      if (!data.success) {
-        console.log(`${ticker}: API falhou`)
-        return []
-      }
-      
-      const dividends = data.dividends || {}
-      
-      if (Object.keys(dividends).length === 0) {
-        console.log(`${ticker}: sem dividendos na API`)
+      if (!data.success || !data.dividends) {
+        console.log(`${ticker}: sem dados`)
         return []
       }
       
       const proventos = []
       
-      Object.entries(dividends).forEach(([timestamp, info]) => {
-        const date = new Date(parseInt(timestamp) * 1000).toISOString().split('T')[0]
+      // Dividends vem como objeto, converter para array
+      Object.values(data.dividends).forEach(div => {
+        const date = new Date(div.date * 1000).toISOString().split('T')[0]
         
         if (new Date(date) >= new Date(dataInicial)) {
           proventos.push({
             tipo: 'DIVIDENDO',
             data_com: date,
             data_pagamento: date,
-            valor_por_cota: parseFloat(info.amount),
+            valor_por_cota: parseFloat(div.amount),
             fonte: 'yahoo_finance'
           })
         }
