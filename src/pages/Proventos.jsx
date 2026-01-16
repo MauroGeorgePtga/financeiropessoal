@@ -280,10 +280,23 @@ export default function Proventos() {
       const proventos = await buscarAPI(ticker, dataInicial)
 
       let novos = 0
-      for (const prov of proventos) {
-        const inseriu = await processarProvento(ticker, prov)
-        if (inseriu) novos++
+      
+      // Processar em lotes de 10 para não travar
+      for (let i = 0; i < proventos.length; i += 10) {
+        const lote = proventos.slice(i, i + 10)
+        
+        for (const prov of lote) {
+          const inseriu = await processarProvento(ticker, prov)
+          if (inseriu) novos++
+        }
+        
+        console.log(`${ticker}: processados ${i + lote.length}/${proventos.length}`)
+        
+        // Pequeno delay entre lotes
+        await new Promise(resolve => setTimeout(resolve, 100))
       }
+      
+      console.log(`${ticker}: total ${novos} inseridos`)
 
       await supabase
         .from('investimentos_proventos_sync')
@@ -336,14 +349,16 @@ export default function Proventos() {
       
       const proventos = []
       
-      // Iterar sobre objeto de dividendos
       Object.entries(dividends).forEach(([timestamp, info]) => {
         const date = new Date(info.date * 1000).toISOString().split('T')[0]
         
-        console.log(`${ticker}: dividendo em ${date} = R$ ${info.amount}`)
+        // Limitar últimos 3 anos
+        const tresAnosAtras = new Date()
+        tresAnosAtras.setFullYear(tresAnosAtras.getFullYear() - 3)
         
-        // TEMPORÁRIO: remover filtro de data para testar
-        // if (new Date(date) >= new Date(dataInicial)) {
+        if (new Date(date) >= tresAnosAtras) {
+          console.log(`${ticker}: dividendo em ${date} = $ ${info.amount}`)
+          
           proventos.push({
             tipo: 'DIVIDENDO',
             data_com: date,
@@ -351,7 +366,7 @@ export default function Proventos() {
             valor_por_cota: parseFloat(info.amount),
             fonte: 'yahoo_finance'
           })
-        // }
+        }
       })
       
       console.log(`${ticker}: ${proventos.length} após filtro de data`)
