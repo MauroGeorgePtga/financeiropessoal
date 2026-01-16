@@ -6,3 +6,6 @@ export function ValorOculto({ valor, formatado = true }) {
   if (!valoresVisiveis) {
     return <span>••••••</span>
   }
+
+  return <span>{valor}</span>
+}
