@@ -28,6 +28,7 @@ export default function Proventos() {
   const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear())
   const [filtroTipo, setFiltroTipo] = useState('TODOS')
   const [filtroStatus, setFiltroStatus] = useState('TODOS')
+  const [limiteLinhas, setLimiteLinhas] = useState(50)
   
   const [proventos, setProventos] = useState([])
   const [resumo, setResumo] = useState({
@@ -506,7 +507,16 @@ export default function Proventos() {
   const formatarMoeda = (valor) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(valor || 0)
+  }
+
+  const formatarNumero = (valor) => {
+    return new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     }).format(valor || 0)
   }
 
@@ -533,11 +543,13 @@ export default function Proventos() {
     return classes[tipo] || ''
   }
 
-  const proventosFiltrados = proventos.filter(p => {
-    if (filtroTipo !== 'TODOS' && p.tipo !== filtroTipo) return false
-    if (filtroStatus !== 'TODOS' && p.status !== filtroStatus) return false
-    return true
-  })
+  const proventosFiltrados = proventos
+    .filter(p => {
+      if (filtroTipo !== 'TODOS' && p.tipo !== filtroTipo) return false
+      if (filtroStatus !== 'TODOS' && p.status !== filtroStatus) return false
+      return true
+    })
+    .slice(0, limiteLinhas === 0 ? undefined : limiteLinhas)
 
   const anos = []
   for (let ano = 2020; ano <= new Date().getFullYear() + 1; ano++) {
@@ -673,11 +685,52 @@ export default function Proventos() {
           </select>
         </div>
 
+        <div className="filtro-group">
+          <label><Filter size={16} /> Exibir</label>
+          <select value={limiteLinhas} onChange={(e) => setLimiteLinhas(parseInt(e.target.value))}>
+            <option value="30">30 linhas</option>
+            <option value="50">50 linhas</option>
+            <option value="0">Todos</option>
+          </select>
+        </div>
+
         <button className="btn-secondary" onClick={handleExportar}>
           <Download size={18} />
           Exportar
         </button>
       </div>
+
+      {porTicker.length > 0 && (
+        <div className="ticker-resumo-section">
+          <h2>Proventos por Ativo ({anoSelecionado})</h2>
+          <div className="ticker-resumo-grid">
+            {porTicker.map(t => (
+              <div key={t.ticker} className="ticker-resumo-card">
+                <div className="ticker-header">
+                  <span className="ticker-name">{t.ticker}</span>
+                  <span className="ticker-count">{t.quantidade} provento{t.quantidade > 1 ? 's' : ''}</span>
+                </div>
+                <div className="ticker-valores">
+                  <div className="ticker-valor-item">
+                    <span className="label">Total Líquido:</span>
+                    <span className="valor">
+                      <ValorOculto valor={t.totalLiquido} />
+                    </span>
+                  </div>
+                  {t.totalIR > 0 && (
+                    <div className="ticker-valor-item ticker-ir">
+                      <span className="label">IR Retido:</span>
+                      <span className="valor">
+                        <ValorOculto valor={t.totalIR} />
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="proventos-section">
         <h2>
@@ -720,7 +773,7 @@ export default function Proventos() {
                     <td className="valor-cell">
                       {valoresVisiveis ? formatarMoeda(p.valor_por_cota) : '****'}
                     </td>
-                    <td className="quantidade-cell">{p.quantidade_cotas.toFixed(2)}</td>
+                    <td className="quantidade-cell">{formatarNumero(p.quantidade_cotas)}</td>
                     <td className="valor-cell valor-liquido">
                       <ValorOculto valor={p.valor_liquido} />
                     </td>
@@ -746,30 +799,6 @@ export default function Proventos() {
           </div>
         )}
       </div>
-
-      {porTicker.length > 0 && (
-        <div className="ticker-resumo-section">
-          <h2>Por Ativo ({anoSelecionado})</h2>
-          <div className="ticker-resumo-grid">
-            {porTicker.map(t => (
-              <div key={t.ticker} className="ticker-resumo-card">
-                <div className="ticker-header">
-                  <span className="ticker-name">{t.ticker}</span>
-                  <span className="ticker-count">{t.quantidade}</span>
-                </div>
-                <div className="ticker-valores">
-                  <div className="ticker-valor-item">
-                    <span className="label">Total:</span>
-                    <span className="valor">
-                      <ValorOculto valor={t.totalLiquido} />
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
