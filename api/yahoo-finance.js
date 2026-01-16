@@ -1,8 +1,7 @@
 // api/yahoo-finance.js
-// Vercel Serverless Function para buscar dividendos
+// Vercel Serverless - busca dividendos Yahoo Finance
 
 export default async function handler(req, res) {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
@@ -11,17 +10,14 @@ export default async function handler(req, res) {
     return res.status(200).end()
   }
 
-  const { ticker, from } = req.query
+  const { ticker, interval = '1mo', range = '10y', events = 'div,split' } = req.query
 
   if (!ticker) {
     return res.status(400).json({ error: 'Ticker obrigatório' })
   }
 
   try {
-    const period1 = Math.floor(new Date(from || '2024-01-01').getTime() / 1000)
-    const period2 = Math.floor(Date.now() / 1000)
-    
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?period1=${period1}&period2=${period2}&events=div`
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=${interval}&range=${range}&events=${events}`
 
     const response = await fetch(url, {
       headers: {
@@ -30,18 +26,19 @@ export default async function handler(req, res) {
     })
 
     if (!response.ok) {
-      throw new Error('Yahoo Finance error')
+      throw new Error(`Yahoo: ${response.status}`)
     }
 
     const data = await response.json()
     
-    const dividends = data?.chart?.result?.[0]?.events?.dividends || {}
+    const result = data?.chart?.result?.[0]
+    const dividends = result?.events?.dividends || {}
 
     res.setHeader('Cache-Control', 's-maxage=3600')
     res.status(200).json({ 
       success: true,
       ticker,
-      dividends 
+      dividends
     })
 
   } catch (error) {
