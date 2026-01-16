@@ -42,7 +42,8 @@
 }
 
 .dashboard-card {
-  background: white;
+  /* background: white; */
+  background: #D3D3D3;
   padding: 25px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
