@@ -788,7 +788,14 @@ export default function Transacoes() {
                     <input
                       type="checkbox"
                       checked={formData.pago}
-                      onChange={(e) => setFormData({ ...formData, pago: e.target.checked })}
+                      onChange={(e) => {
+                        const isPago = e.target.checked
+                        setFormData({ 
+                          ...formData, 
+                          pago: isPago,
+                          data_pagamento: isPago ? new Date().toISOString().split('T')[0] : ''
+                        })
+                      }}
                     />
                     <span>Pago</span>
                   </label>
