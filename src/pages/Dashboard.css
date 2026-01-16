@@ -43,6 +43,7 @@
   margin-bottom: 20px;
 }
 
+/* Quadros de Receita, Despesa e Saldo do Mes */
 .dashboard-card {
   /* BackGround: white; */
   background: #D3D3D3;
@@ -138,10 +139,8 @@
 
 /* Cores dos Cards - Saldo Total de Contas */
 .card-saldo-total {
-background: #D3D3D3;
-
-/* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
-/* color: white; */
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+color: white; */
 }
 
 .card-saldo-total .card-title,
