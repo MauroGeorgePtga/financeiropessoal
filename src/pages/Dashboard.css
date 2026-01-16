@@ -21,7 +21,7 @@
   font-size: 16px;
 }
 
-/* TESTE */
+/* Informado de Data campo superior direito */
 .dashboard-date {
   display: flex;
   align-items: center;
@@ -138,8 +138,10 @@
 
 /* Cores dos Cards */
 .card-saldo-total {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+  /* background: white; */
+  /* color: #D3D3D3; */
+  bachground: color: #D3D3D3;
 }
 
 .card-saldo-total .card-title,
