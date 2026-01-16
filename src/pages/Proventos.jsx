@@ -366,23 +366,40 @@ export default function Proventos() {
 
   const processarProvento = async (ticker, provento) => {
     try {
-      const { data: cotasData } = await supabase
+      console.log(`Processando ${ticker}:`, provento)
+      
+      const { data: cotasData, error: cotasError } = await supabase
         .rpc('calcular_cotas_na_data', {
           p_user_id: user.id,
           p_ticker: ticker,
           p_data_com: provento.data_com
         })
 
+      if (cotasError) {
+        console.error(`${ticker}: erro calcular cotas`, cotasError)
+        throw cotasError
+      }
+
       const qtd = parseFloat(cotasData || 0)
-      if (qtd <= 0) return false
+      console.log(`${ticker}: ${qtd} cotas na data ${provento.data_com}`)
+      
+      if (qtd <= 0) {
+        console.log(`${ticker}: sem cotas, pulando`)
+        return false
+      }
 
       const valorBruto = qtd * parseFloat(provento.valor_por_cota)
+      console.log(`${ticker}: valor bruto = ${valorBruto}`)
       
-      const { data: irData } = await supabase
+      const { data: irData, error: irError } = await supabase
         .rpc('calcular_ir_provento', {
           p_tipo: provento.tipo,
           p_valor_bruto: valorBruto
         })
+
+      if (irError) {
+        console.error(`${ticker}: erro calcular IR`, irError)
+      }
 
       const ir = irData?.[0] || { percentual_ir: 0, valor_ir: 0, valor_liquido: valorBruto }
 
@@ -395,9 +412,14 @@ export default function Proventos() {
         .eq('tipo', provento.tipo)
         .single()
 
-      if (existente) return false
+      if (existente) {
+        console.log(`${ticker}: já existe, pulando`)
+        return false
+      }
 
-      await supabase
+      console.log(`${ticker}: inserindo no banco...`)
+
+      const { error: insertError } = await supabase
         .from('investimentos_proventos')
         .insert({
           user_id: user.id,
@@ -415,9 +437,16 @@ export default function Proventos() {
           fonte: provento.fonte
         })
 
+      if (insertError) {
+        console.error(`${ticker}: erro ao inserir`, insertError)
+        throw insertError
+      }
+
+      console.log(`${ticker}: inserido com sucesso!`)
       return true
+      
     } catch (error) {
-      console.error('Erro processar:', error)
+      console.error(`${ticker}: erro processar`, error)
       return false
     }
   }
