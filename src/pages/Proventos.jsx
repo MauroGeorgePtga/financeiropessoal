@@ -309,8 +309,7 @@ export default function Proventos() {
     try {
       const tickerYahoo = ticker.includes('.SA') ? ticker : `${ticker}.SA`
       
-      // Formato correto do Yahoo Finance
-      const url = `/api/yahoo-finance?ticker=${tickerYahoo}&interval=1mo&range=10y&events=div,split`
+      const url = `/api/yahoo-finance?ticker=${tickerYahoo}&interval=1mo&range=10y&events=div`
       
       console.log(`${ticker}: buscando...`)
       
@@ -323,29 +322,39 @@ export default function Proventos() {
       
       const data = await res.json()
       
+      console.log(`${ticker}: resposta completa`, data)
+      
       if (!data.success || !data.dividends) {
-        console.log(`${ticker}: sem dados`)
+        console.log(`${ticker}: sem dividendos`)
         return []
       }
       
+      const dividends = data.dividends
+      const totalDividends = Object.keys(dividends).length
+      
+      console.log(`${ticker}: ${totalDividends} dividendos no Yahoo`)
+      
       const proventos = []
       
-      // Dividends vem como objeto, converter para array
-      Object.values(data.dividends).forEach(div => {
-        const date = new Date(div.date * 1000).toISOString().split('T')[0]
+      // Iterar sobre objeto de dividendos
+      Object.entries(dividends).forEach(([timestamp, info]) => {
+        // timestamp já é em segundos, date também
+        const date = new Date(info.date * 1000).toISOString().split('T')[0]
+        
+        console.log(`${ticker}: dividendo em ${date} = R$ ${info.amount}`)
         
         if (new Date(date) >= new Date(dataInicial)) {
           proventos.push({
             tipo: 'DIVIDENDO',
             data_com: date,
             data_pagamento: date,
-            valor_por_cota: parseFloat(div.amount),
+            valor_por_cota: parseFloat(info.amount),
             fonte: 'yahoo_finance'
           })
         }
       })
       
-      console.log(`${ticker}: ${proventos.length} encontrados`)
+      console.log(`${ticker}: ${proventos.length} após filtro de data`)
       
       return proventos
       
