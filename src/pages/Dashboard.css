@@ -21,7 +21,7 @@
   font-size: 16px;
 }
 
-/* Informado de Data campo superior direito */
+/* Data campo superior direito */
 .dashboard-date {
   display: flex;
   align-items: center;
@@ -137,7 +137,7 @@
   color: #764ba2;
 }
 
-/* Cores dos Cards - Saldo Total de Contas */
+/* Cores dos Cards - Salto Total em Contas */
 .card-saldo-total {
 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
 color: white; */
@@ -209,8 +209,10 @@ color: white; */
   margin-bottom: 20px;
 }
 
+/* TESTE */
 .secondary-card {
-  background: white;
+  /* background: white; */
+  background: #D3D3D3
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
