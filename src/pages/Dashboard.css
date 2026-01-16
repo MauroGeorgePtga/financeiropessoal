@@ -322,7 +322,8 @@
 }
 
 .dashboard-widget {
-  background: white;
+  /* background: white; */
+  background: #D3D3D3;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
