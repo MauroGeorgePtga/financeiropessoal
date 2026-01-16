@@ -138,10 +138,8 @@
 
 /* Cores dos Cards */
 .card-saldo-total {
-  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
-  /* background: white; */
-  /* color: #D3D3D3; */
-  bachground: color: #D3D3D3;
+ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+ color: white;
 }
 
 .card-saldo-total .card-title,
