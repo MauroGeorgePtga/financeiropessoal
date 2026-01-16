@@ -346,8 +346,8 @@
 
 /* Modal Large */
 .modal-large {
-  max-width: 900px !important;
-  width: 90% !important;
+  max-width: 750px !important;
+  width: 85% !important;
 }
 
 .modal-large .form-grid {
