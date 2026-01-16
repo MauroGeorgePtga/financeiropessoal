@@ -338,12 +338,12 @@ export default function Proventos() {
       
       // Iterar sobre objeto de dividendos
       Object.entries(dividends).forEach(([timestamp, info]) => {
-        // timestamp já é em segundos, date também
         const date = new Date(info.date * 1000).toISOString().split('T')[0]
         
         console.log(`${ticker}: dividendo em ${date} = R$ ${info.amount}`)
         
-        if (new Date(date) >= new Date(dataInicial)) {
+        // TEMPORÁRIO: remover filtro de data para testar
+        // if (new Date(date) >= new Date(dataInicial)) {
           proventos.push({
             tipo: 'DIVIDENDO',
             data_com: date,
@@ -351,7 +351,7 @@ export default function Proventos() {
             valor_por_cota: parseFloat(info.amount),
             fonte: 'yahoo_finance'
           })
-        }
+        // }
       })
       
       console.log(`${ticker}: ${proventos.length} após filtro de data`)
