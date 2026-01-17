@@ -169,7 +169,8 @@ export default function Dashboard() {
         .select(`
           *,
           contas_bancarias(nome, cor),
-          categorias(nome, cor, icone)
+          categorias(nome, cor, icone),
+          subcategorias(nome)
         `)
         .eq('user_id', user.id)
 
@@ -302,7 +303,6 @@ export default function Dashboard() {
 
     return Object.values(categoriasSoma)
       .sort((a, b) => b.valor - a.valor)
-      .slice(0, 5)
   }
 
   const topCategoriasReceitas = (mes, ano) => {
@@ -340,7 +340,6 @@ export default function Dashboard() {
 
     return Object.values(categoriasSoma)
       .sort((a, b) => b.valor - a.valor)
-      .slice(0, 5)
   }
 
   // States para filtros
