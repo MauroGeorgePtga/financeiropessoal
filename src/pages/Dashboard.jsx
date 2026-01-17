@@ -1,1179 +1,1055 @@
-/* Dashboard */
-
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 30px;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.dashboard-header h1 {
-  margin: 0 0 5px 0;
-  color: #333;
-  font-size: 32px;
-}
-
-.dashboard-header p {
-  margin: 0;
-  color: #666;
-  font-size: 16px;
-}
-
-/* Data campo superior direito */
-.dashboard-date {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 20px;
-  /* background: white; */
-  background: #D3D3D3;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  color: #666;
-  font-size: 14px;
-}
-/* Cards Principais */
-.dashboard-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-/* Quadros de Receita, Despesa e Saldo do Mes */
-.dashboard-card {
-  /* BackGround: white; */
-  background: #D3D3D3;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.dashboard-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.card-title {
-  font-size: 14px;
-  color: #666;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.card-icon {
-  opacity: 0.3;
-}
-
-.card-value {
-  margin-bottom: 15px;
-}
-
-.card-value span {
-  font-size: 32px;
-  font-weight: 700;
-}
-
-.card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  color: #999;
-}
-
-/* Footer Split (Banco x Dinheiro) */
-.card-footer-split {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.footer-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #666;
-}
-
-.footer-item svg {
-  color: #999;
-  flex-shrink: 0;
-}
-
-.footer-label {
-  font-weight: 600;
-  min-width: 60px;
-}
-
-.footer-value {
-  font-weight: 700;
-  color: #333;
-}
-
-.card-link {
-  color: #667eea;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.2s;
-}
-
-.card-link:hover {
-  color: #764ba2;
-}
-
-/* Cores dos Cards - Salto Total em Contas */
-.card-saldo-total {
-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
-color: white; */
-}
-
-.card-saldo-total .card-title,
-.card-saldo-total .card-icon {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.card-saldo-total .card-value span {
-  color: white;
-}
-
-/* Footer do card de saldo total - mais visível */
-.card-saldo-total .card-footer-split {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.card-saldo-total .footer-item {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.95);
-}
-
-.card-saldo-total .footer-item svg {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.card-saldo-total .footer-label {
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
-}
-
-.card-saldo-total .footer-value {
-  font-weight: 700;
-  color: white;
-  font-size: 14px;
-}
-
-.card-saldo-total .footer-value.positivo {
-  color: #9effc4;
-}
-
-.card-saldo-total .footer-value.negativo {
-  color: #ffb3ba;
-}
-
-.card-saldo-total .card-link {
-  color: white;
-}
-
-.card-receitas .card-icon {
-  color: #48bb78;
-}
-
-.card-despesas .card-icon {
-  color: #f56565;
-}
-
-.card-saldo-mes .card-icon {
-  color: #4299e1;
-}
-
-/* Cards Secundários */
-.dashboard-secondary-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.secondary-card {
-  background: #D3D3D3;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.secondary-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-  color: #666;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.secondary-value {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-bottom: 15px;
-}
-
-.secondary-value strong {
-  font-size: 32px;
-  color: #333;
-}
-
-.secondary-value span {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.secondary-value .subtitle {
-  color: #999;
-  font-weight: 400;
-}
-
-.secondary-link {
-  color: #667eea;
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 600;
-  transition: color 0.2s;
-}
-
-.secondary-link:hover {
-  color: #764ba2;
-}
-
-/* Card Investimentos */
-.card-investimentos {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.card-investimentos .secondary-header {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.card-investimentos .secondary-value strong {
-  color: white;
-  font-size: 36px;
-}
-
-.card-investimentos .invest-subtitle {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 12px;
-  font-weight: 400;
-}
-
-.invest-rentabilidade {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 700;
-  width: fit-content;
-  margin-bottom: 12px;
-}
-
-.invest-rentabilidade.positivo {
-  background: #ffffcc;
-  color: #33ff33;
-}
-
-.invest-rentabilidade.negativo {
-  background: #ffffcc;
-  color: #ff3300;
-}
-
-.card-investimentos .secondary-link {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.card-investimentos .secondary-link:hover {
-  color: white;
-}
-
-.loading-invest {
-  padding: 20px;
-  text-align: center;
-  opacity: 0.8;
-}
-
-/* Grid de Widgets */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.dashboard-widget {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.dashboard-widget.widget-full {
-  grid-column: 1 / -1;
-}
-
-.widget-header {
-  padding: 20px;
-  border-bottom: 1px solid #f0f0f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.widget-header h3 {
-  margin: 0;
-  font-size: 16px;
-  color: #333;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.widget-link {
-  color: #667eea;
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 600;
-  transition: color 0.2s;
-}
-
-.widget-link:hover {
-  color: #764ba2;
-}
-
-.widget-content {
-  padding: 20px;
-}
-
-.widget-empty {
-  text-align: center;
-  padding: 40px 20px;
-  color: #999;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  align-items: center;
-}
-
-/* Vencimentos */
-.vencimentos-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* Quadro de Contas Vencendo */
-.vencimento-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  /* background: #f9f9f9; */
-  background: #D3D3D3;
-  border-radius: 8px;
-  transition: background-color 0.2s;
-}
-
-.vencimento-item:hover {
-  background: #f0f0f0;
-}
-
-.vencimento-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.vencimento-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
-
-.vencimento-detalhes {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.vencimento-detalhes strong {
-  font-size: 14px;
-  color: #333;
-}
-
-.vencimento-data {
-  font-size: 12px;
-  color: #999;
-}
-
-.vencimento-valor {
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.vencimento-valor.receita {
-  color: #48bb78;
-}
-
-.vencimento-valor.despesa {
-  color: #f56565;
-}
-
-/* Categorias */
-.categorias-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Quadro de Despesas por Categoria */
-.categoria-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  min-height: 60px;
-  background: white;
-  border-radius: 8px;
-}
-
-.categoria-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.categoria-posicao {
-  font-size: 14px;
-  font-weight: 700;
-  color: #999;
-  width: 25px;
-}
-
-.categoria-icon {
-  width: 35px;
-  height: 35px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
-
-.categoria-nome {
-  font-size: 14px;
-  color: #333;
-  font-weight: 500;
-}
-
-.categoria-valor {
-  font-size: 15px;
-  font-weight: 700;
-  color: #f56565;
-}
-
-/* Contas Grid */
-.contas-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-}
-
-.conta-mini {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 15px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  transition: background-color 0.2s;
-}
-
-.conta-mini:hover {
-  background: #f0f0f0;
-}
-
-.conta-mini-icon {
-  width: 45px;
-  height: 45px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-}
-
-.conta-mini-info {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.conta-mini-info strong {
-  font-size: 14px;
-  color: #333;
-}
-
-.conta-mini-info span {
-  font-size: 16px;
-  font-weight: 700;
-}
-
-/* Dicas */
-.dashboard-tips {
-  background: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.dashboard-tips h3 {
-  margin: 0 0 20px 0;
-  font-size: 18px;
-  color: #333;
-}
-
-.tips-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 15px;
-}
-
-.tip-card {
-  padding: 15px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  border-left: 3px solid #667eea;
-}
-
-.tip-card strong {
-  display: block;
-  margin-bottom: 8px;
-  color: #333;
-  font-size: 14px;
-}
-
-.tip-card p {
-  margin: 0;
-  color: #666;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-/* Cores Utilitárias */
-.positivo {
-  color: #48bb78;
-}
-
-.negativo {
-  color: #f56565;
-}
-
-/* Visão Anual - Tabela e Gráfico */
-.visao-anual-container {
-  background: white;
-  border-radius: 16px;
-  padding: 30px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 30px;
-}
-
-.visao-anual-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 3px solid #f0f0f0;
-}
-
-.visao-anual-header h2 {
-  margin: 0;
-  font-size: 26px;
-  font-weight: 700;
-  color: #333;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.ano-select {
-  padding: 12px 24px;
-  border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #333;
-  background: white;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.ano-select:hover {
-  border-color: #667eea;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
-}
-
-.ano-select:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
-}
-
-.visao-anual-content {
-  display: grid;
-  grid-template-columns: 500px 1fr;
-  gap: 40px;
-  min-height: 500px;
-}
-
-/* Tabela de Meses */
-.tabela-meses {
-  overflow-x: auto;
-}
-
-.tabela-mensal {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  border: 2px solid #f0f0f0;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.tabela-mensal thead th {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 16px 12px;
-  text-align: left;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: white;
-  border: none;
-}
-
-.tabela-mensal thead th:first-child {
-  border-radius: 10px 0 0 0;
-}
-
-.tabela-mensal thead th:last-child {
-  border-radius: 0 10px 0 0;
-}
-
-.tabela-mensal tbody tr {
-  border-bottom: 1px solid #f5f5f5;
-  transition: all 0.2s;
-}
-
-.tabela-mensal tbody tr:hover {
-  background: #f9fafb;
-  transform: scale(1.01);
-}
-
-.tabela-mensal tbody tr:last-child {
-  border-bottom: none;
-}
-
-.tabela-mensal td {
-  padding: 14px 12px;
-  font-size: 14px;
-  border: none;
-}
-
-.tabela-mensal .mes-nome {
-  font-weight: 700;
-  color: #333;
-  font-size: 14px;
-}
-
-.tabela-mensal .valor {
-  text-align: right;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.tabela-mensal .valor.receita {
-  color: #48bb78;
-}
-
-.tabela-mensal .valor.despesa {
-  color: #f56565;
-}
-
-.tabela-mensal .valor.resultado.positivo {
-  color: #2563eb;
-  font-weight: 700;
-}
-
-.tabela-mensal .valor.resultado.negativo {
-  color: #dc2626;
-  font-weight: 700;
-}
-
-.tabela-mensal tfoot .total-row {
-  background: linear-gradient(135deg, #f7f9fc 0%, #e8eef5 100%);
-  border-top: 3px solid #e0e0e0;
-}
-
-.tabela-mensal tfoot td {
-  padding: 16px 12px;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-/* Gráfico de Barras */
-.grafico-barras {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 16px;
-  padding: 25px;
-}
-
-.grafico-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  height: 420px;
-  padding: 30px 20px;
-  background: white;
-  border-radius: 12px;
-  gap: 10px;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.barra-grupo {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.barras {
-  display: flex;
-  gap: 6px;
-  align-items: flex-end;
-  height: 100%;
-  width: 100%;
-  min-height: 50px;
-}
-
-.barra {
-  flex: 1;
-  min-height: 8px;
-  border-radius: 8px 8px 0 0;
-  position: relative;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 10px;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.barra:hover {
-  opacity: 0.85;
-  transform: translateY(-5px);
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.barra-receita {
-  background: linear-gradient(180deg, #48bb78 0%, #38a169 100%);
-}
-
-.barra-despesa {
-  background: linear-gradient(180deg, #f56565 0%, #e53e3e 100%);
-}
-
-.barra-valor {
-  font-size: 11px;
-  font-weight: 700;
-  color: white;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  white-space: nowrap;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.barra-mes {
-  font-size: 12px;
-  font-weight: 700;
-  color: #555;
-  text-align: center;
-}
-
-.grafico-legenda {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  padding: 18px;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.legenda-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  font-weight: 700;
-  color: #555;
-}
-
-.legenda-cor {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.legenda-cor.receita {
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-}
-
-.legenda-cor.despesa {
-  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { ValorOculto } from '../components/ValorOculto'
+import { Link } from 'react-router-dom'
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Wallet,
+  Calendar,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  Landmark,
+  Banknote
+} from 'lucide-react'
+import './Dashboard.css'
+
+export default function Dashboard() {
+  const { user } = useAuth()
+  const [loading, setLoading] = useState(true)
+  const [dados, setDados] = useState({
+    contas: [],
+    transacoes: [],
+    categorias: [],
+    totalContas: 0,
+    saldoTotal: 0,
+    saldoPositivo: 0,
+    saldoNegativo: 0,
+    // Receitas
+    receitasMes: 0,
+    receitasBanco: 0,
+    receitasDinheiro: 0,
+    // Despesas
+    despesasMes: 0,
+    despesasBanco: 0,
+    despesasDinheiro: 0,
+    // Saldo
+    saldoMes: 0,
+    transacoesPendentes: 0,
+    valorPendente: 0,
+    proximosVencimentos: []
+  })
+
+  const [investimentos, setInvestimentos] = useState({
+    totalInvestido: 0,
+    valorAtual: 0,
+    rentabilidade: 0,
+    qtdAtivos: 0
+  })
+  const [loadingInvestimentos, setLoadingInvestimentos] = useState(true)
+  const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear())
+  
+  // Filtros para análise de categorias
+  const [filtroReceitasPor, setFiltroReceitasPor] = useState('categoria') // 'categoria' ou 'subcategoria'
+  const [filtroReceitasMes, setFiltroReceitasMes] = useState(new Date().getMonth() + 1)
+  const [filtroReceitasAno, setFiltroReceitasAno] = useState(new Date().getFullYear())
+  
+  const [filtroDespesasPor, setFiltroDespesasPor] = useState('categoria')
+  const [filtroDespesasMes, setFiltroDespesasMes] = useState(new Date().getMonth() + 1)
+  const [filtroDespesasAno, setFiltroDespesasAno] = useState(new Date().getFullYear())
+
+  useEffect(() => {
+    if (user) {
+      carregarDados()
+      carregarInvestimentos()
+    }
+  }, [user])
+
+  const carregarInvestimentos = async () => {
+    try {
+      setLoadingInvestimentos(true)
+      
+      // Buscar operações
+      const { data: operacoes, error: opError } = await supabase
+        .from('investimentos_operacoes')
+        .select('*')
+        .eq('user_id', user.id)
+
+      if (opError) throw opError
+
+      // Buscar cotações
+      const { data: cotacoes, error: cotError } = await supabase
+        .from('investimentos_cotacoes')
+        .select('*')
+        .eq('user_id', user.id)
+
+      if (cotError) throw cotError
+
+      // Calcular carteira
+      const carteira = {}
+      
+      operacoes?.forEach(op => {
+        if (!carteira[op.ticker]) {
+          carteira[op.ticker] = {
+            ticker: op.ticker,
+            quantidade: 0,
+            total_investido: 0
+          }
+        }
+
+        const custoTotal = (op.taxa_corretagem || 0) + (op.emolumentos || 0) + (op.outros_custos || 0)
+
+        if (op.tipo_operacao === 'compra') {
+          carteira[op.ticker].quantidade += op.quantidade
+          carteira[op.ticker].total_investido += (op.quantidade * op.preco_unitario) + custoTotal
+        } else if (op.tipo_operacao === 'venda') {
+          carteira[op.ticker].quantidade -= op.quantidade
+          carteira[op.ticker].total_investido -= (op.quantidade * op.preco_unitario) - custoTotal
+        }
+      })
+
+      // Calcular totais
+      let totalInvestido = 0
+      let valorAtual = 0
+      let qtdAtivos = 0
+
+      Object.keys(carteira).forEach(ticker => {
+        if (carteira[ticker].quantidade > 0) {
+          totalInvestido += carteira[ticker].total_investido
+          qtdAtivos++
+
+          const cotacao = cotacoes?.find(c => c.ticker === ticker)
+          if (cotacao) {
+            valorAtual += carteira[ticker].quantidade * cotacao.cotacao_atual
+          }
+        }
+      })
+
+      const rentabilidade = totalInvestido > 0 
+        ? ((valorAtual - totalInvestido) / totalInvestido) * 100 
+        : 0
+
+      setInvestimentos({
+        totalInvestido,
+        valorAtual,
+        rentabilidade,
+        qtdAtivos
+      })
+    } catch (error) {
+      console.error('Erro ao carregar investimentos:', error)
+    } finally {
+      setLoadingInvestimentos(false)
+    }
   }
 
-  .dashboard-date {
-    width: 100%;
+  const carregarDados = async () => {
+    try {
+      setLoading(true)
+
+      // Data atual
+      const hoje = new Date()
+      const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0]
+      const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().split('T')[0]
+      const daquiA7Dias = new Date(hoje.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
+      // Carregar contas
+      const { data: contasData } = await supabase
+        .from('contas_bancarias')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('ativo', true)
+
+      // Carregar transações
+      const { data: transacoesData } = await supabase
+        .from('transacoes')
+        .select(`
+          *,
+          contas_bancarias(nome, cor),
+          categorias(nome, cor, icone),
+          subcategorias(nome)
+        `)
+        .eq('user_id', user.id)
+
+      // Carregar categorias
+      const { data: categoriasData } = await supabase
+        .from('categorias')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('ativo', true)
+
+      const contas = contasData || []
+      const transacoes = transacoesData || []
+      const categorias = categoriasData || []
+
+      // Calcular saldos das contas (positivos e negativos separados)
+      const saldoPositivo = contas
+        .filter(conta => (conta.saldo_atual || 0) > 0)
+        .reduce((acc, conta) => acc + conta.saldo_atual, 0)
+      
+      const saldoNegativo = contas
+        .filter(conta => (conta.saldo_atual || 0) < 0)
+        .reduce((acc, conta) => acc + conta.saldo_atual, 0)
+      
+      const saldoTotal = contas.reduce((acc, conta) => acc + (conta.saldo_atual || 0), 0)
+
+      // Transações do mês atual PAGAS (excluindo transferências)
+      const transacoesMes = transacoes.filter(t => 
+        t.data_transacao >= primeiroDiaMes && 
+        t.data_transacao <= ultimoDiaMes &&
+        t.pago &&
+        !t.is_transferencia  // EXCLUIR TRANSFERÊNCIAS
+      )
+
+      // RECEITAS do mês (sem transferências)
+      const receitasMes = transacoesMes.filter(t => t.tipo === 'receita')
+      const receitasBanco = receitasMes
+        .filter(t => t.conta_id !== null)
+        .reduce((acc, t) => acc + t.valor, 0)
+      const receitasDinheiro = receitasMes
+        .filter(t => t.conta_id === null)
+        .reduce((acc, t) => acc + t.valor, 0)
+      const receitasTotal = receitasBanco + receitasDinheiro
+
+      // DESPESAS do mês (sem transferências)
+      const despesasMes = transacoesMes.filter(t => t.tipo === 'despesa')
+      const despesasBanco = despesasMes
+        .filter(t => t.conta_id !== null)
+        .reduce((acc, t) => acc + t.valor, 0)
+      const despesasDinheiro = despesasMes
+        .filter(t => t.conta_id === null)
+        .reduce((acc, t) => acc + t.valor, 0)
+      const despesasTotal = despesasBanco + despesasDinheiro
+
+      const saldoMes = receitasTotal - despesasTotal
+
+      // Transações pendentes (excluindo transferências)
+      const pendentes = transacoes.filter(t => !t.pago && !t.is_transferencia)
+      const transacoesPendentes = pendentes.length
+      const valorPendente = pendentes.reduce((acc, t) => {
+        return acc + (t.tipo === 'receita' ? t.valor : -t.valor)
+      }, 0)
+
+      // Próximos vencimentos (7 dias) - excluindo transferências
+      const proximosVencimentos = transacoes
+        .filter(t => 
+          !t.pago && 
+          !t.is_transferencia &&  // EXCLUIR TRANSFERÊNCIAS
+          t.data_vencimento && 
+          t.data_vencimento <= daquiA7Dias &&
+          t.data_vencimento >= hoje.toISOString().split('T')[0]
+        )
+        .sort((a, b) => new Date(a.data_vencimento) - new Date(b.data_vencimento))
+        .slice(0, 5)
+
+      setDados({
+        contas,
+        transacoes,
+        categorias,
+        totalContas: contas.length,
+        saldoTotal,
+        saldoPositivo,      // NOVO
+        saldoNegativo,      // NOVO
+        receitasMes: receitasTotal,
+        receitasBanco,
+        receitasDinheiro,
+        despesasMes: despesasTotal,
+        despesasBanco,
+        despesasDinheiro,
+        saldoMes,
+        transacoesPendentes,
+        valorPendente,
+        proximosVencimentos
+      })
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  .dashboard-date span {
-    font-size: 12px;
+  // Top 5 categorias mais usadas no mês
+  const topCategoriasDespesas = (mes, ano) => {
+    const mesNum = mes || new Date().getMonth() + 1
+    const anoNum = ano || new Date().getFullYear()
+    
+    const primeiroDiaMes = new Date(anoNum, mesNum - 1, 1).toISOString().split('T')[0]
+    const ultimoDiaMes = new Date(anoNum, mesNum, 0).toISOString().split('T')[0]
+
+    const transacoesMes = dados.transacoes.filter(t => 
+      t.data_transacao >= primeiroDiaMes && 
+      t.data_transacao <= ultimoDiaMes &&
+      t.pago &&
+      t.tipo === 'despesa' &&
+      !t.is_transferencia
+    )
+
+    const categoriasSoma = {}
+    transacoesMes.forEach(t => {
+      const catNome = t.categorias?.nome || 'Sem categoria'
+      if (!categoriasSoma[catNome]) {
+        categoriasSoma[catNome] = {
+          nome: catNome,
+          valor: 0,
+          cor: t.categorias?.cor || '#999',
+          icone: t.categorias?.icone || '📦'
+        }
+      }
+      categoriasSoma[catNome].valor += t.valor
+    })
+
+    return Object.values(categoriasSoma)
+      .sort((a, b) => b.valor - a.valor)
   }
 
-  .dashboard-cards {
-    grid-template-columns: 1fr;
+  const topCategoriasReceitas = (mes, ano) => {
+    const mesNum = mes || new Date().getMonth() + 1
+    const anoNum = ano || new Date().getFullYear()
+    
+    const primeiroDiaMes = new Date(anoNum, mesNum - 1, 1).toISOString().split('T')[0]
+    const ultimoDiaMes = new Date(anoNum, mesNum, 0).toISOString().split('T')[0]
+
+    const transacoesMes = dados.transacoes.filter(t => 
+      t.data_transacao >= primeiroDiaMes && 
+      t.data_transacao <= ultimoDiaMes &&
+      t.pago &&
+      t.tipo === 'receita' &&
+      !t.is_transferencia
+    )
+
+    const categoriasSoma = {}
+    transacoesMes.forEach(t => {
+      // Usar subcategoria se existir, senão usar categoria
+      const catNome = t.subcategorias?.nome || t.categorias?.nome || 'Sem categoria'
+      const catCor = t.categorias?.cor || '#48bb78'
+      const catIcone = t.categorias?.icone || '💰'
+      
+      if (!categoriasSoma[catNome]) {
+        categoriasSoma[catNome] = {
+          nome: catNome,
+          valor: 0,
+          cor: catCor,
+          icone: catIcone
+        }
+      }
+      categoriasSoma[catNome].valor += t.valor
+    })
+
+    return Object.values(categoriasSoma)
+      .sort((a, b) => b.valor - a.valor)
   }
 
-  .dashboard-secondary-cards {
-    grid-template-columns: 1fr;
+  // States para filtros
+  const [mesDespesas, setMesDespesas] = useState(new Date().getMonth() + 1)
+  const [anoDespesas, setAnoDespesas] = useState(new Date().getFullYear())
+  const [mesReceitas, setMesReceitas] = useState(new Date().getMonth() + 1)
+  const [anoReceitas, setAnoReceitas] = useState(new Date().getFullYear())
+
+  // Obter anos disponíveis nas transações
+  const getAnosDisponiveis = () => {
+    const anos = new Set()
+    dados.transacoes.forEach(t => {
+      const ano = new Date(t.data_transacao).getFullYear()
+      anos.add(ano)
+    })
+    return Array.from(anos).sort((a, b) => b - a) // Mais recente primeiro
   }
 
-  .dashboard-grid {
-    grid-template-columns: 1fr;
+  // Calcular dados mensais do ano selecionado
+  const calcularDadosMensais = () => {
+    const meses = [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ]
+
+    return meses.map((nome, index) => {
+      const mesNumero = index + 1
+      const primeiroDia = `${anoSelecionado}-${String(mesNumero).padStart(2, '0')}-01`
+      const ultimoDia = new Date(anoSelecionado, mesNumero, 0).toISOString().split('T')[0]
+
+      const transacoesMes = dados.transacoes.filter(t =>
+        t.data_transacao >= primeiroDia &&
+        t.data_transacao <= ultimoDia &&
+        t.pago &&
+        !t.is_transferencia // SEM TRANSFERÊNCIAS
+      )
+
+      const receitas = transacoesMes
+        .filter(t => t.tipo === 'receita')
+        .reduce((acc, t) => acc + t.valor, 0)
+
+      const despesas = transacoesMes
+        .filter(t => t.tipo === 'despesa')
+        .reduce((acc, t) => acc + t.valor, 0)
+
+      const resultado = receitas - despesas
+
+      return {
+        mes: nome,
+        receitas,
+        despesas,
+        resultado
+      }
+    })
   }
 
-  .visao-anual-content {
-    grid-template-columns: 1fr;
+  const anosDisponiveis = getAnosDisponiveis()
+  const dadosMensais = calcularDadosMensais()
+
+  // Calcular receitas por categoria ou subcategoria
+  const calcularReceitasPorCategoria = () => {
+    const primeiroDia = `${filtroReceitasAno}-${String(filtroReceitasMes).padStart(2, '0')}-01`
+    const ultimoDia = new Date(filtroReceitasAno, filtroReceitasMes, 0).toISOString().split('T')[0]
+
+    const transacoesFiltradas = dados.transacoes.filter(t =>
+      t.data_transacao >= primeiroDia &&
+      t.data_transacao <= ultimoDia &&
+      t.tipo === 'receita' &&
+      t.pago &&
+      !t.is_transferencia
+    )
+
+    const agrupamento = {}
+
+    transacoesFiltradas.forEach(t => {
+      let chave, nome
+
+      if (filtroReceitasPor === 'categoria') {
+        chave = t.categoria_id
+        nome = t.categorias?.nome || 'Sem categoria'
+      } else {
+        chave = t.subcategoria_id || 'sem_subcategoria'
+        nome = t.subcategorias?.nome || 'Sem subcategoria'
+      }
+
+      if (!agrupamento[chave]) {
+        agrupamento[chave] = {
+          nome,
+          valor: 0,
+          cor: t.categorias?.cor || '#999',
+          icone: t.categorias?.icone || '📦'
+        }
+      }
+      agrupamento[chave].valor += t.valor
+    })
+
+    return Object.values(agrupamento).sort((a, b) => b.valor - a.valor)
   }
 
-  .grafico-container {
-    height: 250px;
-    padding: 15px 10px;
+  // Calcular despesas por categoria ou subcategoria
+  const calcularDespesasPorCategoria = () => {
+    const primeiroDia = `${filtroDespesasAno}-${String(filtroDespesasMes).padStart(2, '0')}-01`
+    const ultimoDia = new Date(filtroDespesasAno, filtroDespesasMes, 0).toISOString().split('T')[0]
+
+    const transacoesFiltradas = dados.transacoes.filter(t =>
+      t.data_transacao >= primeiroDia &&
+      t.data_transacao <= ultimoDia &&
+      t.tipo === 'despesa' &&
+      t.pago &&
+      !t.is_transferencia
+    )
+
+    const agrupamento = {}
+
+    transacoesFiltradas.forEach(t => {
+      let chave, nome
+
+      if (filtroDespesasPor === 'categoria') {
+        chave = t.categoria_id
+        nome = t.categorias?.nome || 'Sem categoria'
+      } else {
+        chave = t.subcategoria_id || 'sem_subcategoria'
+        nome = t.subcategorias?.nome || 'Sem subcategoria'
+      }
+
+      if (!agrupamento[chave]) {
+        agrupamento[chave] = {
+          nome,
+          valor: 0,
+          cor: t.categorias?.cor || '#999',
+          icone: t.categorias?.icone || '📦'
+        }
+      }
+      agrupamento[chave].valor += t.valor
+    })
+
+    return Object.values(agrupamento).sort((a, b) => b.valor - a.valor)
   }
 
-  .barra-valor {
-    font-size: 8px;
+  const receitasPorCategoria = calcularReceitasPorCategoria()
+  const despesasPorCategoria = calcularDespesasPorCategoria()
+  const totalReceitas = receitasPorCategoria.reduce((acc, c) => acc + c.valor, 0)
+  const totalDespesas = despesasPorCategoria.reduce((acc, c) => acc + c.valor, 0)
+
+  const mesesOptions = [
+    { value: 1, label: 'Janeiro' },
+    { value: 2, label: 'Fevereiro' },
+    { value: 3, label: 'Março' },
+    { value: 4, label: 'Abril' },
+    { value: 5, label: 'Maio' },
+    { value: 6, label: 'Junho' },
+    { value: 7, label: 'Julho' },
+    { value: 8, label: 'Agosto' },
+    { value: 9, label: 'Setembro' },
+    { value: 10, label: 'Outubro' },
+    { value: 11, label: 'Novembro' },
+    { value: 12, label: 'Dezembro' }
+  ]
+
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="loading">Carregando dashboard...</div>
+      </div>
+    )
   }
 
-  .barra-mes {
-    font-size: 9px;
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value)
   }
 
-  .contas-grid {
-    grid-template-columns: 1fr;
+  const formatDate = (date) => {
+    return new Date(date + 'T00:00:00').toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short'
+    })
   }
 
-  .tips-grid {
-    grid-template-columns: 1fr;
-  }
+  return (
+    <div className="page-container">
+      <div className="dashboard-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p>Visão geral das suas finanças</p>
+        </div>
+        <div className="dashboard-date">
+          <Calendar size={20} />
+          <span>{new Date().toLocaleDateString('pt-BR', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })}</span>
+        </div>
+      </div>
 
-  .card-footer-split {
-    gap: 6px;
-  }
+      {/* Cards Principais */}
+      <div className="dashboard-cards">
+        <div className="dashboard-card card-saldo-total">
+          <div className="card-header">
+            <span className="card-title">Saldo Total em Contas</span>
+            <Wallet size={24} className="card-icon" />
+          </div>
+          <div className="card-value">
+            <span className={dados.saldoTotal >= 0 ? 'positivo' : 'negativo'}>
+              <ValorOculto valor={formatCurrency(dados.saldoTotal)} />
+            </span>
+          </div>
+          <div className="card-footer-split">
+            <div className="footer-item">
+              <TrendingUp size={14} />
+              <span className="footer-label">Positivo:</span>
+              <span className="footer-value positivo">
+                <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.saldoPositivo || 0)} /> />
+              </span>
+            </div>
+            <div className="footer-item">
+              <TrendingDown size={14} />
+              <span className="footer-label">Negativo:</span>
+              <span className="footer-value negativo">
+                <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.saldoNegativo || 0)} /> />
+              </span>
+            </div>
+          </div>
+        </div>
 
-  .footer-item {
-    font-size: 11px;
-  }
+        <div className="dashboard-card card-receitas">
+          <div className="card-header">
+            <span className="card-title">Receitas do Mês</span>
+            <ArrowUpCircle size={24} className="card-icon" />
+          </div>
+          <div className="card-value">
+            <span className="positivo">
+              <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.receitasMes)} /> />
+            </span>
+          </div>
+          <div className="card-footer-split">
+            <div className="footer-item">
+              <Landmark size={14} />
+              <span className="footer-label">Banco:</span>
+              <span className="footer-value">
+                <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.receitasBanco)} /> />
+              </span>
+            </div>
+            <div className="footer-item">
+              <Banknote size={14} />
+              <span className="footer-label">Dinheiro:</span>
+              <span className="footer-value">
+                <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.receitasDinheiro)} /> />
+              </span>
+            </div>
+          </div>
+        </div>
 
-  .footer-label {
-    min-width: 50px;
-  }
-}
+        <div className="dashboard-card card-despesas">
+          <div className="card-header">
+            <span className="card-title">Despesas do Mês</span>
+            <ArrowDownCircle size={24} className="card-icon" />
+          </div>
+          <div className="card-value">
+            <span className="negativo">
+              <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.despesasMes)} /> />
+            </span>
+          </div>
+          <div className="card-footer-split">
+            <div className="footer-item">
+              <Landmark size={14} />
+              <span className="footer-label">Banco:</span>
+              <span className="footer-value">
+                <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.despesasBanco)} /> />
+              </span>
+            </div>
+            <div className="footer-item">
+              <Banknote size={14} />
+              <span className="footer-label">Dinheiro:</span>
+              <span className="footer-value">
+                <ValorOculto valor=<ValorOculto valor={formatCurrency(dados.despesasDinheiro)} /> />
+              </span>
+            </div>
+          </div>
+        </div>
 
-/* Mobile Extra Pequeno - Otimização para celulares */
-@media (max-width: 480px) {
-  /* Header mais compacto */
-  .dashboard-header h1 {
-    font-size: 20px;
-  }
+        <div className="dashboard-card card-saldo-mes">
+          <div className="card-header">
+            <span className="card-title">Saldo do Mês</span>
+            {dados.saldoMes >= 0 ? (
+              <TrendingUp size={24} className="card-icon" />
+            ) : (
+              <TrendingDown size={24} className="card-icon" />
+            )}
+          </div>
+          <div className="card-value">
+            <span className={dados.saldoMes >= 0 ? 'positivo' : 'negativo'}>
+              <ValorOculto valor={formatCurrency(dados.saldoMes)} />
+            </span>
+          </div>
+          <div className="card-footer">
+            <span>
+              {dados.saldoMes >= 0 ? 'Superávit' : 'Déficit'} mensal
+            </span>
+          </div>
+        </div>
+      </div>
 
-  .dashboard-date {
-    padding: 8px 12px;
-    font-size: 11px;
-  }
+      {/* Cards Secundários */}
+      <div className="dashboard-secondary-cards">
+        {/* Card Investimentos - NOVO */}
+        <div className="secondary-card card-investimentos">
+          <div className="secondary-header">
+            <span>💰 Investimentos</span>
+          </div>
+          {loadingInvestimentos ? (
+            <div className="loading-invest">Carregando...</div>
+          ) : (
+            <>
+              <div className="secondary-value">
+                <strong><ValorOculto valor={formatCurrency(investimentos.valorAtual)} /></strong>
+                <span className="invest-subtitle">
+                  Investido: <ValorOculto valor={formatCurrency(investimentos.totalInvestido)} />
+                </span>
+              </div>
+              <div className={`invest-rentabilidade ${investimentos.rentabilidade >= 0 ? 'positivo' : 'negativo'}`}>
+                {investimentos.rentabilidade >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                <span>
+                  {investimentos.rentabilidade >= 0 ? '+' : ''}{investimentos.rentabilidade.toFixed(2)}%
+                </span>
+              </div>
+              <Link to="/investimentos" className="secondary-link">
+                {investimentos.qtdAtivos} ativo(s) →
+              </Link>
+            </>
+          )}
+        </div>
 
-  /* Cards mais compactos */
-  .dashboard-card {
-    padding: 15px;
-    border-radius: 8px;
-  }
+        <div className="secondary-card card-pendentes">
+          <div className="secondary-header">
+            <Clock size={20} />
+            <span>Transações Pendentes</span>
+          </div>
+          <div className="secondary-value">
+            <strong>{dados.transacoesPendentes}</strong>
+            <span className={dados.valorPendente >= 0 ? 'positivo' : 'negativo'}>
+              <ValorOculto valor={formatCurrency(Math.abs(dados.valorPendente))} />
+            </span>
+          </div>
+          <Link to="/transacoes" className="secondary-link">
+            Ver pendentes →
+          </Link>
+        </div>
 
-  .card-header {
-    margin-bottom: 10px;
-  }
+        <div className="secondary-card card-categorias">
+          <div className="secondary-header">
+            <CheckCircle size={20} />
+            <span>Categorias Ativas</span>
+          </div>
+          <div className="secondary-value">
+            <strong>{dados.categorias.length}</strong>
+            <span className="subtitle">
+              {dados.categorias.filter(c => c.tipo === 'receita').length} receitas / {' '}
+              {dados.categorias.filter(c => c.tipo === 'despesa').length} despesas
+            </span>
+          </div>
+          <Link to="/categorias" className="secondary-link">
+            Gerenciar →
+          </Link>
+        </div>
+      </div>
 
-  .card-header h3 {
-    font-size: 13px;
-  }
+      {/* Visão Anual - Tabela e Gráfico */}
+      <div className="visao-anual-container">
+        <div className="visao-anual-header">
+          <h2>📊 Visão Anual</h2>
+          <select
+            value={anoSelecionado}
+            onChange={(e) => setAnoSelecionado(Number(e.target.value))}
+            className="ano-select"
+          >
+            {anosDisponiveis.length > 0 ? (
+              anosDisponiveis.map(ano => (
+                <option key={ano} value={ano}>{ano}</option>
+              ))
+            ) : (
+              <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
+            )}
+          </select>
+        </div>
 
-  .card-icon {
-    width: 35px;
-    height: 35px;
-    font-size: 18px;
-  }
+        <div className="visao-anual-content">
+          {/* Tabela de Meses */}
+          <div className="tabela-meses">
+            <table className="tabela-mensal">
+              <thead>
+                <tr>
+                  <th>Mês</th>
+                  <th>Receitas</th>
+                  <th>Despesas</th>
+                  <th>Resultado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dadosMensais.map((dados, index) => (
+                  <tr key={index}>
+                    <td className="mes-nome">{dados.mes}</td>
+                    <td className="valor receita">{formatCurrency(dados.receitas)}</td>
+                    <td className="valor despesa">{formatCurrency(dados.despesas)}</td>
+                    <td className={`valor resultado ${dados.resultado >= 0 ? 'positivo' : 'negativo'}`}>
+                      {formatCurrency(dados.resultado)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="total-row">
+                  <td><strong>TOTAL</strong></td>
+                  <td className="valor receita">
+                    <strong>{formatCurrency(dadosMensais.reduce((acc, m) => acc + m.receitas, 0))}</strong>
+                  </td>
+                  <td className="valor despesa">
+                    <strong>{formatCurrency(dadosMensais.reduce((acc, m) => acc + m.despesas, 0))}</strong>
+                  </td>
+                  <td className={`valor resultado ${dadosMensais.reduce((acc, m) => acc + m.resultado, 0) >= 0 ? 'positivo' : 'negativo'}`}>
+                    <strong>{formatCurrency(dadosMensais.reduce((acc, m) => acc + m.resultado, 0))}</strong>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
 
-  /* Valores menores */
-  .card-value,
-  .primary-value {
-    font-size: 20px !important;
-  }
+          {/* Gráfico de Barras */}
+          <div className="grafico-barras">
+            <div className="grafico-container">
+              {dadosMensais.map((dados, index) => {
+                const maxValor = Math.max(...dadosMensais.map(m => Math.max(m.receitas, m.despesas)))
+                const alturaReceita = maxValor > 0 ? (dados.receitas / maxValor) * 100 : 0
+                const alturaDespesa = maxValor > 0 ? (dados.despesas / maxValor) * 100 : 0
 
-  .secondary-value {
-    font-size: 13px;
-  }
+                return (
+                  <div key={index} className="barra-grupo">
+                    <div className="barras">
+                      <div
+                        className="barra barra-receita"
+                        style={{ height: `${alturaReceita}%` }}
+                        title={`Receitas: ${formatCurrency(dados.receitas)}`}
+                      >
+                        {dados.receitas > 0 && <span className="barra-valor">{formatCurrency(dados.receitas)}</span>}
+                      </div>
+                      <div
+                        className="barra barra-despesa"
+                        style={{ height: `${alturaDespesa}%` }}
+                        title={`Despesas: ${formatCurrency(dados.despesas)}`}
+                      >
+                        {dados.despesas > 0 && <span className="barra-valor">{formatCurrency(dados.despesas)}</span>}
+                      </div>
+                    </div>
+                    <span className="barra-mes">{dados.mes.substring(0, 3)}</span>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="grafico-legenda">
+              <div className="legenda-item">
+                <span className="legenda-cor receita"></span>
+                <span>Receitas</span>
+              </div>
+              <div className="legenda-item">
+                <span className="legenda-cor despesa"></span>
+                <span>Despesas</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  /* Card de investimentos */
-  .card-investimentos .secondary-value strong,
-  .card-investimentos .secondary-value strong > span {
-    font-size: 24px !important;
-  }
+      {/* Conteúdo em Grid */}
+      <div className="dashboard-grid">
+        {/* Próximos Vencimentos */}
+        <div className="dashboard-widget">
+          <div className="widget-header">
+            <h3>
+              <AlertCircle size={20} />
+              Próximos Vencimentos (7 dias)
+            </h3>
+          </div>
+          <div className="widget-content">
+            {dados.proximosVencimentos.length === 0 ? (
+              <div className="widget-empty">
+                <span>Nenhum vencimento próximo</span>
+              </div>
+            ) : (
+              <div className="vencimentos-list">
+                {dados.proximosVencimentos.map((trans) => (
+                  <div key={trans.id} className="vencimento-item">
+                    <div className="vencimento-info">
+                      <div 
+                        className="vencimento-icon"
+                        style={{ backgroundColor: trans.categorias?.cor }}
+                      >
+                        {trans.categorias?.icone}
+                      </div>
+                      <div className="vencimento-detalhes">
+                        <strong>{trans.descricao}</strong>
+                        <span className="vencimento-data">
+                          Vence em {formatDate(trans.data_vencimento)}
+                        </span>
+                      </div>
+                    </div>
+                    <span className={`vencimento-valor ${trans.tipo}`}>
+                      {formatCurrency(trans.valor)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
-  .card-investimentos .primary-value {
-    font-size: 16px !important;
-  }
+        {/* Top Categorias Despesas */}
+        <div className="dashboard-widget widget-categorias">
+          <div className="widget-header">
+            <h3>
+              <TrendingDown size={20} />
+              Maiores Despesas
+            </h3>
+          </div>
+          <div className="widget-filtros">
+            <select 
+              value={mesDespesas} 
+              onChange={(e) => setMesDespesas(parseInt(e.target.value))}
+              className="filtro-select"
+            >
+              <option value="1">Janeiro</option>
+              <option value="2">Fevereiro</option>
+              <option value="3">Março</option>
+              <option value="4">Abril</option>
+              <option value="5">Maio</option>
+              <option value="6">Junho</option>
+              <option value="7">Julho</option>
+              <option value="8">Agosto</option>
+              <option value="9">Setembro</option>
+              <option value="10">Outubro</option>
+              <option value="11">Novembro</option>
+              <option value="12">Dezembro</option>
+            </select>
+            <select 
+              value={anoDespesas} 
+              onChange={(e) => setAnoDespesas(parseInt(e.target.value))}
+              className="filtro-select"
+            >
+              {getAnosDisponiveis().map(ano => (
+                <option key={ano} value={ano}>{ano}</option>
+              ))}
+            </select>
+          </div>
+          <div className="widget-content">
+            {topCategoriasDespesas(mesDespesas, anoDespesas).length === 0 ? (
+              <div className="widget-empty">
+                <span>Nenhuma despesa no período</span>
+              </div>
+            ) : (
+              <div className="categorias-list">
+                {topCategoriasDespesas(mesDespesas, anoDespesas).map((cat, index) => (
+                  <div key={index} className="categoria-item">
+                    <div className="categoria-info">
+                      <span className="categoria-posicao">{index + 1}º</span>
+                      <div 
+                        className="categoria-icon"
+                        style={{ backgroundColor: cat.cor }}
+                      >
+                        {cat.icone}
+                      </div>
+                      <span className="categoria-nome">{cat.nome}</span>
+                    </div>
+                    <span className="categoria-valor">
+                      {formatCurrency(cat.valor)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
-  /* Rodapé dos cards */
-  .card-footer {
-    padding: 10px;
-    margin-top: 10px;
-  }
+        {/* Top Categorias Receitas */}
+        <div className="dashboard-widget widget-categorias">
+          <div className="widget-header">
+            <h3>
+              <TrendingUp size={20} />
+              Maiores Receitas
+            </h3>
+          </div>
+          <div className="widget-filtros">
+            <select 
+              value={mesReceitas} 
+              onChange={(e) => setMesReceitas(parseInt(e.target.value))}
+              className="filtro-select"
+            >
+              <option value="1">Janeiro</option>
+              <option value="2">Fevereiro</option>
+              <option value="3">Março</option>
+              <option value="4">Abril</option>
+              <option value="5">Maio</option>
+              <option value="6">Junho</option>
+              <option value="7">Julho</option>
+              <option value="8">Agosto</option>
+              <option value="9">Setembro</option>
+              <option value="10">Outubro</option>
+              <option value="11">Novembro</option>
+              <option value="12">Dezembro</option>
+            </select>
+            <select 
+              value={anoReceitas} 
+              onChange={(e) => setAnoReceitas(parseInt(e.target.value))}
+              className="filtro-select"
+            >
+              {getAnosDisponiveis().map(ano => (
+                <option key={ano} value={ano}>{ano}</option>
+              ))}
+            </select>
+          </div>
+          <div className="widget-content">
+            {topCategoriasReceitas(mesReceitas, anoReceitas).length === 0 ? (
+              <div className="widget-empty">
+                <span>Nenhuma receita no período</span>
+              </div>
+            ) : (
+              <div className="categorias-list">
+                {topCategoriasReceitas(mesReceitas, anoReceitas).map((cat, index) => (
+                  <div key={index} className="categoria-item">
+                    <div className="categoria-info">
+                      <span className="categoria-posicao">{index + 1}º</span>
+                      <div 
+                        className="categoria-icon"
+                        style={{ backgroundColor: cat.cor }}
+                      >
+                        {cat.icone}
+                      </div>
+                      <span className="categoria-nome">{cat.nome}</span>
+                    </div>
+                    <span className="categoria-valor categoria-valor-receita">
+                      {formatCurrency(cat.valor)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
-  .footer-item {
-    font-size: 10px;
-    gap: 4px;
-  }
+        {/* Minhas Contas */}
+        <div className="dashboard-widget widget-full">
+          <div className="widget-header">
+            <h3>
+              <Wallet size={20} />
+              Minhas Contas
+            </h3>
+            <Link to="/contas" className="widget-link">Ver todas</Link>
+          </div>
+          <div className="widget-content">
+            {dados.contas.length === 0 ? (
+              <div className="widget-empty">
+                <span>Nenhuma conta cadastrada</span>
+                <Link to="/contas" className="btn-secondary">
+                  Cadastrar Conta
+                </Link>
+              </div>
+            ) : (
+              <div className="contas-grid">
+                {dados.contas.slice(0, 6).map((conta) => (
+                  <div key={conta.id} className="conta-mini">
+                    <div 
+                      className="conta-mini-icon"
+                      style={{ backgroundColor: conta.cor }}
+                    >
+                      💳
+                    </div>
+                    <div className="conta-mini-info">
+                      <strong>{conta.nome}</strong>
+                      <span className={conta.saldo_atual >= 0 ? 'positivo' : 'negativo'}>
+                        {formatCurrency(conta.saldo_atual || 0)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
-  .footer-label {
-    font-size: 9px;
-    min-width: 45px;
-  }
-
-  .footer-value {
-    font-size: 11px;
-  }
-
-  /* Gráficos */
-  .grafico-container {
-    height: 200px;
-    padding: 10px 5px;
-  }
-
-  .grafico-barras {
-    gap: 4px;
-  }
-
-  .barra-item {
-    min-width: 25px;
-  }
-
-  .barra-valor {
-    font-size: 7px;
-    padding: 2px 3px;
-  }
-
-  .barra-mes {
-    font-size: 8px;
-    padding: 3px 0;
-  }
-
-  /* Contas bancárias */
-  .conta-item {
-    padding: 10px;
-    gap: 10px;
-  }
-
-  .conta-icone {
-    width: 35px;
-    height: 35px;
-    font-size: 16px;
-  }
-
-  .conta-nome {
-    font-size: 13px;
-  }
-
-  .conta-saldo {
-    font-size: 15px;
-  }
-
-  /* Categorias */
-  .categoria-item {
-    padding: 10px;
-    gap: 10px;
-  }
-
-  .categoria-info h4 {
-    font-size: 12px;
-  }
-
-  .categoria-gastos {
-    font-size: 11px;
-  }
-
-  .categoria-valor {
-    font-size: 14px;
-  }
-
-  /* Dicas */
-  .tip-item {
-    padding: 12px;
-  }
-
-  .tip-item h4 {
-    font-size: 12px;
-  }
-
-  .tip-item p {
-    font-size: 11px;
-  }
-
-  /* Botões */
-  .btn-primary,
-  .btn-secondary {
-    padding: 8px 12px;
-    font-size: 12px;
-  }
-
-  /* Espaçamentos gerais */
-  .dashboard-cards,
-  .dashboard-secondary-cards,
-  .dashboard-grid {
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-
-  /* Scrollbar mais fina no mobile */
-  .grafico-barras::-webkit-scrollbar {
-    height: 4px;
-  }
-}
-
-/* Widgets de Categorias */
-.widget-categorias {
-  background: #D3D3D3 !important;
-}
-
-.widget-filtros {
-  display: flex;
-  gap: 10px;
-  padding: 0 20px 15px 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.filtro-select {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 13px;
-  background: white;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-
-.filtro-select:hover {
-  border-color: #667eea;
-}
-
-.filtro-select:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.categoria-valor-receita {
-  color: #48bb78 !important;
-}
-
-.categorias-list {
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 5px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.categorias-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.categorias-list::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 3px;
-}
-
-.categorias-list::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
-}
-
-.categorias-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-/* Garantir tamanho do texto mesmo com ValorOculto */
-.card-investimentos .secondary-value strong,
-.card-investimentos .secondary-value strong > span {
-  font-size: 36px !important;
-}
-
-@media (max-width: 480px) {
-  .card-investimentos .secondary-value strong,
-  .card-investimentos .secondary-value strong > span {
-    font-size: 24px !important;
-  }
+      {/* Dicas Rápidas */}
+      <div className="dashboard-tips">
+        <h3>💡 Dicas Rápidas</h3>
+        <div className="tips-grid">
+          <div className="tip-card">
+            <strong>Organize-se</strong>
+            <p>Cadastre todas as suas contas e categorias para ter um controle completo</p>
+          </div>
+          <div className="tip-card">
+            <strong>Lance diariamente</strong>
+            <p>Registre suas transações todos os dias para não perder o controle</p>
+          </div>
+          <div className="tip-card">
+            <strong>Fique de olho</strong>
+            <p>Acompanhe seus vencimentos e não deixe contas atrasarem</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
