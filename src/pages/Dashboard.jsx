@@ -271,17 +271,19 @@ export default function Dashboard() {
   }
 
   // Top 5 categorias mais usadas no mês
-  const topCategorias = () => {
-    const hoje = new Date()
-    const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0]
-    const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().split('T')[0]
+  const topCategoriasDespesas = (mes, ano) => {
+    const mesNum = mes || new Date().getMonth() + 1
+    const anoNum = ano || new Date().getFullYear()
+    
+    const primeiroDiaMes = new Date(anoNum, mesNum - 1, 1).toISOString().split('T')[0]
+    const ultimoDiaMes = new Date(anoNum, mesNum, 0).toISOString().split('T')[0]
 
     const transacoesMes = dados.transacoes.filter(t => 
       t.data_transacao >= primeiroDiaMes && 
       t.data_transacao <= ultimoDiaMes &&
       t.pago &&
       t.tipo === 'despesa' &&
-      !t.is_transferencia  // EXCLUIR TRANSFERÊNCIAS
+      !t.is_transferencia
     )
 
     const categoriasSoma = {}
@@ -302,6 +304,46 @@ export default function Dashboard() {
       .sort((a, b) => b.valor - a.valor)
       .slice(0, 5)
   }
+
+  const topCategoriasReceitas = (mes, ano) => {
+    const mesNum = mes || new Date().getMonth() + 1
+    const anoNum = ano || new Date().getFullYear()
+    
+    const primeiroDiaMes = new Date(anoNum, mesNum - 1, 1).toISOString().split('T')[0]
+    const ultimoDiaMes = new Date(anoNum, mesNum, 0).toISOString().split('T')[0]
+
+    const transacoesMes = dados.transacoes.filter(t => 
+      t.data_transacao >= primeiroDiaMes && 
+      t.data_transacao <= ultimoDiaMes &&
+      t.pago &&
+      t.tipo === 'receita' &&
+      !t.is_transferencia
+    )
+
+    const categoriasSoma = {}
+    transacoesMes.forEach(t => {
+      const catNome = t.categorias?.nome || 'Sem categoria'
+      if (!categoriasSoma[catNome]) {
+        categoriasSoma[catNome] = {
+          nome: catNome,
+          valor: 0,
+          cor: t.categorias?.cor || '#48bb78',
+          icone: t.categorias?.icone || '💰'
+        }
+      }
+      categoriasSoma[catNome].valor += t.valor
+    })
+
+    return Object.values(categoriasSoma)
+      .sort((a, b) => b.valor - a.valor)
+      .slice(0, 5)
+  }
+
+  // States para filtros
+  const [mesDespesas, setMesDespesas] = useState(new Date().getMonth() + 1)
+  const [anoDespesas, setAnoDespesas] = useState(new Date().getFullYear())
+  const [mesReceitas, setMesReceitas] = useState(new Date().getMonth() + 1)
+  const [anoReceitas, setAnoReceitas] = useState(new Date().getFullYear())
 
   // Obter anos disponíveis nas transações
   const getAnosDisponiveis = () => {
@@ -814,22 +856,51 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Top Categorias */}
-        <div className="dashboard-widget">
+        {/* Top Categorias Despesas */}
+        <div className="dashboard-widget widget-categorias">
           <div className="widget-header">
             <h3>
               <TrendingDown size={20} />
-              Maiores Despesas do Mês
+              Maiores Despesas
             </h3>
           </div>
+          <div className="widget-filtros">
+            <select 
+              value={mesDespesas} 
+              onChange={(e) => setMesDespesas(parseInt(e.target.value))}
+              className="filtro-select"
+            >
+              <option value="1">Janeiro</option>
+              <option value="2">Fevereiro</option>
+              <option value="3">Março</option>
+              <option value="4">Abril</option>
+              <option value="5">Maio</option>
+              <option value="6">Junho</option>
+              <option value="7">Julho</option>
+              <option value="8">Agosto</option>
+              <option value="9">Setembro</option>
+              <option value="10">Outubro</option>
+              <option value="11">Novembro</option>
+              <option value="12">Dezembro</option>
+            </select>
+            <select 
+              value={anoDespesas} 
+              onChange={(e) => setAnoDespesas(parseInt(e.target.value))}
+              className="filtro-select"
+            >
+              {getAnosDisponiveis().map(ano => (
+                <option key={ano} value={ano}>{ano}</option>
+              ))}
+            </select>
+          </div>
           <div className="widget-content">
-            {topCategorias().length === 0 ? (
+            {topCategoriasDespesas(mesDespesas, anoDespesas).length === 0 ? (
               <div className="widget-empty">
-                <span>Nenhuma despesa no mês</span>
+                <span>Nenhuma despesa no período</span>
               </div>
             ) : (
               <div className="categorias-list">
-                {topCategorias().map((cat, index) => (
+                {topCategoriasDespesas(mesDespesas, anoDespesas).map((cat, index) => (
                   <div key={index} className="categoria-item">
                     <div className="categoria-info">
                       <span className="categoria-posicao">{index + 1}º</span>
@@ -842,6 +913,72 @@ export default function Dashboard() {
                       <span className="categoria-nome">{cat.nome}</span>
                     </div>
                     <span className="categoria-valor">
+                      {formatCurrency(cat.valor)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Top Categorias Receitas */}
+        <div className="dashboard-widget widget-categorias">
+          <div className="widget-header">
+            <h3>
+              <TrendingUp size={20} />
+              Maiores Receitas
+            </h3>
+          </div>
+          <div className="widget-filtros">
+            <select 
+              value={mesReceitas} 
+              onChange={(e) => setMesReceitas(parseInt(e.target.value))}
+              className="filtro-select"
+            >
+              <option value="1">Janeiro</option>
+              <option value="2">Fevereiro</option>
+              <option value="3">Março</option>
+              <option value="4">Abril</option>
+              <option value="5">Maio</option>
+              <option value="6">Junho</option>
+              <option value="7">Julho</option>
+              <option value="8">Agosto</option>
+              <option value="9">Setembro</option>
+              <option value="10">Outubro</option>
+              <option value="11">Novembro</option>
+              <option value="12">Dezembro</option>
+            </select>
+            <select 
+              value={anoReceitas} 
+              onChange={(e) => setAnoReceitas(parseInt(e.target.value))}
+              className="filtro-select"
+            >
+              {getAnosDisponiveis().map(ano => (
+                <option key={ano} value={ano}>{ano}</option>
+              ))}
+            </select>
+          </div>
+          <div className="widget-content">
+            {topCategoriasReceitas(mesReceitas, anoReceitas).length === 0 ? (
+              <div className="widget-empty">
+                <span>Nenhuma receita no período</span>
+              </div>
+            ) : (
+              <div className="categorias-list">
+                {topCategoriasReceitas(mesReceitas, anoReceitas).map((cat, index) => (
+                  <div key={index} className="categoria-item">
+                    <div className="categoria-info">
+                      <span className="categoria-posicao">{index + 1}º</span>
+                      <div 
+                        className="categoria-icon"
+                        style={{ backgroundColor: cat.cor }}
+                      >
+                        {cat.icone}
+                      </div>
+                      <span className="categoria-nome">{cat.nome}</span>
+                    </div>
+                    <span className="categoria-valor categoria-valor-receita">
                       {formatCurrency(cat.valor)}
                     </span>
                   </div>
