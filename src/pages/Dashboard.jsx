@@ -322,13 +322,17 @@ export default function Dashboard() {
 
     const categoriasSoma = {}
     transacoesMes.forEach(t => {
-      const catNome = t.categorias?.nome || 'Sem categoria'
+      // Usar subcategoria se existir, senão usar categoria
+      const catNome = t.subcategorias?.nome || t.categorias?.nome || 'Sem categoria'
+      const catCor = t.categorias?.cor || '#48bb78'
+      const catIcone = t.categorias?.icone || '💰'
+      
       if (!categoriasSoma[catNome]) {
         categoriasSoma[catNome] = {
           nome: catNome,
           valor: 0,
-          cor: t.categorias?.cor || '#48bb78',
-          icone: t.categorias?.icone || '💰'
+          cor: catCor,
+          icone: catIcone
         }
       }
       categoriasSoma[catNome].valor += t.valor
