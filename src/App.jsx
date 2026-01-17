@@ -12,6 +12,7 @@ import CadastroAtivos from './pages/CadastroAtivos'
 import Patrimonio from './pages/Patrimonio'
 import Relatorios from './pages/Relatorios'
 import Configuracoes from './pages/Configuracoes'
+import './styles/mobile.css'
 
 function App() {
   const { user, loading } = useAuth()
