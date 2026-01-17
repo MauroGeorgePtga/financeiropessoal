@@ -1138,6 +1138,30 @@ color: white; */
   color: #48bb78 !important;
 }
 
+.categorias-list {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.categorias-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.categorias-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.categorias-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.categorias-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
 /* Garantir tamanho do texto mesmo com ValorOculto */
 .card-investimentos .secondary-value strong,
 .card-investimentos .secondary-value strong > span {
