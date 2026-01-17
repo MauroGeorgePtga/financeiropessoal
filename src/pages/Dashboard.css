@@ -208,7 +208,6 @@ color: white; */
   margin-bottom: 20px;
 }
 
-/* Transaçoes Pendentes e Categorias */
 .secondary-card {
   background: #D3D3D3;
   padding: 20px;
@@ -1100,6 +1099,43 @@ color: white; */
   .grafico-barras::-webkit-scrollbar {
     height: 4px;
   }
+}
+
+/* Widgets de Categorias */
+.widget-categorias {
+  background: #D3D3D3 !important;
+}
+
+.widget-filtros {
+  display: flex;
+  gap: 10px;
+  padding: 0 20px 15px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.filtro-select {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.filtro-select:hover {
+  border-color: #667eea;
+}
+
+.filtro-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.categoria-valor-receita {
+  color: #48bb78 !important;
 }
 
 /* Garantir tamanho do texto mesmo com ValorOculto */
