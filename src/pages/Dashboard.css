@@ -21,14 +21,12 @@
   font-size: 16px;
 }
 
-/* Data campo superior direito */
 .dashboard-date {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 12px 20px;
-  /* background: white; */
-  background: #D3D3D3;
+  background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   color: #666;
@@ -43,10 +41,8 @@
   margin-bottom: 20px;
 }
 
-/* Quadros de Receita, Despesa e Saldo do Mes */
 .dashboard-card {
-  /* BackGround: white; */
-  background: #D3D3D3;
+  background: white;
   padding: 25px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -137,10 +133,10 @@
   color: #764ba2;
 }
 
-/* Cores dos Cards - Salto Total em Contas */
+/* Cores dos Cards */
 .card-saldo-total {
-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
-color: white; */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
 }
 
 .card-saldo-total .card-title,
@@ -326,8 +322,7 @@ color: white; */
 }
 
 .dashboard-widget {
-  /* background: white; */
-  background: #D3D3D3;
+  background: white;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -387,14 +382,12 @@ color: white; */
   gap: 12px;
 }
 
-/* Quadro de Contas Vencendo */
 .vencimento-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  /* background: #f9f9f9; */
-  background: #D3D3D3;
+  background: #f9f9f9;
   border-radius: 8px;
   transition: background-color 0.2s;
 }
@@ -455,14 +448,12 @@ color: white; */
   gap: 10px;
 }
 
-/* Quadro de Despesas por Categoria */
 .categoria-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  /* background: #f9f9f9; */
-  background: #D3D3D3;
+  background: #f9f9f9;
   border-radius: 8px;
 }
 
@@ -935,8 +926,183 @@ color: white; */
   }
 }
 
+/* Mobile Extra Pequeno - Otimização para celulares */
+@media (max-width: 480px) {
+  /* Header mais compacto */
+  .dashboard-header h1 {
+    font-size: 20px;
+  }
+
+  .dashboard-date {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  /* Cards mais compactos */
+  .dashboard-card {
+    padding: 15px;
+    border-radius: 8px;
+  }
+
+  .card-header {
+    margin-bottom: 10px;
+  }
+
+  .card-header h3 {
+    font-size: 13px;
+  }
+
+  .card-icon {
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+  }
+
+  /* Valores menores */
+  .card-value,
+  .primary-value {
+    font-size: 20px !important;
+  }
+
+  .secondary-value {
+    font-size: 13px;
+  }
+
+  /* Card de investimentos */
+  .card-investimentos .secondary-value strong,
+  .card-investimentos .secondary-value strong > span {
+    font-size: 24px !important;
+  }
+
+  .card-investimentos .primary-value {
+    font-size: 16px !important;
+  }
+
+  /* Rodapé dos cards */
+  .card-footer {
+    padding: 10px;
+    margin-top: 10px;
+  }
+
+  .footer-item {
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  .footer-label {
+    font-size: 9px;
+    min-width: 45px;
+  }
+
+  .footer-value {
+    font-size: 11px;
+  }
+
+  /* Gráficos */
+  .grafico-container {
+    height: 200px;
+    padding: 10px 5px;
+  }
+
+  .grafico-barras {
+    gap: 4px;
+  }
+
+  .barra-item {
+    min-width: 25px;
+  }
+
+  .barra-valor {
+    font-size: 7px;
+    padding: 2px 3px;
+  }
+
+  .barra-mes {
+    font-size: 8px;
+    padding: 3px 0;
+  }
+
+  /* Contas bancárias */
+  .conta-item {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .conta-icone {
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+  }
+
+  .conta-nome {
+    font-size: 13px;
+  }
+
+  .conta-saldo {
+    font-size: 15px;
+  }
+
+  /* Categorias */
+  .categoria-item {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .categoria-info h4 {
+    font-size: 12px;
+  }
+
+  .categoria-gastos {
+    font-size: 11px;
+  }
+
+  .categoria-valor {
+    font-size: 14px;
+  }
+
+  /* Dicas */
+  .tip-item {
+    padding: 12px;
+  }
+
+  .tip-item h4 {
+    font-size: 12px;
+  }
+
+  .tip-item p {
+    font-size: 11px;
+  }
+
+  /* Botões */
+  .btn-primary,
+  .btn-secondary {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  /* Espaçamentos gerais */
+  .dashboard-cards,
+  .dashboard-secondary-cards,
+  .dashboard-grid {
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  /* Scrollbar mais fina no mobile */
+  .grafico-barras::-webkit-scrollbar {
+    height: 4px;
+  }
+}
+
 /* Garantir tamanho do texto mesmo com ValorOculto */
 .card-investimentos .secondary-value strong,
 .card-investimentos .secondary-value strong > span {
   font-size: 36px !important;
+}
+
+@media (max-width: 480px) {
+  .card-investimentos .secondary-value strong,
+  .card-investimentos .secondary-value strong > span {
+    font-size: 24px !important;
+  }
 }
