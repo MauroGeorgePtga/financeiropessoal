@@ -472,6 +472,12 @@
   margin-bottom: 30px;
 }
 
+/* Destaque - Maior quando no topo */
+.categorias-container.categorias-destaque {
+  grid-column: 1 / -1;
+  gap: 25px;
+}
+
 .categorias-card {
   background: white;
   border-radius: 12px;
@@ -479,11 +485,15 @@
   overflow: hidden;
 }
 
+.categorias-destaque .categorias-card {
+  min-height: 600px;
+}
+
 .categorias-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 20px 25px;
   border-bottom: 1px solid #f0f0f0;
   background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
 }
@@ -493,15 +503,15 @@
   align-items: center;
   gap: 10px;
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
   color: #333;
   font-weight: 600;
 }
 
 .categorias-total {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: 8px;
 }
 
@@ -519,6 +529,10 @@
   padding: 20px;
   max-height: 500px;
   overflow-y: auto;
+}
+
+.categorias-destaque .categorias-content {
+  max-height: 520px;
 }
 
 .categorias-empty {
