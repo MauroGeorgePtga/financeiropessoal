@@ -20,6 +20,7 @@ export default function ContasBancarias() {
     conta: '',
     saldo_inicial: 0,
     cor: '#667eea',
+    logo: '🏦',
     observacoes: ''
   })
   const [error, setError] = useState('')
@@ -36,6 +37,23 @@ export default function ContasBancarias() {
   const cores = [
     '#667eea', '#48bb78', '#f56565', '#ed8936', '#38b2ac', 
     '#9f7aea', '#4299e1', '#f687b3', '#ecc94b', '#fc8181'
+  ]
+
+  const logosBancos = [
+    { emoji: '🏦', nome: 'Banco Genérico' },
+    { emoji: '🇧🇷', nome: 'Banco do Brasil' },
+    { emoji: '🔴', nome: 'Bradesco' },
+    { emoji: '🔵', nome: 'Caixa' },
+    { emoji: '🟣', nome: 'Nubank' },
+    { emoji: '🟡', nome: 'Banco Inter' },
+    { emoji: '🟠', nome: 'Itaú' },
+    { emoji: '⚫', nome: 'Santander' },
+    { emoji: '💳', nome: 'Cartão' },
+    { emoji: '💰', nome: 'Dinheiro' },
+    { emoji: '📱', nome: 'Digital' },
+    { emoji: '💎', nome: 'Investimento' },
+    { emoji: '🪙', nome: 'Cripto' },
+    { emoji: '🏪', nome: 'Outros' }
   ]
 
   useEffect(() => {
@@ -114,6 +132,7 @@ export default function ContasBancarias() {
       conta: conta.conta || '',
       saldo_inicial: conta.saldo_inicial || 0,
       cor: conta.cor || '#667eea',
+      logo: conta.logo || '🏦',
       observacoes: conta.observacoes || ''
     })
     setShowModal(true)
@@ -279,7 +298,7 @@ export default function ContasBancarias() {
             <div key={conta.id} className="conta-card">
               <div className="conta-header">
                 <div className="conta-icon" style={{ backgroundColor: conta.cor }}>
-                  💳
+                  {conta.logo || '💳'}
                 </div>
                 <div className="conta-actions">
                   <button
@@ -418,6 +437,23 @@ export default function ContasBancarias() {
                     onChange={(e) => setFormData({ ...formData, saldo_inicial: parseFloat(e.target.value) })}
                     required
                   />
+                </div>
+
+                <div className="form-group full-width">
+                  <label>Ícone do Banco</label>
+                  <div className="logo-picker">
+                    {logosBancos.map(logo => (
+                      <button
+                        key={logo.emoji}
+                        type="button"
+                        className={`logo-option ${formData.logo === logo.emoji ? 'active' : ''}`}
+                        onClick={() => setFormData({ ...formData, logo: logo.emoji })}
+                        title={logo.nome}
+                      >
+                        {logo.emoji}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="form-group full-width">
