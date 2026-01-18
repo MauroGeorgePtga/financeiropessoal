@@ -45,6 +45,7 @@ export default function Relatorios() {
     despesasBanco: 0,
     despesasDinheiro: 0
   })
+  const [categoriasExpandidas, setCategoriasExpandidas] = useState({})
 
   const COLORS = [
     '#667eea', '#48bb78', '#f56565', '#ed8936', '#38b2ac',
@@ -100,6 +101,7 @@ export default function Relatorios() {
         .select(`
           *,
           categorias(nome, cor, icone, tipo),
+          subcategorias(nome),
           contas_bancarias(nome, cor)
         `)
         .eq('user_id', user.id)
@@ -174,6 +176,95 @@ export default function Relatorios() {
     return Object.entries(categoriasSoma)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
+  }
+
+  // Processar despesas por categoria e subcategoria
+  const getDespesasPorCategoriaSubcategoria = () => {
+    const despesas = dados.transacoes.filter(t => t.tipo === 'despesa' && !t.is_transferencia)
+    const categorias = {}
+
+    despesas.forEach(t => {
+      const catNome = t.categorias?.nome || 'Sem categoria'
+      const catCor = t.categorias?.cor || '#999'
+      const catIcone = t.categorias?.icone || '📦'
+      const subNome = t.subcategorias?.nome || 'Sem subcategoria'
+
+      if (!categorias[catNome]) {
+        categorias[catNome] = {
+          nome: catNome,
+          cor: catCor,
+          icone: catIcone,
+          total: 0,
+          subcategorias: {}
+        }
+      }
+
+      categorias[catNome].total += t.valor
+
+      if (!categorias[catNome].subcategorias[subNome]) {
+        categorias[catNome].subcategorias[subNome] = 0
+      }
+      categorias[catNome].subcategorias[subNome] += t.valor
+    })
+
+    // Converter para array e ordenar
+    return Object.values(categorias)
+      .map(cat => ({
+        ...cat,
+        subcategorias: Object.entries(cat.subcategorias)
+          .map(([nome, valor]) => ({ nome, valor }))
+          .sort((a, b) => b.valor - a.valor)
+      }))
+      .sort((a, b) => b.total - a.total)
+  }
+
+  // Processar receitas por categoria e subcategoria
+  const getReceitasPorCategoriaSubcategoria = () => {
+    const receitas = dados.transacoes.filter(t => t.tipo === 'receita' && !t.is_transferencia)
+    const categorias = {}
+
+    receitas.forEach(t => {
+      const catNome = t.categorias?.nome || 'Sem categoria'
+      const catCor = t.categorias?.cor || '#48bb78'
+      const catIcone = t.categorias?.icone || '💰'
+      const subNome = t.subcategorias?.nome || 'Sem subcategoria'
+
+      if (!categorias[catNome]) {
+        categorias[catNome] = {
+          nome: catNome,
+          cor: catCor,
+          icone: catIcone,
+          total: 0,
+          subcategorias: {}
+        }
+      }
+
+      categorias[catNome].total += t.valor
+
+      if (!categorias[catNome].subcategorias[subNome]) {
+        categorias[catNome].subcategorias[subNome] = 0
+      }
+      categorias[catNome].subcategorias[subNome] += t.valor
+    })
+
+    // Converter para array e ordenar
+    return Object.values(categorias)
+      .map(cat => ({
+        ...cat,
+        subcategorias: Object.entries(cat.subcategorias)
+          .map(([nome, valor]) => ({ nome, valor }))
+          .sort((a, b) => b.valor - a.valor)
+      }))
+      .sort((a, b) => b.total - a.total)
+  }
+
+  // Toggle expansão de categoria
+  const toggleCategoria = (tipo, catNome) => {
+    const key = `${tipo}-${catNome}`
+    setCategoriasExpandidas(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }))
   }
 
   // Dados para gráfico de barras - Receitas vs Despesas por Mês
@@ -455,6 +546,129 @@ export default function Relatorios() {
                 </PieChart>
               </ResponsiveContainer>
             )}
+          </div>
+        </div>
+
+        {/* Categorias e Subcategorias - Despesas e Receitas */}
+        <div className="categorias-container">
+          {/* Despesas */}
+          <div className="categorias-card">
+            <div className="categorias-header">
+              <h3>
+                <TrendingDown size={20} />
+                Despesas por Categoria
+              </h3>
+              <span className="categorias-total despesas">
+                {formatCurrency(resumo.totalDespesas)}
+              </span>
+            </div>
+            <div className="categorias-content">
+              {getDespesasPorCategoriaSubcategoria().length === 0 ? (
+                <div className="categorias-empty">Nenhuma despesa no período</div>
+              ) : (
+                getDespesasPorCategoriaSubcategoria().map((cat, index) => {
+                  const key = `despesa-${cat.nome}`
+                  const isExpanded = categoriasExpandidas[key]
+                  
+                  return (
+                    <div key={index} className="categoria-group">
+                      <div 
+                        className="categoria-header-item"
+                        onClick={() => toggleCategoria('despesa', cat.nome)}
+                      >
+                        <div className="categoria-info-item">
+                          <span className="categoria-toggle">{isExpanded ? '▼' : '▶'}</span>
+                          <div 
+                            className="categoria-icon-box"
+                            style={{ backgroundColor: cat.cor }}
+                          >
+                            {cat.icone}
+                          </div>
+                          <span className="categoria-nome-item">{cat.nome}</span>
+                          <span className="categoria-count">({cat.subcategorias.length})</span>
+                        </div>
+                        <span className="categoria-valor-item">
+                          {formatCurrency(cat.total)}
+                        </span>
+                      </div>
+                      
+                      {isExpanded && (
+                        <div className="subcategorias-expandidas">
+                          {cat.subcategorias.map((sub, subIndex) => (
+                            <div key={subIndex} className="subcategoria-row">
+                              <span className="subcategoria-nome-item">{sub.nome}</span>
+                              <span className="subcategoria-valor-item">
+                                {formatCurrency(sub.valor)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Receitas */}
+          <div className="categorias-card">
+            <div className="categorias-header">
+              <h3>
+                <TrendingUp size={20} />
+                Receitas por Categoria
+              </h3>
+              <span className="categorias-total receitas">
+                {formatCurrency(resumo.totalReceitas)}
+              </span>
+            </div>
+            <div className="categorias-content">
+              {getReceitasPorCategoriaSubcategoria().length === 0 ? (
+                <div className="categorias-empty">Nenhuma receita no período</div>
+              ) : (
+                getReceitasPorCategoriaSubcategoria().map((cat, index) => {
+                  const key = `receita-${cat.nome}`
+                  const isExpanded = categoriasExpandidas[key]
+                  
+                  return (
+                    <div key={index} className="categoria-group">
+                      <div 
+                        className="categoria-header-item"
+                        onClick={() => toggleCategoria('receita', cat.nome)}
+                      >
+                        <div className="categoria-info-item">
+                          <span className="categoria-toggle">{isExpanded ? '▼' : '▶'}</span>
+                          <div 
+                            className="categoria-icon-box"
+                            style={{ backgroundColor: cat.cor }}
+                          >
+                            {cat.icone}
+                          </div>
+                          <span className="categoria-nome-item">{cat.nome}</span>
+                          <span className="categoria-count">({cat.subcategorias.length})</span>
+                        </div>
+                        <span className="categoria-valor-item receita-valor">
+                          {formatCurrency(cat.total)}
+                        </span>
+                      </div>
+                      
+                      {isExpanded && (
+                        <div className="subcategorias-expandidas">
+                          {cat.subcategorias.map((sub, subIndex) => (
+                            <div key={subIndex} className="subcategoria-row">
+                              <span className="subcategoria-nome-item">{sub.nome}</span>
+                              <span className="subcategoria-valor-item receita-valor">
+                                {formatCurrency(sub.valor)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
+              )}
+            </div>
           </div>
         </div>
 
