@@ -40,6 +40,21 @@ export default function Transacoes() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  // Auto-dismiss de mensagens
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(''), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [success])
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(''), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [error])
+
   useEffect(() => {
     if (user) {
       carregarDados()
@@ -69,10 +84,16 @@ export default function Transacoes() {
         .eq('user_id', user.id)
         .eq('ativo', true)
         .order('nome')
+        .limit(100) // Force nova query
 
       if (contasError) throw contasError
       
-      console.log('🔄 Contas recarregadas:', contasData?.map(c => ({ nome: c.nome, saldo: c.saldo_atual })))
+      console.log('🔄 Contas recarregadas:', contasData?.map(c => ({ 
+        nome: c.nome, 
+        saldo: c.saldo_atual,
+        logo_url: c.logo_url,
+        tem_logo: !!c.logo_url
+      })))
 
       const { data: catData, error: catError } = await supabase
         .from('categorias')
@@ -374,14 +395,23 @@ export default function Transacoes() {
   const toggleGrupo = (chave) => {
     setGruposExpandidos(prev => ({
       ...prev,
-      [chave]: !prev[chave]
+      [chave]: prev[chave] === undefined ? true : !prev[chave] // Primeira vez abre, depois alterna
     }))
   }
 
-  const getNomeConta = (chave) => {
-    if (chave === 'dinheiro') return 'Dinheiro'
+  const getContaInfo = (chave) => {
+    if (chave === 'dinheiro') {
+      return { nome: 'Dinheiro', logo_url: null, cor: '#48bb78' }
+    }
     const conta = contas.find(c => c.id === chave)
-    return conta ? `${conta.icone || '💳'} ${conta.nome}` : 'Conta Desconhecida'
+    const info = conta ? {
+      nome: conta.nome,
+      logo_url: conta.logo_url,
+      cor: conta.cor || '#667eea'
+    } : { nome: 'Conta Desconhecida', logo_url: null, cor: '#999' }
+    
+    console.log('📊 Conta Info:', chave, info)
+    return info
   }
 
   if (loading) {
@@ -527,7 +557,8 @@ export default function Transacoes() {
         <div className="transacoes-agrupadas">
           {Object.entries(transacoesPorConta).map(([chave, transacoesDaConta]) => {
             const { saldoInicial, receitas, despesas, saldoAtual } = calcularTotaisConta(chave, transacoesDaConta)
-            const isExpanded = gruposExpandidos[chave] !== false // Por padrão todos expandidos
+            const isExpanded = gruposExpandidos[chave] === true // Por padrão todos retraídos
+            const contaInfo = getContaInfo(chave)
             
             return (
               <div key={chave} className="grupo-conta">
@@ -537,7 +568,16 @@ export default function Transacoes() {
                 >
                   <div className="grupo-info">
                     <span className="grupo-icone">{isExpanded ? '▼' : '▶'}</span>
-                    <h3 className="grupo-nome">{getNomeConta(chave)}</h3>
+                    {contaInfo.logo_url ? (
+                      <div className="grupo-logo" style={{ backgroundColor: contaInfo.cor }}>
+                        <img src={contaInfo.logo_url} alt={contaInfo.nome} />
+                      </div>
+                    ) : (
+                      <div className="grupo-logo" style={{ backgroundColor: contaInfo.cor }}>
+                        💳
+                      </div>
+                    )}
+                    <h3 className="grupo-nome">{contaInfo.nome}</h3>
                     <span className="grupo-qtd">({transacoesDaConta.length})</span>
                   </div>
                   
