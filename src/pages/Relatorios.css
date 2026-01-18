@@ -463,3 +463,199 @@
   display: none !important;
   content: none !important;
 }
+
+/* Categorias e Subcategorias Container */
+.categorias-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.categorias-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.categorias-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #f0f0f0;
+  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+}
+
+.categorias-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+  font-weight: 600;
+}
+
+.categorias-total {
+  font-size: 20px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.categorias-total.despesas {
+  color: #f56565;
+  background: #fee;
+}
+
+.categorias-total.receitas {
+  color: #48bb78;
+  background: #efe;
+}
+
+.categorias-content {
+  padding: 20px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.categorias-empty {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 14px;
+}
+
+/* Grupo de Categoria */
+.categoria-group {
+  margin-bottom: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.categoria-group:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.categoria-header-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  cursor: pointer;
+  background: #fafafa;
+  transition: background 0.2s;
+}
+
+.categoria-header-item:hover {
+  background: #f0f0f0;
+}
+
+.categoria-info-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.categoria-toggle {
+  font-size: 12px;
+  color: #667eea;
+  font-weight: bold;
+  width: 16px;
+  transition: transform 0.2s;
+}
+
+.categoria-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.categoria-nome-item {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.categoria-count {
+  font-size: 12px;
+  color: #999;
+}
+
+.categoria-valor-item {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f56565;
+}
+
+.categoria-valor-item.receita-valor {
+  color: #48bb78;
+}
+
+/* Subcategorias Expandidas */
+.subcategorias-expandidas {
+  background: white;
+  border-top: 1px solid #e0e0e0;
+  padding: 8px 15px 8px 50px;
+}
+
+.subcategoria-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.subcategoria-row:last-child {
+  border-bottom: none;
+}
+
+.subcategoria-nome-item {
+  font-size: 13px;
+  color: #666;
+}
+
+.subcategoria-valor-item {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f56565;
+}
+
+.subcategoria-valor-item.receita-valor {
+  color: #48bb78;
+}
+
+/* Scrollbar */
+.categorias-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.categorias-content::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+
+.categorias-content::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 3px;
+}
+
+.categorias-content::-webkit-scrollbar-thumb:hover {
+  background: #ccc;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .categorias-container {
+    grid-template-columns: 1fr;
+  }
+}
