@@ -20,11 +20,13 @@ export default function ContasBancarias() {
     conta: '',
     saldo_inicial: 0,
     cor: '#667eea',
-    logo: '🏦',
+    logo_url: '',
     observacoes: ''
   })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [previewLogo, setPreviewLogo] = useState(null)
 
   const tiposConta = [
     { value: 'corrente', label: 'Conta Corrente' },
@@ -39,22 +41,63 @@ export default function ContasBancarias() {
     '#9f7aea', '#4299e1', '#f687b3', '#ecc94b', '#fc8181'
   ]
 
-  const logosBancos = [
-    { emoji: '🏦', nome: 'Banco Genérico' },
-    { emoji: '🇧🇷', nome: 'Banco do Brasil' },
-    { emoji: '🔴', nome: 'Bradesco' },
-    { emoji: '🔵', nome: 'Caixa' },
-    { emoji: '🟣', nome: 'Nubank' },
-    { emoji: '🟡', nome: 'Banco Inter' },
-    { emoji: '🟠', nome: 'Itaú' },
-    { emoji: '⚫', nome: 'Santander' },
-    { emoji: '💳', nome: 'Cartão' },
-    { emoji: '💰', nome: 'Dinheiro' },
-    { emoji: '📱', nome: 'Digital' },
-    { emoji: '💎', nome: 'Investimento' },
-    { emoji: '🪙', nome: 'Cripto' },
-    { emoji: '🏪', nome: 'Outros' }
-  ]
+  // Função para upload de logo
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      setError('Por favor, selecione uma imagem válida')
+      return
+    }
+
+    // Validar tamanho (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Imagem muito grande. Máximo 2MB')
+      return
+    }
+
+    try {
+      setUploadingLogo(true)
+      setError('')
+
+      // Criar nome único para o arquivo
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.id}_${Date.now()}.${fileExt}`
+      const filePath = `logos-contas/${fileName}`
+
+      // Upload para Supabase Storage
+      const { data, error: uploadError } = await supabase.storage
+        .from('contas-bancarias')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
+
+      if (uploadError) throw uploadError
+
+      // Obter URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from('contas-bancarias')
+        .getPublicUrl(filePath)
+
+      setFormData({ ...formData, logo_url: publicUrl })
+      setPreviewLogo(URL.createObjectURL(file))
+      
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error)
+      setError('Erro ao fazer upload da imagem')
+    } finally {
+      setUploadingLogo(false)
+    }
+  }
+
+  // Função para remover logo
+  const handleRemoverLogo = () => {
+    setFormData({ ...formData, logo_url: '' })
+    setPreviewLogo(null)
+  }
 
   useEffect(() => {
     if (user) {
@@ -132,7 +175,7 @@ export default function ContasBancarias() {
       conta: conta.conta || '',
       saldo_inicial: conta.saldo_inicial || 0,
       cor: conta.cor || '#667eea',
-      logo: conta.logo || '🏦',
+      logo_url: conta.logo_url || '',
       observacoes: conta.observacoes || ''
     })
     setShowModal(true)
@@ -179,6 +222,7 @@ export default function ContasBancarias() {
     setShowModal(false)
     setEditingConta(null)
     setError('')
+    setPreviewLogo(null)
   }
 
   const contasFiltradas = contas.filter(conta =>
@@ -298,7 +342,11 @@ export default function ContasBancarias() {
             <div key={conta.id} className="conta-card">
               <div className="conta-header">
                 <div className="conta-icon" style={{ backgroundColor: conta.cor }}>
-                  {conta.logo || '💳'}
+                  {conta.logo_url ? (
+                    <img src={conta.logo_url} alt={conta.nome} className="conta-logo-img" />
+                  ) : (
+                    '💳'
+                  )}
                 </div>
                 <div className="conta-actions">
                   <button
@@ -440,19 +488,47 @@ export default function ContasBancarias() {
                 </div>
 
                 <div className="form-group full-width">
-                  <label>Ícone do Banco</label>
-                  <div className="logo-picker">
-                    {logosBancos.map(logo => (
-                      <button
-                        key={logo.emoji}
-                        type="button"
-                        className={`logo-option ${formData.logo === logo.emoji ? 'active' : ''}`}
-                        onClick={() => setFormData({ ...formData, logo: logo.emoji })}
-                        title={logo.nome}
-                      >
-                        {logo.emoji}
-                      </button>
-                    ))}
+                  <label>Logo do Banco</label>
+                  <div className="logo-upload-container">
+                    {(previewLogo || formData.logo_url) ? (
+                      <div className="logo-preview">
+                        <img 
+                          src={previewLogo || formData.logo_url} 
+                          alt="Logo" 
+                          className="logo-preview-img"
+                        />
+                        <button
+                          type="button"
+                          className="btn-remove-logo"
+                          onClick={handleRemoverLogo}
+                          title="Remover logo"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="logo-upload-area">
+                        <input
+                          type="file"
+                          id="logo-upload"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          disabled={uploadingLogo}
+                          style={{ display: 'none' }}
+                        />
+                        <label htmlFor="logo-upload" className="logo-upload-label">
+                          {uploadingLogo ? (
+                            <span>Enviando...</span>
+                          ) : (
+                            <>
+                              <Plus size={24} />
+                              <span>Adicionar Logo</span>
+                              <small>PNG, JPG até 2MB</small>
+                            </>
+                          )}
+                        </label>
+                      </div>
+                    )}
                   </div>
                 </div>
 
