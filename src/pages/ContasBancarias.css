@@ -519,6 +519,39 @@
   transform: scale(1.15);
 }
 
+/* Logo Picker */
+.logo-picker {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.logo-option {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-option:hover {
+  transform: scale(1.1);
+  border-color: #667eea;
+}
+
+.logo-option.active {
+  border-color: #667eea;
+  border-width: 3px;
+  transform: scale(1.15);
+  background: #f0f4ff;
+}
+
 .modal-footer {
   display: flex;
   justify-content: flex-end;
