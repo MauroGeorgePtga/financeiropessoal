@@ -132,19 +132,23 @@ export default function ContasBancarias() {
 
     try {
       if (editingConta) {
-        // Atualizar
+        // Atualizar - NÃO sobrescrever saldo_atual (é calculado automaticamente)
+        const { logo_url, saldo_inicial, ...dadosParaAtualizar } = formData
+        
         const { error } = await supabase
           .from('contas_bancarias')
           .update({
-            ...formData,
-            saldo_atual: formData.saldo_inicial
+            ...dadosParaAtualizar,
+            logo_url,
+            saldo_inicial
+            // saldo_atual NÃO é atualizado aqui - é calculado por triggers
           })
           .eq('id', editingConta.id)
 
         if (error) throw error
         setSuccess('Conta atualizada com sucesso!')
       } else {
-        // Criar
+        // Criar - saldo_atual = saldo_inicial na criação
         const { error } = await supabase
           .from('contas_bancarias')
           .insert([{
