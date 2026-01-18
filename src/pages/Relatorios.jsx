@@ -482,75 +482,9 @@ export default function Relatorios() {
           </div>
         </div>
 
-        {/* Evolução do Saldo */}
-        <div className="grafico-card grafico-full">
-          <div className="grafico-header">
-            <h3>
-              <TrendingUp size={20} />
-              Evolução do Saldo Acumulado
-            </h3>
-          </div>
-          <div className="grafico-content">
-            {getDadosLinhaEvolucao().length === 0 ? (
-              <div className="grafico-empty">Nenhum dado disponível</div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={getDadosLinhaEvolucao()}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="saldo" 
-                    stroke="#667eea" 
-                    strokeWidth={3}
-                    name="Saldo Acumulado"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </div>
-
-        {/* Banco vs Dinheiro */}
-        <div className="grafico-card">
-          <div className="grafico-header">
-            <h3>
-              <PieChartIcon size={20} />
-              Banco vs Dinheiro
-            </h3>
-          </div>
-          <div className="grafico-content">
-            {getDadosPizzaFormaPagamento().length === 0 ? (
-              <div className="grafico-empty">Nenhum dado disponível</div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={getDadosPizzaFormaPagamento()}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {getDadosPizzaFormaPagamento().map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </div>
 
         {/* Categorias e Subcategorias - Despesas e Receitas */}
-        <div className="categorias-container">
+        <div className="categorias-container categorias-destaque">
           {/* Despesas */}
           <div className="categorias-card">
             <div className="categorias-header">
@@ -669,6 +603,73 @@ export default function Relatorios() {
                 })
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Evolução do Saldo */}
+        <div className="grafico-card grafico-full">
+          <div className="grafico-header">
+            <h3>
+              <TrendingUp size={20} />
+              Evolução do Saldo Acumulado
+            </h3>
+          </div>
+          <div className="grafico-content">
+            {getDadosLinhaEvolucao().length === 0 ? (
+              <div className="grafico-empty">Nenhum dado disponível</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={getDadosLinhaEvolucao()}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="mes" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => formatCurrency(value)} />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="saldo" 
+                    stroke="#667eea" 
+                    strokeWidth={3}
+                    name="Saldo Acumulado"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+
+        {/* Banco vs Dinheiro */}
+        <div className="grafico-card">
+          <div className="grafico-header">
+            <h3>
+              <PieChartIcon size={20} />
+              Banco vs Dinheiro
+            </h3>
+          </div>
+          <div className="grafico-content">
+            {getDadosPizzaFormaPagamento().length === 0 ? (
+              <div className="grafico-empty">Nenhum dado disponível</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={getDadosPizzaFormaPagamento()}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {getDadosPizzaFormaPagamento().map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => formatCurrency(value)} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 
