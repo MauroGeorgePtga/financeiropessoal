@@ -87,7 +87,11 @@ export default function Transacoes() {
 
       if (contasError) throw contasError
       
-      console.log('🔄 Contas recarregadas:', contasData?.map(c => ({ nome: c.nome, saldo: c.saldo_atual })))
+      console.log('🔄 Contas recarregadas:', contasData?.map(c => ({ 
+        nome: c.nome, 
+        saldo: c.saldo_atual,
+        logo_url: c.logo_url 
+      })))
 
       const { data: catData, error: catError } = await supabase
         .from('categorias')
@@ -398,11 +402,14 @@ export default function Transacoes() {
       return { nome: 'Dinheiro', logo_url: null, cor: '#48bb78' }
     }
     const conta = contas.find(c => c.id === chave)
-    return conta ? {
+    const info = conta ? {
       nome: conta.nome,
       logo_url: conta.logo_url,
       cor: conta.cor || '#667eea'
     } : { nome: 'Conta Desconhecida', logo_url: null, cor: '#999' }
+    
+    console.log('📊 Conta Info:', chave, info)
+    return info
   }
 
   if (loading) {
