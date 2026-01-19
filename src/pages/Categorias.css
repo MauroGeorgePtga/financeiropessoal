@@ -74,8 +74,9 @@
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
-  position: relative;
   margin-bottom: 15px;
+  display: block;
+  width: 100%;
 }
 
 .categoria-item:hover {
@@ -181,28 +182,11 @@
 
 /* Subcategorias */
 .subcategorias-list {
-  padding: 0 20px 20px 20px;
+  padding: 15px 20px 20px 20px;
   border-top: 1px solid #f0f0f0;
-  padding-top: 15px;
-  background: white;
-  position: relative;
-  z-index: 1;
-  animation: expandSubcategorias 0.3s ease-out;
-}
-
-@keyframes expandSubcategorias {
-  from {
-    opacity: 0;
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-  to {
-    opacity: 1;
-    max-height: 1000px;
-    padding-top: 15px;
-    padding-bottom: 20px;
-  }
+  background: #fafafa;
+  display: block;
+  width: 100%;
 }
 
 .subcategoria-item {
@@ -210,7 +194,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 15px;
-  background: #f9f9f9;
+  background: white;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
   margin-bottom: 8px;
   transition: background-color 0.2s;
