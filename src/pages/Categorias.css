@@ -66,7 +66,7 @@
 .categorias-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
 }
 
 .categoria-item {
@@ -75,6 +75,8 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: visible;
   transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  margin-bottom: 15px;
 }
 
 .categoria-item:hover {
@@ -183,6 +185,9 @@
   padding: 0 20px 20px 20px;
   border-top: 1px solid #f0f0f0;
   padding-top: 15px;
+  background: white;
+  position: relative;
+  z-index: 1;
 }
 
 .subcategoria-item {
