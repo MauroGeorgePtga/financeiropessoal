@@ -260,7 +260,7 @@ export default function Categorias() {
   const toggleCategoria = (id) => {
     setExpandedCategorias(prev => ({
       ...prev,
-      [id]: prev[id] === true ? false : true
+      [id]: !prev[id]
     }))
   }
 
@@ -363,23 +363,14 @@ export default function Categorias() {
 
             return (
               <div key={categoria.id} className="categoria-item">
-                <div 
-                  className="categoria-header"
-                  onClick={() => subs.length > 0 && toggleCategoria(categoria.id)}
-                  style={{ cursor: subs.length > 0 ? 'pointer' : 'default' }}
-                >
+                <div className="categoria-header">
                   <div className="categoria-info">
                     <button 
                       className="expand-btn"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        if (subs.length > 0) toggleCategoria(categoria.id)
-                      }}
+                      onClick={() => toggleCategoria(categoria.id)}
                     >
-                      {subs.length > 0 ? (
+                      {subs.length > 0 && (
                         isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />
-                      ) : (
-                        <span style={{ width: '20px', display: 'inline-block' }}></span>
                       )}
                     </button>
                     
@@ -401,7 +392,7 @@ export default function Categorias() {
                     </div>
                   </div>
 
-                  <div className="categoria-actions" onClick={(e) => e.stopPropagation()}>
+                  <div className="categoria-actions">
                     <button
                       className="btn-icon btn-add"
                       onClick={() => abrirModalSubcategoria(categoria.id)}
