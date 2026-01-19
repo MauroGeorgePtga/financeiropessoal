@@ -66,17 +66,15 @@
 .categorias-list {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 10px;
 }
 
 .categoria-item {
   background: white;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
-  margin-bottom: 15px;
-  display: block;
-  width: 100%;
 }
 
 .categoria-item:hover {
@@ -182,11 +180,9 @@
 
 /* Subcategorias */
 .subcategorias-list {
-  padding: 15px 20px 20px 20px;
+  padding: 0 20px 20px 20px;
   border-top: 1px solid #f0f0f0;
-  background: #fafafa;
-  display: block;
-  width: 100%;
+  padding-top: 15px;
 }
 
 .subcategoria-item {
@@ -194,8 +190,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 15px;
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: #f9f9f9;
   border-radius: 8px;
   margin-bottom: 8px;
   transition: background-color 0.2s;
