@@ -260,7 +260,7 @@ export default function Categorias() {
   const toggleCategoria = (id) => {
     setExpandedCategorias(prev => ({
       ...prev,
-      [id]: !prev[id]
+      [id]: prev[id] === true ? false : true
     }))
   }
 
