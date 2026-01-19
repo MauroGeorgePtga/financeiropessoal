@@ -73,7 +73,6 @@
   background: white;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: visible;
   transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
   margin-bottom: 15px;
@@ -188,6 +187,22 @@
   background: white;
   position: relative;
   z-index: 1;
+  animation: expandSubcategorias 0.3s ease-out;
+}
+
+@keyframes expandSubcategorias {
+  from {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+    padding-top: 15px;
+    padding-bottom: 20px;
+  }
 }
 
 .subcategoria-item {
