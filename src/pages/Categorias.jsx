@@ -360,17 +360,28 @@ export default function Categorias() {
           {categoriasFiltradas.map((categoria) => {
             const subs = getSubcategoriasPorCategoria(categoria.id)
             const isExpanded = expandedCategorias[categoria.id]
+            
+            console.log('Categoria:', categoria.nome, 'Subs:', subs.length, 'Expanded:', isExpanded)
 
             return (
               <div key={categoria.id} className="categoria-item">
-                <div className="categoria-header">
+                <div 
+                  className="categoria-header"
+                  onClick={() => subs.length > 0 && toggleCategoria(categoria.id)}
+                  style={{ cursor: subs.length > 0 ? 'pointer' : 'default' }}
+                >
                   <div className="categoria-info">
                     <button 
                       className="expand-btn"
-                      onClick={() => toggleCategoria(categoria.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (subs.length > 0) toggleCategoria(categoria.id)
+                      }}
                     >
-                      {subs.length > 0 && (
+                      {subs.length > 0 ? (
                         isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />
+                      ) : (
+                        <span style={{ width: '20px', display: 'inline-block' }}></span>
                       )}
                     </button>
                     
@@ -392,7 +403,7 @@ export default function Categorias() {
                     </div>
                   </div>
 
-                  <div className="categoria-actions">
+                  <div className="categoria-actions" onClick={(e) => e.stopPropagation()}>
                     <button
                       className="btn-icon btn-add"
                       onClick={() => abrirModalSubcategoria(categoria.id)}
