@@ -359,7 +359,7 @@ export default function Categorias() {
         <div className="categorias-list">
           {categoriasFiltradas.map((categoria) => {
             const subs = getSubcategoriasPorCategoria(categoria.id)
-            const isExpanded = expandedCategorias[categoria.id] === true
+            const isExpanded = !!expandedCategorias[categoria.id]
 
             return (
               <div key={categoria.id} className="categoria-item">
