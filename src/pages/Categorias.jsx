@@ -28,13 +28,35 @@ export default function Categorias() {
   const carregarDados = async () => {
     try {
       setLoading(true)
-      const { data: catData } = await supabase.from('categorias').select('*').eq('user_id', user.id).eq('ativo', true).order('nome')
-      const { data: subData } = await supabase.from('subcategorias').select('*').eq('user_id', user.id).eq('ativo', true).order('nome')
-      console.log('📊 Categorias:', catData?.length, '| Subcategorias:', subData?.length)
+      
+      const { data: catData, error: catError } = await supabase
+        .from('categorias')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('ativo', true)
+        .order('nome')
+      
+      if (catError) {
+        console.error('❌ Erro ao carregar categorias:', catError)
+      }
+      
+      const { data: subData, error: subError } = await supabase
+        .from('subcategorias')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('ativo', true)
+        .order('nome')
+      
+      if (subError) {
+        console.error('❌ Erro ao carregar subcategorias:', subError)
+      }
+      
+      console.log('📊 Categorias:', catData?.length, '| Subcategorias:', subData?.length, subData)
+      
       setCategorias(catData || [])
       setSubcategorias(subData || [])
     } catch (err) {
-      console.error(err)
+      console.error('❌ Erro geral:', err)
     } finally {
       setLoading(false)
     }
