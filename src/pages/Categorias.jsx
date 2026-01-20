@@ -40,10 +40,14 @@ export default function Categorias() {
         console.error('❌ Erro ao carregar categorias:', catError)
       }
       
+      // Subcategorias não tem user_id, então filtramos via JOIN
       const { data: subData, error: subError } = await supabase
         .from('subcategorias')
-        .select('*')
-        .eq('user_id', user.id)
+        .select(`
+          *,
+          categorias!inner(user_id)
+        `)
+        .eq('categorias.user_id', user.id)
         .eq('ativo', true)
         .order('nome')
       
@@ -51,7 +55,7 @@ export default function Categorias() {
         console.error('❌ Erro ao carregar subcategorias:', subError)
       }
       
-      console.log('📊 Categorias:', catData?.length, '| Subcategorias:', subData?.length, subData)
+      console.log('📊 Categorias:', catData?.length, '| Subcategorias:', subData?.length)
       
       setCategorias(catData || [])
       setSubcategorias(subData || [])
@@ -84,7 +88,11 @@ export default function Categorias() {
       if (editingItem) {
         await supabase.from('subcategorias').update({ nome: subFormData.nome }).eq('id', editingItem.id)
       } else {
-        await supabase.from('subcategorias').insert([{ ...subFormData, user_id: user.id }])
+        // Subcategorias não tem user_id, só categoria_id e nome
+        await supabase.from('subcategorias').insert([{
+          categoria_id: subFormData.categoria_id,
+          nome: subFormData.nome
+        }])
       }
       await carregarDados()
       fecharModalSub()
