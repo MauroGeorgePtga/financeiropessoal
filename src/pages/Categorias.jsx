@@ -107,7 +107,7 @@ export default function Categorias() {
           console.log(`${cat.nome}: ${subs.length} subs | Expanded: ${expanded}`)
           
           return (
-            <div key={cat.id} className="categoria-item">
+            <div key={cat.id} className="categoria-item" style={expanded ? {border: '3px solid red'} : {}}>
               <div className="categoria-header" onClick={() => toggleCategoria(cat.id)} style={{cursor: 'pointer'}}>
                 <div className="categoria-info">
                   <button className="expand-btn" onClick={(e) => e.stopPropagation()}>
