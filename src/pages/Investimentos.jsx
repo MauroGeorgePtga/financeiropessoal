@@ -1242,15 +1242,15 @@ export default function Investimentos() {
                           </span>
                         </div>
                       </div>
-
+                      /* Parte Cabeçalho Valor Investido */
                       <div className="secao-resumo">
                         <div className="resumo-item">
                           <span className="resumo-label">Investido</span>
-                          <span className="resumo-valor">{formatCurrency(totalInvestidoTipo)}</span>
+                          <span className="resumo-valor"><ValorOculto valor={formatCurrency(totalInvestidoTipo)}/></span> 
                         </div>
                         <div className="resumo-item">
                           <span className="resumo-label">Atual</span>
-                          <span className="resumo-valor">{formatCurrency(totalAtualTipo)}</span>
+                          <span className="resumo-valor"><ValorOculto valor={formatCurrency(totalAtualTipo)}/></span> 
                         </div>
                         <div className={`resumo-item rent ${rentabilidadeTipo >= 0 ? 'positivo' : 'negativo'}`}>
                           {rentabilidadeTipo >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
