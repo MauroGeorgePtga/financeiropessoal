@@ -25,6 +25,10 @@ export default function CategoriasModal() {
 
   useEffect(() => { if (user) carregarDados() }, [user])
 
+  useEffect(() => {
+    console.log('expandedCategories changed:', expandedCategories)
+  }, [expandedCategories])
+
   const carregarDados = async () => {
     try {
       setLoading(true)
@@ -42,10 +46,8 @@ export default function CategoriasModal() {
   const toggleExpand = (categoriaId) => {
     console.log('Toggling categoria:', categoriaId, 'Current state:', expandedCategories)
     setExpandedCategories(prev => {
-      const newState = {
-        ...prev,
-        [categoriaId]: !prev[categoriaId]
-      }
+      const newState = { ...prev }
+      newState[categoriaId] = !prev[categoriaId]
       console.log('New state:', newState)
       return newState
     })
@@ -122,12 +124,6 @@ export default function CategoriasModal() {
         {categoriasFiltradas.map(cat => {
           const subs = getSubcategorias(cat.id)
           const isExpanded = !!expandedCategories[cat.id]
-          
-          console.log(`Categoria ${cat.nome} (${cat.id}):`, {
-            subs: subs.length,
-            isExpanded,
-            expandedCategories
-          })
           
           return (
             <div key={cat.id} className="categoria-secao">
