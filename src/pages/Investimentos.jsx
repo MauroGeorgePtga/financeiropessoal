@@ -1242,7 +1242,6 @@ export default function Investimentos() {
                           </span>
                         </div>
                       </div>
-                      /* Parte Cabeçalho Valor Investido */
                       <div className="secao-resumo">
                         <div className="resumo-item">
                           <span className="resumo-label">Investido</span>
