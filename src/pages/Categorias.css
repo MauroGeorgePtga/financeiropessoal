@@ -87,6 +87,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 15px;
 }
 
 .categoria-info {
@@ -94,6 +95,7 @@
   align-items: center;
   gap: 15px;
   flex: 1;
+  min-width: 0;
 }
 
 .expand-btn {
@@ -106,11 +108,13 @@
   align-items: center;
   justify-content: center;
   min-width: 24px;
-  transition: color 0.2s;
+  flex-shrink: 0;
+  transition: color 0.2s, transform 0.2s;
 }
 
 .expand-btn:hover {
-  color: #333;
+  color: #667eea;
+  transform: scale(1.1);
 }
 
 .categoria-icon {
@@ -121,6 +125,7 @@
   align-items: center;
   justify-content: center;
   font-size: 24px;
+  flex-shrink: 0;
 }
 
 .categoria-nome {
@@ -128,12 +133,17 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .categoria-nome h3 {
   margin: 0;
   color: #333;
   font-size: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tipo-badge {
@@ -143,6 +153,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
 .tipo-receita {
@@ -162,11 +173,13 @@
   border-radius: 12px;
   font-size: 11px;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .categoria-actions {
   display: flex;
   gap: 5px;
+  flex-shrink: 0;
 }
 
 .btn-add {
@@ -183,6 +196,18 @@
   padding: 0 20px 20px 20px;
   border-top: 1px solid #f0f0f0;
   padding-top: 15px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
 }
 
 .subcategoria-item {
@@ -208,11 +233,17 @@
   color: #666;
   font-size: 14px;
   font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .subcategoria-actions {
   display: flex;
   gap: 5px;
+  flex-shrink: 0;
 }
 
 .btn-icon-small {
@@ -335,21 +366,67 @@
 
   .filtro-btn {
     flex: 1;
+    padding: 8px 12px;
+    font-size: 13px;
   }
 
   .categoria-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
+    padding: 15px;
+    flex-wrap: wrap;
   }
 
   .categoria-info {
     width: 100%;
+    flex-wrap: nowrap;
+  }
+
+  .expand-btn {
+    min-width: 20px;
+  }
+
+  .categoria-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 20px;
+  }
+
+  .categoria-nome {
+    flex: 1;
+    gap: 8px;
+  }
+
+  .categoria-nome h3 {
+    font-size: 16px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tipo-badge {
+    font-size: 10px;
+    padding: 3px 10px;
+  }
+
+  .sub-count {
+    font-size: 10px;
+    padding: 3px 8px;
   }
 
   .categoria-actions {
     width: 100%;
     justify-content: flex-end;
+    margin-top: 10px;
+  }
+
+  .subcategorias-list {
+    padding: 15px;
+  }
+
+  .subcategoria-item {
+    padding: 10px 12px;
+  }
+
+  .subcategoria-nome {
+    font-size: 13px;
   }
 
   .icon-picker {
@@ -363,5 +440,43 @@
 
   .radio-group {
     flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .categoria-header {
+    padding: 12px;
+  }
+
+  .categoria-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .categoria-nome h3 {
+    font-size: 14px;
+  }
+
+  .tipo-badge {
+    font-size: 9px;
+    padding: 2px 8px;
+  }
+
+  .btn-icon {
+    padding: 6px;
+  }
+
+  .subcategorias-list {
+    padding: 10px;
+  }
+
+  .subcategoria-item {
+    padding: 8px 10px;
+  }
+
+  .subcategoria-nome {
+    font-size: 12px;
   }
 }
