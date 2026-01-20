@@ -377,12 +377,20 @@
     background: #e0e0e0;
     padding: 10px;
     color: #333;
+    min-width: 40px;
+    min-height: 40px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .btn-acao svg {
-    display: block;
-    width: 18px;
-    height: 18px;
+    display: block !important;
+    width: 18px !important;
+    height: 18px !important;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
   }
 
   .btn-acao:hover {
@@ -394,6 +402,10 @@
     color: white;
   }
 
+  .btn-acao.add svg {
+    stroke: white !important;
+  }
+
   .btn-acao.add:hover {
     background: #38a169;
   }
@@ -401,6 +413,10 @@
   .btn-acao.delete {
     background: #f56565;
     color: white;
+  }
+
+  .btn-acao.delete svg {
+    stroke: white !important;
   }
 
   .btn-acao.delete:hover {
