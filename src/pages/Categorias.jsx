@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { Plus, Edit2, Trash2, X, List } from 'lucide-react'
+import { Plus, Edit2, Trash2, X, ChevronDown, ChevronRight } from 'lucide-react'
 import './Categorias.css'
 
 export default function CategoriasModal() {
@@ -11,10 +11,9 @@ export default function CategoriasModal() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [showSubModal, setShowSubModal] = useState(false)
-  const [showSubListModal, setShowSubListModal] = useState(false)
-  const [selectedCategoria, setSelectedCategoria] = useState(null)
   const [editingItem, setEditingItem] = useState(null)
   const [tipoFiltro, setTipoFiltro] = useState('todos')
+  const [expandedCategories, setExpandedCategories] = useState(new Set())
   
   const [formData, setFormData] = useState({ nome: '', tipo: 'despesa', cor: '#667eea', icone: '💰' })
   const [subFormData, setSubFormData] = useState({ categoria_id: '', nome: '' })
@@ -40,6 +39,16 @@ export default function CategoriasModal() {
     }
   }
 
+  const toggleExpand = (categoriaId) => {
+    const newExpanded = new Set(expandedCategories)
+    if (newExpanded.has(categoriaId)) {
+      newExpanded.delete(categoriaId)
+    } else {
+      newExpanded.add(categoriaId)
+    }
+    setExpandedCategories(newExpanded)
+  }
+
   const handleSubmitCategoria = async (e) => {
     e.preventDefault()
     try {
@@ -51,6 +60,7 @@ export default function CategoriasModal() {
       await carregarDados()
       fecharModal()
       setSuccess('Salvo!')
+      setTimeout(() => setSuccess(''), 3000)
     } catch (err) { setError(err.message) }
   }
 
@@ -65,15 +75,18 @@ export default function CategoriasModal() {
       await carregarDados()
       fecharModalSub()
       setSuccess('Salvo!')
+      setTimeout(() => setSuccess(''), 3000)
     } catch (err) { setError(err.message) }
   }
 
   const fecharModal = () => { setShowModal(false); setEditingItem(null); setFormData({ nome: '', tipo: 'despesa', cor: '#667eea', icone: '💰' }) }
   const fecharModalSub = () => { setShowSubModal(false); setEditingItem(null); setSubFormData({ categoria_id: '', nome: '' }) }
 
-  const verSubcategorias = (categoria) => {
-    setSelectedCategoria(categoria)
-    setShowSubListModal(true)
+  const handleDeleteSubcategoria = async (subId) => {
+    if (confirm('Excluir subcategoria?')) {
+      await supabase.from('subcategorias').update({ ativo: false }).eq('id', subId)
+      carregarDados()
+    }
   }
 
   if (loading) return <div className="page-container"><div className="loading">Carregando...</div></div>
@@ -106,11 +119,17 @@ export default function CategoriasModal() {
       <div className="categorias-list">
         {categoriasFiltradas.map(cat => {
           const subs = getSubcategorias(cat.id)
+          const isExpanded = expandedCategories.has(cat.id)
           
           return (
-            <div key={cat.id} className="categoria-item" style={{marginBottom: '10px'}}>
+            <div key={cat.id} className="categoria-item">
               <div className="categoria-header">
                 <div className="categoria-info">
+                  {subs.length > 0 && (
+                    <button className="expand-btn" onClick={() => toggleExpand(cat.id)}>
+                      {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                    </button>
+                  )}
                   <div className="categoria-icon" style={{ backgroundColor: cat.cor }}>{cat.icone}</div>
                   <div className="categoria-nome">
                     <h3>{cat.nome}</h3>
@@ -119,43 +138,39 @@ export default function CategoriasModal() {
                   </div>
                 </div>
                 <div className="categoria-actions">
-                  {subs.length > 0 && (
-                    <button className="btn-icon" onClick={() => verSubcategorias(cat)} title="Ver Subcategorias" style={{color: '#667eea'}}>
-                      <List size={16} />
-                    </button>
-                  )}
-                  <button className="btn-icon btn-add" onClick={() => { setSubFormData({ categoria_id: cat.id, nome: '' }); setShowSubModal(true) }}><Plus size={16} /></button>
-                  <button className="btn-icon" onClick={() => { setEditingItem(cat); setFormData(cat); setShowModal(true) }}><Edit2 size={16} /></button>
-                  <button className="btn-icon btn-delete" onClick={async () => { if(confirm('Excluir?')) { await supabase.from('categorias').update({ativo:false}).eq('id',cat.id); carregarDados() }}}><Trash2 size={16} /></button>
+                  <button className="btn-icon btn-add" onClick={() => { setSubFormData({ categoria_id: cat.id, nome: '' }); setShowSubModal(true) }} title="Adicionar Subcategoria">
+                    <Plus size={16} />
+                  </button>
+                  <button className="btn-icon" onClick={() => { setEditingItem(cat); setFormData(cat); setShowModal(true) }} title="Editar Categoria">
+                    <Edit2 size={16} />
+                  </button>
+                  <button className="btn-icon btn-delete" onClick={async () => { if(confirm('Excluir categoria?')) { await supabase.from('categorias').update({ativo:false}).eq('id',cat.id); carregarDados() }}} title="Excluir Categoria">
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </div>
+
+              {isExpanded && subs.length > 0 && (
+                <div className="subcategorias-list">
+                  {subs.map(sub => (
+                    <div key={sub.id} className="subcategoria-item">
+                      <span className="subcategoria-nome">↳ {sub.nome}</span>
+                      <div className="subcategoria-actions">
+                        <button className="btn-icon-small" onClick={() => { setEditingItem(sub); setSubFormData({ categoria_id: sub.categoria_id, nome: sub.nome }); setShowSubModal(true) }} title="Editar">
+                          <Edit2 size={14} />
+                        </button>
+                        <button className="btn-icon-small btn-delete" onClick={() => handleDeleteSubcategoria(sub.id)} title="Excluir">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )
         })}
       </div>
-
-      {/* Modal Ver Subcategorias */}
-      {showSubListModal && selectedCategoria && (
-        <div className="modal-overlay" onClick={() => setShowSubListModal(false)}>
-          <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Subcategorias de {selectedCategoria.nome}</h2>
-              <button className="btn-close" onClick={() => setShowSubListModal(false)}><X size={24} /></button>
-            </div>
-            <div style={{padding: '20px'}}>
-              {getSubcategorias(selectedCategoria.id).map(sub => (
-                <div key={sub.id} className="subcategoria-item">
-                  <span className="subcategoria-nome">↳ {sub.nome}</span>
-                  <div className="subcategoria-actions">
-                    <button className="btn-icon-small" onClick={() => { setEditingItem(sub); setSubFormData({ categoria_id: sub.categoria_id, nome: sub.nome }); setShowSubModal(true); setShowSubListModal(false) }}><Edit2 size={14} /></button>
-                    <button className="btn-icon-small btn-delete" onClick={async () => { if(confirm('Excluir?')) { await supabase.from('subcategorias').update({ativo:false}).eq('id',sub.id); carregarDados() }}}><Trash2 size={14} /></button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Modal Categoria */}
       {showModal && (
