@@ -15,33 +15,22 @@ export default function Categorias() {
   const [expandedCategorias, setExpandedCategorias] = useState({})
   const [tipoFiltro, setTipoFiltro] = useState('todos')
   
-  const [formData, setFormData] = useState({
-    nome: '',
-    tipo: 'despesa',
-    cor: '#667eea',
-    icone: '💰'
-  })
-
-  const [subFormData, setSubFormData] = useState({
-    categoria_id: '',
-    nome: ''
-  })
-
+  const [formData, setFormData] = useState({ nome: '', tipo: 'despesa', cor: '#667eea', icone: '💰' })
+  const [subFormData, setSubFormData] = useState({ categoria_id: '', nome: '' })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
   const cores = ['#667eea', '#48bb78', '#f56565', '#ed8936', '#38b2ac', '#9f7aea', '#4299e1', '#f687b3', '#ecc94b', '#fc8181']
   const icones = ['💰', '🏠', '🚗', '🍔', '🏥', '📚', '🎮', '✈️', '👕', '⚡', '📱', '🎬', '🏋️', '🎨', '💼', '🎓']
 
-  useEffect(() => {
-    if (user) carregarDados()
-  }, [user])
+  useEffect(() => { if (user) carregarDados() }, [user])
 
   const carregarDados = async () => {
     try {
       setLoading(true)
       const { data: catData } = await supabase.from('categorias').select('*').eq('user_id', user.id).eq('ativo', true).order('nome')
       const { data: subData } = await supabase.from('subcategorias').select('*').eq('user_id', user.id).eq('ativo', true).order('nome')
+      console.log('📊 Categorias:', catData?.length, '| Subcategorias:', subData?.length)
       setCategorias(catData || [])
       setSubcategorias(subData || [])
     } catch (err) {
@@ -49,28 +38,22 @@ export default function Categorias() {
     } finally {
       setLoading(false)
     }
-      const { data: subData } = await supabase.from('subcategorias').select('*').eq('user_id', user.id).eq('ativo', true).order('nome')
-      console.log('📊 Subcategorias carregadas:', subData)
-
-  const toggleCategoria = (id) => {
-    setExpandedCategorias(prev => ({ ...prev, [id]: !prev[id] }))
   }
+
+  const toggleCategoria = (id) => setExpandedCategorias(prev => ({ ...prev, [id]: !prev[id] }))
 
   const handleSubmitCategoria = async (e) => {
     e.preventDefault()
     try {
       if (editingItem) {
         await supabase.from('categorias').update(formData).eq('id', editingItem.id)
-        setSuccess('Atualizado!')
       } else {
         await supabase.from('categorias').insert([{ ...formData, user_id: user.id }])
-        setSuccess('Cadastrado!')
       }
       await carregarDados()
       fecharModal()
-    } catch (err) {
-      setError(err.message)
-    }
+      setSuccess('Salvo!')
+    } catch (err) { setError(err.message) }
   }
 
   const handleSubmitSubcategoria = async (e) => {
@@ -78,29 +61,17 @@ export default function Categorias() {
     try {
       if (editingItem) {
         await supabase.from('subcategorias').update({ nome: subFormData.nome }).eq('id', editingItem.id)
-        setSuccess('Atualizado!')
       } else {
         await supabase.from('subcategorias').insert([{ ...subFormData, user_id: user.id }])
-        setSuccess('Cadastrado!')
       }
       await carregarDados()
       fecharModalSub()
-    } catch (err) {
-      setError(err.message)
-    }
+      setSuccess('Salvo!')
+    } catch (err) { setError(err.message) }
   }
 
-  const fecharModal = () => {
-    setShowModal(false)
-    setEditingItem(null)
-    setFormData({ nome: '', tipo: 'despesa', cor: '#667eea', icone: '💰' })
-  }
-
-  const fecharModalSub = () => {
-    setShowSubModal(false)
-    setEditingItem(null)
-    setSubFormData({ categoria_id: '', nome: '' })
-  }
+  const fecharModal = () => { setShowModal(false); setEditingItem(null); setFormData({ nome: '', tipo: 'despesa', cor: '#667eea', icone: '💰' }) }
+  const fecharModalSub = () => { setShowSubModal(false); setEditingItem(null); setSubFormData({ categoria_id: '', nome: '' }) }
 
   if (loading) return <div className="page-container"><div className="loading">Carregando...</div></div>
 
@@ -110,13 +81,8 @@ export default function Categorias() {
   return (
     <div className="page-container">
       <div className="page-header">
-        <div>
-          <h1>Categorias</h1>
-          <p>Gerencie suas categorias</p>
-        </div>
-        <button className="btn-primary" onClick={() => setShowModal(true)}>
-          <Plus size={20} /> Nova Categoria
-        </button>
+        <div><h1>Categorias</h1><p>Gerencie suas categorias</p></div>
+        <button className="btn-primary" onClick={() => setShowModal(true)}><Plus size={20} /> Nova Categoria</button>
       </div>
 
       {success && <div className="alert alert-success">{success}</div>}
@@ -138,7 +104,7 @@ export default function Categorias() {
         {categoriasFiltradas.map(cat => {
           const subs = getSubcategorias(cat.id)
           const expanded = expandedCategorias[cat.id]
-          console.log(`Categoria: ${cat.nome} | Subs: ${subs.length} | Expanded: ${expanded}`)
+          console.log(`${cat.nome}: ${subs.length} subs | Expanded: ${expanded}`)
           
           return (
             <div key={cat.id} className="categoria-item">
@@ -155,15 +121,9 @@ export default function Categorias() {
                   </div>
                 </div>
                 <div className="categoria-actions" onClick={(e) => e.stopPropagation()}>
-                  <button className="btn-icon btn-add" onClick={() => { setSubFormData({ categoria_id: cat.id, nome: '' }); setShowSubModal(true) }}>
-                    <Plus size={16} />
-                  </button>
-                  <button className="btn-icon" onClick={() => { setEditingItem(cat); setFormData(cat); setShowModal(true) }}>
-                    <Edit2 size={16} />
-                  </button>
-                  <button className="btn-icon btn-delete" onClick={async () => { if(confirm('Excluir?')) { await supabase.from('categorias').update({ativo:false}).eq('id',cat.id); carregarDados() }}}>
-                    <Trash2 size={16} />
-                  </button>
+                  <button className="btn-icon btn-add" onClick={() => { setSubFormData({ categoria_id: cat.id, nome: '' }); setShowSubModal(true) }}><Plus size={16} /></button>
+                  <button className="btn-icon" onClick={() => { setEditingItem(cat); setFormData(cat); setShowModal(true) }}><Edit2 size={16} /></button>
+                  <button className="btn-icon btn-delete" onClick={async () => { if(confirm('Excluir?')) { await supabase.from('categorias').update({ativo:false}).eq('id',cat.id); carregarDados() }}}><Trash2 size={16} /></button>
                 </div>
               </div>
 
@@ -173,12 +133,8 @@ export default function Categorias() {
                     <div key={sub.id} className="subcategoria-item">
                       <span className="subcategoria-nome">↳ {sub.nome}</span>
                       <div className="subcategoria-actions">
-                        <button className="btn-icon-small" onClick={() => { setEditingItem(sub); setSubFormData({ categoria_id: sub.categoria_id, nome: sub.nome }); setShowSubModal(true) }}>
-                          <Edit2 size={14} />
-                        </button>
-                        <button className="btn-icon-small btn-delete" onClick={async () => { if(confirm('Excluir?')) { await supabase.from('subcategorias').update({ativo:false}).eq('id',sub.id); carregarDados() }}}>
-                          <Trash2 size={14} />
-                        </button>
+                        <button className="btn-icon-small" onClick={() => { setEditingItem(sub); setSubFormData({ categoria_id: sub.categoria_id, nome: sub.nome }); setShowSubModal(true) }}><Edit2 size={14} /></button>
+                        <button className="btn-icon-small btn-delete" onClick={async () => { if(confirm('Excluir?')) { await supabase.from('subcategorias').update({ativo:false}).eq('id',sub.id); carregarDados() }}}><Trash2 size={14} /></button>
                       </div>
                     </div>
                   ))}
@@ -192,38 +148,18 @@ export default function Categorias() {
       {showModal && (
         <div className="modal-overlay" onClick={fecharModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{editingItem ? 'Editar' : 'Nova'} Categoria</h2>
-              <button className="btn-close" onClick={fecharModal}><X size={24} /></button>
-            </div>
+            <div className="modal-header"><h2>{editingItem ? 'Editar' : 'Nova'} Categoria</h2><button className="btn-close" onClick={fecharModal}><X size={24} /></button></div>
             <form onSubmit={handleSubmitCategoria}>
-              <div className="form-group">
-                <label>Nome *</label>
-                <input type="text" value={formData.nome} onChange={(e) => setFormData({...formData, nome: e.target.value})} required />
-              </div>
-              <div className="form-group">
-                <label>Tipo *</label>
+              <div className="form-group"><label>Nome *</label><input type="text" value={formData.nome} onChange={(e) => setFormData({...formData, nome: e.target.value})} required /></div>
+              <div className="form-group"><label>Tipo *</label>
                 <div className="radio-group">
                   <label className="radio-label"><input type="radio" name="tipo" value="receita" checked={formData.tipo === 'receita'} onChange={(e) => setFormData({...formData, tipo: e.target.value})} /><span>Receita</span></label>
                   <label className="radio-label"><input type="radio" name="tipo" value="despesa" checked={formData.tipo === 'despesa'} onChange={(e) => setFormData({...formData, tipo: e.target.value})} /><span>Despesa</span></label>
                 </div>
               </div>
-              <div className="form-group">
-                <label>Ícone</label>
-                <div className="icon-picker">
-                  {icones.map(i => <button key={i} type="button" className={`icon-option ${formData.icone === i ? 'active' : ''}`} onClick={() => setFormData({...formData, icone: i})}>{i}</button>)}
-                </div>
-              </div>
-              <div className="form-group">
-                <label>Cor</label>
-                <div className="color-picker">
-                  {cores.map(c => <button key={c} type="button" className={`color-option ${formData.cor === c ? 'active' : ''}`} style={{backgroundColor: c, width: 40, height: 40, border: '2px solid #ddd', borderRadius: 8, cursor: 'pointer'}} onClick={() => setFormData({...formData, cor: c})} />)}
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn-secondary" onClick={fecharModal}>Cancelar</button>
-                <button type="submit" className="btn-primary">Salvar</button>
-              </div>
+              <div className="form-group"><label>Ícone</label><div className="icon-picker">{icones.map(i => <button key={i} type="button" className={`icon-option ${formData.icone === i ? 'active' : ''}`} onClick={() => setFormData({...formData, icone: i})}>{i}</button>)}</div></div>
+              <div className="form-group"><label>Cor</label><div style={{display: 'flex', gap: '8px', flexWrap: 'wrap'}}>{cores.map(c => <button key={c} type="button" style={{backgroundColor: c, width: 40, height: 40, border: formData.cor === c ? '3px solid #333' : '2px solid #ddd', borderRadius: 8, cursor: 'pointer'}} onClick={() => setFormData({...formData, cor: c})} />)}</div></div>
+              <div className="modal-footer"><button type="button" className="btn-secondary" onClick={fecharModal}>Cancelar</button><button type="submit" className="btn-primary">Salvar</button></div>
             </form>
           </div>
         </div>
@@ -232,19 +168,10 @@ export default function Categorias() {
       {showSubModal && (
         <div className="modal-overlay" onClick={fecharModalSub}>
           <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{editingItem ? 'Editar' : 'Nova'} Subcategoria</h2>
-              <button className="btn-close" onClick={fecharModalSub}><X size={24} /></button>
-            </div>
+            <div className="modal-header"><h2>{editingItem ? 'Editar' : 'Nova'} Subcategoria</h2><button className="btn-close" onClick={fecharModalSub}><X size={24} /></button></div>
             <form onSubmit={handleSubmitSubcategoria}>
-              <div className="form-group">
-                <label>Nome *</label>
-                <input type="text" value={subFormData.nome} onChange={(e) => setSubFormData({...subFormData, nome: e.target.value})} required />
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn-secondary" onClick={fecharModalSub}>Cancelar</button>
-                <button type="submit" className="btn-primary">Salvar</button>
-              </div>
+              <div className="form-group"><label>Nome *</label><input type="text" value={subFormData.nome} onChange={(e) => setSubFormData({...subFormData, nome: e.target.value})} required /></div>
+              <div className="modal-footer"><button type="button" className="btn-secondary" onClick={fecharModalSub}>Cancelar</button><button type="submit" className="btn-primary">Salvar</button></div>
             </form>
           </div>
         </div>
