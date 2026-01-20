@@ -1,5 +1,6 @@
-/* Página de Categorias */
+/* Categorias - Baseado em Investimentos */
 
+/* Header */
 .categorias-header {
   background: white;
   padding: 20px;
@@ -67,33 +68,36 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  position: relative;
-  z-index: 1;
 }
 
-.categoria-item {
+/* Seção de Categoria (como carteira-secao) */
+.categoria-secao {
   background: white;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: visible;
-  position: relative;
+  overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.categoria-item:hover {
+.categoria-secao:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.categoria-header {
-  padding: 20px;
+.categoria-secao-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 15px;
+  padding: 20px;
+  transition: all 0.2s;
+  background: white;
 }
 
-.categoria-info {
+.categoria-secao-header:hover {
+  background: #f9fafb;
+}
+
+.secao-left {
   display: flex;
   align-items: center;
   gap: 15px;
@@ -101,23 +105,16 @@
   min-width: 0;
 }
 
-.expand-btn {
-  background: none;
-  border: none;
-  color: #999;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
+.secao-icon {
+  font-size: 14px;
+  color: #666;
+  width: 20px;
   flex-shrink: 0;
-  transition: color 0.2s, transform 0.2s;
+  transition: color 0.2s;
 }
 
-.expand-btn:hover {
+.categoria-secao-header:hover .secao-icon {
   color: #667eea;
-  transform: scale(1.1);
 }
 
 .categoria-icon {
@@ -131,22 +128,26 @@
   flex-shrink: 0;
 }
 
-.categoria-nome {
+.secao-info {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 6px;
   flex: 1;
   min-width: 0;
 }
 
-.categoria-nome h3 {
+.secao-titulo {
   margin: 0;
-  color: #333;
   font-size: 18px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 700;
+  color: #333;
+}
+
+.secao-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .tipo-badge {
@@ -194,23 +195,11 @@
   color: #38b2ac;
 }
 
-/* Subcategorias */
+/* Lista de Subcategorias (como carteira-list) */
 .subcategorias-list {
-  padding: 0 20px 20px 20px;
   border-top: 1px solid #f0f0f0;
-  padding-top: 15px;
-  animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    max-height: 0;
-  }
-  to {
-    opacity: 1;
-    max-height: 500px;
-  }
+  padding: 10px;
+  background: #fafafa;
 }
 
 .subcategoria-item {
@@ -218,14 +207,15 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 15px;
-  background: #f9f9f9;
+  background: white;
   border-radius: 8px;
   margin-bottom: 8px;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.2s;
 }
 
 .subcategoria-item:hover {
   background: #f0f0f0;
+  transform: translateX(5px);
 }
 
 .subcategoria-item:last-child {
@@ -238,9 +228,6 @@
   font-weight: 500;
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .subcategoria-actions {
@@ -263,7 +250,7 @@
 }
 
 .btn-icon-small:hover {
-  background: white;
+  background: #e0e0e0;
   color: #333;
 }
 
@@ -347,10 +334,6 @@
   max-width: 450px;
 }
 
-.modal-small .form-group {
-  margin-bottom: 20px;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .categorias-header {
@@ -373,18 +356,14 @@
     font-size: 13px;
   }
 
-  .categoria-header {
+  .categoria-secao-header {
     padding: 15px;
     flex-wrap: wrap;
   }
 
-  .categoria-info {
-    width: 100%;
-    flex-wrap: nowrap;
-  }
-
-  .expand-btn {
-    min-width: 20px;
+  .secao-left {
+    flex: 1 1 100%;
+    margin-bottom: 10px;
   }
 
   .categoria-icon {
@@ -393,15 +372,8 @@
     font-size: 20px;
   }
 
-  .categoria-nome {
-    flex: 1;
-    gap: 8px;
-  }
-
-  .categoria-nome h3 {
+  .secao-titulo {
     font-size: 16px;
-    flex: 1;
-    min-width: 0;
   }
 
   .tipo-badge {
@@ -417,11 +389,10 @@
   .categoria-actions {
     width: 100%;
     justify-content: flex-end;
-    margin-top: 10px;
   }
 
   .subcategorias-list {
-    padding: 15px;
+    padding: 10px;
   }
 
   .subcategoria-item {
@@ -448,7 +419,7 @@
 }
 
 @media (max-width: 480px) {
-  .categoria-header {
+  .categoria-secao-header {
     padding: 12px;
   }
 
@@ -458,7 +429,7 @@
     font-size: 18px;
   }
 
-  .categoria-nome h3 {
+  .secao-titulo {
     font-size: 14px;
   }
 
@@ -467,12 +438,8 @@
     padding: 2px 8px;
   }
 
-  .btn-icon {
-    padding: 6px;
-  }
-
   .subcategorias-list {
-    padding: 10px;
+    padding: 8px;
   }
 
   .subcategoria-item {
