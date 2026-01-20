@@ -49,7 +49,8 @@ export default function Categorias() {
     } finally {
       setLoading(false)
     }
-  }
+      const { data: subData } = await supabase.from('subcategorias').select('*').eq('user_id', user.id).eq('ativo', true).order('nome')
+      console.log('📊 Subcategorias carregadas:', subData)
 
   const toggleCategoria = (id) => {
     setExpandedCategorias(prev => ({ ...prev, [id]: !prev[id] }))
@@ -137,6 +138,7 @@ export default function Categorias() {
         {categoriasFiltradas.map(cat => {
           const subs = getSubcategorias(cat.id)
           const expanded = expandedCategorias[cat.id]
+          console.log(`Categoria: ${cat.nome} | Subs: ${subs.length} | Expanded: ${expanded}`)
           
           return (
             <div key={cat.id} className="categoria-item">
