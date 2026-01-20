@@ -72,10 +72,15 @@ export default function Categorias() {
   }
 
   const toggleCategoria = (id) => {
-    setExpandedCategorias(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }))
+    console.log('Toggle categoria ID:', id, 'Estado atual:', expandedCategorias[id])
+    setExpandedCategorias(prev => {
+      const novoEstado = {
+        ...prev,
+        [id]: !prev[id]
+      }
+      console.log('Novo estado completo:', novoEstado)
+      return novoEstado
+    })
   }
 
   const handleSubmitCategoria = async (e) => {
@@ -191,6 +196,8 @@ export default function Categorias() {
         {categoriasFiltradas.map((categoria) => {
           const subs = getSubcategoriasPorCategoria(categoria.id)
           const isExpanded = expandedCategorias[categoria.id]
+          
+          console.log('Categoria:', categoria.nome, '| Subs:', subs.length, '| Expanded:', isExpanded)
 
           return (
             <div key={categoria.id} className="categoria-item">
@@ -242,6 +249,9 @@ export default function Categorias() {
 
               {isExpanded && subs.length > 0 && (
                 <div className="subcategorias-list">
+                  <div style={{background: '#ffe', padding: '10px', marginBottom: '10px', border: '2px solid #fa0'}}>
+                    ⚠️ DEBUG: Mostrando {subs.length} subcategorias - isExpanded: {isExpanded ? 'TRUE' : 'FALSE'}
+                  </div>
                   {subs.map((sub) => (
                     <div key={sub.id} className="subcategoria-item">
                       <span className="subcategoria-nome">↳ {sub.nome}</span>
