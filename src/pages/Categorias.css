@@ -365,6 +365,25 @@
     justify-content: flex-end;
   }
 
+  .btn-acao {
+    background: #f5f5f5;
+    padding: 10px;
+  }
+
+  .btn-acao:hover {
+    background: #e0e0e0;
+  }
+
+  .btn-acao.add {
+    background: #e6fffa;
+    color: #38b2ac;
+  }
+
+  .btn-acao.delete {
+    background: #fff5f5;
+    color: #f56565;
+  }
+
   .icon-picker {
     grid-template-columns: repeat(4, 1fr);
   }
