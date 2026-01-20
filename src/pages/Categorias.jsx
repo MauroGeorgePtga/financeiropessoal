@@ -260,7 +260,7 @@ export default function Categorias() {
   const toggleCategoria = (id) => {
     setExpandedCategorias(prev => ({
       ...prev,
-      [id]: !prev[id]
+      [id]: prev[id] === undefined ? true : !prev[id]
     }))
   }
 
@@ -359,10 +359,10 @@ export default function Categorias() {
         <div className="categorias-list">
           {categoriasFiltradas.map((categoria) => {
             const subs = getSubcategoriasPorCategoria(categoria.id)
-            const isExpanded = expandedCategorias[categoria.id]
+            const isExpanded = expandedCategorias[categoria.id] === true // Por padrão todos retraídos
 
             return (
-              <div key={`${categoria.id}-${isExpanded}`} className="categoria-item">
+              <div key={categoria.id} className="categoria-item">
                 <div className="categoria-header">
                   <div className="categoria-info">
                     <button 
