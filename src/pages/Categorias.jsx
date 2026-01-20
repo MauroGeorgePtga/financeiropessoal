@@ -40,10 +40,15 @@ export default function CategoriasModal() {
   }
 
   const toggleExpand = (categoriaId) => {
-    setExpandedCategories(prev => ({
-      ...prev,
-      [categoriaId]: !prev[categoriaId]
-    }))
+    console.log('Toggling categoria:', categoriaId, 'Current state:', expandedCategories)
+    setExpandedCategories(prev => {
+      const newState = {
+        ...prev,
+        [categoriaId]: !prev[categoriaId]
+      }
+      console.log('New state:', newState)
+      return newState
+    })
   }
 
   const handleSubmitCategoria = async (e) => {
@@ -118,11 +123,21 @@ export default function CategoriasModal() {
           const subs = getSubcategorias(cat.id)
           const isExpanded = expandedCategories[cat.id]
           
+          console.log(`Categoria ${cat.nome} (${cat.id}):`, {
+            subs: subs.length,
+            isExpanded,
+            expandedCategories
+          })
+          
           return (
             <div key={cat.id} className="categoria-secao">
               <div 
                 className="categoria-secao-header"
-                onClick={() => subs.length > 0 && toggleExpand(cat.id)}
+                onClick={() => {
+                  if (subs.length > 0) {
+                    toggleExpand(cat.id)
+                  }
+                }}
                 style={{ cursor: subs.length > 0 ? 'pointer' : 'default' }}
               >
                 <div className="secao-left">
