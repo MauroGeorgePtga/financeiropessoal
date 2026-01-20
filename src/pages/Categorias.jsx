@@ -121,7 +121,7 @@ export default function CategoriasModal() {
       <div className="categorias-list">
         {categoriasFiltradas.map(cat => {
           const subs = getSubcategorias(cat.id)
-          const isExpanded = expandedCategories[cat.id]
+          const isExpanded = !!expandedCategories[cat.id]
           
           console.log(`Categoria ${cat.nome} (${cat.id}):`, {
             subs: subs.length,
