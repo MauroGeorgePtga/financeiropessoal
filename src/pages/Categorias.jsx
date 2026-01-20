@@ -362,7 +362,7 @@ export default function Categorias() {
             const isExpanded = expandedCategorias[categoria.id]
 
             return (
-              <div key={categoria.id} className="categoria-item">
+              <div key={`${categoria.id}-${isExpanded}`} className="categoria-item">
                 <div className="categoria-header">
                   <div className="categoria-info">
                     <button 
