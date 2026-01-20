@@ -711,111 +711,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Visão Anual - Tabela e Gráfico */}
-      <div className="visao-anual-container">
-        <div className="visao-anual-header">
-          <h2>📊 Visão Anual</h2>
-          <select
-            value={anoSelecionado}
-            onChange={(e) => setAnoSelecionado(Number(e.target.value))}
-            className="ano-select"
-          >
-            {anosDisponiveis.length > 0 ? (
-              anosDisponiveis.map(ano => (
-                <option key={ano} value={ano}>{ano}</option>
-              ))
-            ) : (
-              <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
-            )}
-          </select>
-        </div>
-
-        <div className="visao-anual-content">
-          {/* Tabela de Meses */}
-          <div className="tabela-meses">
-            <table className="tabela-mensal">
-              <thead>
-                <tr>
-                  <th>Mês</th>
-                  <th>Receitas</th>
-                  <th>Despesas</th>
-                  <th>Resultado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dadosMensais.map((dados, index) => (
-                  <tr key={index}>
-                    <td className="mes-nome">{dados.mes}</td>
-                    <td className="valor receita">{formatCurrency(dados.receitas)}</td>
-                    <td className="valor despesa">{formatCurrency(dados.despesas)}</td>
-                    <td className={`valor resultado ${dados.resultado >= 0 ? 'positivo' : 'negativo'}`}>
-                      {formatCurrency(dados.resultado)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="total-row">
-                  <td><strong>TOTAL</strong></td>
-                  <td className="valor receita">
-                    <strong>{formatCurrency(dadosMensais.reduce((acc, m) => acc + m.receitas, 0))}</strong>
-                  </td>
-                  <td className="valor despesa">
-                    <strong>{formatCurrency(dadosMensais.reduce((acc, m) => acc + m.despesas, 0))}</strong>
-                  </td>
-                  <td className={`valor resultado ${dadosMensais.reduce((acc, m) => acc + m.resultado, 0) >= 0 ? 'positivo' : 'negativo'}`}>
-                    <strong>{formatCurrency(dadosMensais.reduce((acc, m) => acc + m.resultado, 0))}</strong>
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          {/* Gráfico de Barras */}
-          <div className="grafico-barras">
-            <div className="grafico-container">
-              {dadosMensais.map((dados, index) => {
-                const maxValor = Math.max(...dadosMensais.map(m => Math.max(m.receitas, m.despesas)))
-                const alturaReceita = maxValor > 0 ? (dados.receitas / maxValor) * 100 : 0
-                const alturaDespesa = maxValor > 0 ? (dados.despesas / maxValor) * 100 : 0
-
-                return (
-                  <div key={index} className="barra-grupo">
-                    <div className="barras">
-                      <div
-                        className="barra barra-receita"
-                        style={{ height: `${alturaReceita}%` }}
-                        title={`Receitas: ${formatCurrency(dados.receitas)}`}
-                      >
-                        {dados.receitas > 0 && <span className="barra-valor">{formatCurrency(dados.receitas)}</span>}
-                      </div>
-                      <div
-                        className="barra barra-despesa"
-                        style={{ height: `${alturaDespesa}%` }}
-                        title={`Despesas: ${formatCurrency(dados.despesas)}`}
-                      >
-                        {dados.despesas > 0 && <span className="barra-valor">{formatCurrency(dados.despesas)}</span>}
-                      </div>
-                    </div>
-                    <span className="barra-mes">{dados.mes.substring(0, 3)}</span>
-                  </div>
-                )
-              })}
-            </div>
-            <div className="grafico-legenda">
-              <div className="legenda-item">
-                <span className="legenda-cor receita"></span>
-                <span>Receitas</span>
-              </div>
-              <div className="legenda-item">
-                <span className="legenda-cor despesa"></span>
-                <span>Despesas</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Conteúdo em Grid */}
       <div className="dashboard-grid">
         {/* Próximos Vencimentos */}
@@ -1028,6 +923,112 @@ export default function Dashboard() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+
+      {/* Visão Anual - Tabela e Gráfico */}
+      <div className="visao-anual-container">
+        <div className="visao-anual-header">
+          <h2>📊 Visão Anual</h2>
+          <select
+            value={anoSelecionado}
+            onChange={(e) => setAnoSelecionado(Number(e.target.value))}
+            className="ano-select"
+          >
+            {anosDisponiveis.length > 0 ? (
+              anosDisponiveis.map(ano => (
+                <option key={ano} value={ano}>{ano}</option>
+              ))
+            ) : (
+              <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
+            )}
+          </select>
+        </div>
+
+        <div className="visao-anual-content">
+          {/* Tabela de Meses */}
+          <div className="tabela-meses">
+            <table className="tabela-mensal">
+              <thead>
+                <tr>
+                  <th>Mês</th>
+                  <th>Receitas</th>
+                  <th>Despesas</th>
+                  <th>Resultado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dadosMensais.map((dados, index) => (
+                  <tr key={index}>
+                    <td className="mes-nome">{dados.mes}</td>
+                    <td className="valor receita">{formatCurrency(dados.receitas)}</td>
+                    <td className="valor despesa">{formatCurrency(dados.despesas)}</td>
+                    <td className={`valor resultado ${dados.resultado >= 0 ? 'positivo' : 'negativo'}`}>
+                      {formatCurrency(dados.resultado)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="total-row">
+                  <td><strong>TOTAL</strong></td>
+                  <td className="valor receita">
+                    <strong>{formatCurrency(dadosMensais.reduce((acc, m) => acc + m.receitas, 0))}</strong>
+                  </td>
+                  <td className="valor despesa">
+                    <strong>{formatCurrency(dadosMensais.reduce((acc, m) => acc + m.despesas, 0))}</strong>
+                  </td>
+                  <td className={`valor resultado ${dadosMensais.reduce((acc, m) => acc + m.resultado, 0) >= 0 ? 'positivo' : 'negativo'}`}>
+                    <strong>{formatCurrency(dadosMensais.reduce((acc, m) => acc + m.resultado, 0))}</strong>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          {/* Gráfico de Barras */}
+          <div className="grafico-barras">
+            <div className="grafico-container">
+              {dadosMensais.map((dados, index) => {
+                const maxValor = Math.max(...dadosMensais.map(m => Math.max(m.receitas, m.despesas)))
+                const alturaReceita = maxValor > 0 ? (dados.receitas / maxValor) * 100 : 0
+                const alturaDespesa = maxValor > 0 ? (dados.despesas / maxValor) * 100 : 0
+
+                return (
+                  <div key={index} className="barra-grupo">
+                    <div className="barras">
+                      <div
+                        className="barra barra-receita"
+                        style={{ height: `${alturaReceita}%` }}
+                        title={`Receitas: ${formatCurrency(dados.receitas)}`}
+                      >
+                        {dados.receitas > 0 && <span className="barra-valor">{formatCurrency(dados.receitas)}</span>}
+                      </div>
+                      <div
+                        className="barra barra-despesa"
+                        style={{ height: `${alturaDespesa}%` }}
+                        title={`Despesas: ${formatCurrency(dados.despesas)}`}
+                      >
+                        {dados.despesas > 0 && <span className="barra-valor">{formatCurrency(dados.despesas)}</span>}
+                      </div>
+                    </div>
+                    <span className="barra-mes">{dados.mes.substring(0, 3)}</span>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="grafico-legenda">
+              <div className="legenda-item">
+                <span className="legenda-cor receita"></span>
+                <span>Receitas</span>
+              </div>
+              <div className="legenda-item">
+                <span className="legenda-cor despesa"></span>
+                <span>Despesas</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
