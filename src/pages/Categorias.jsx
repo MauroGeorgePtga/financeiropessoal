@@ -373,8 +373,8 @@ export default function Categorias() {
               <div key={categoria.id} className="categoria-item">
                 <div 
                   className="categoria-header"
-                  onClick={() => subs.length > 0 && toggleCategoria(categoria.id)}
-                  style={{ cursor: subs.length > 0 ? 'pointer' : 'default' }}
+                  onClick={() => toggleCategoria(categoria.id)}
+                  style={{ cursor: 'pointer' }}
                 >
                   <div className="categoria-info">
                     <button 
