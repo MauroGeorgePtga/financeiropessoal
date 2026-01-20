@@ -194,9 +194,16 @@ export default function Categorias() {
 
           return (
             <div key={categoria.id} className="categoria-item">
-              <div className="categoria-header">
+              <div 
+                className="categoria-header"
+                onClick={() => subs.length > 0 && toggleCategoria(categoria.id)}
+                style={{ cursor: subs.length > 0 ? 'pointer' : 'default' }}
+              >
                 <div className="categoria-info">
-                  <button className="expand-btn" onClick={() => toggleCategoria(categoria.id)}>
+                  <button 
+                    className="expand-btn"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {subs.length > 0 && (isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />)}
                   </button>
                   
@@ -213,7 +220,7 @@ export default function Categorias() {
                   </div>
                 </div>
 
-                <div className="categoria-actions">
+                <div className="categoria-actions" onClick={(e) => e.stopPropagation()}>
                   <button className="btn-icon btn-add" onClick={() => {
                     setSubFormData({ categoria_id: categoria.id, nome: '' })
                     setShowSubModal(true)
