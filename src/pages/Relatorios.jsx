@@ -183,6 +183,7 @@ export default function Relatorios() {
     const hoje = new Date()
     const mesesData = []
     
+    // Define quantos meses buscar baseado no período
     let qtdMeses = 1
     switch (periodo) {
       case 'ultimos_3_meses':
@@ -196,6 +197,7 @@ export default function Relatorios() {
         break
     }
 
+    // Gera os dados para cada mês
     for (let i = qtdMeses - 1; i >= 0; i--) {
       const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1)
       const mes = data.toLocaleDateString('pt-BR', { month: 'short' })
@@ -225,27 +227,6 @@ export default function Relatorios() {
     }
     
     return mesesData
-  }
-
-  // Dados para gráfico de barras - Despesas por Subcategoria (SEM LIMITE)
-  const getDespesasPorSubcategoriaGrafico = () => {
-    const despesas = dados.transacoes.filter(t => t.tipo === 'despesa' && !t.is_transferencia)
-    const subcategoriasSoma = {}
-
-    despesas.forEach(t => {
-      const subNome = t.subcategorias?.nome || 'Sem subcategoria'
-      if (!subcategoriasSoma[subNome]) {
-        subcategoriasSoma[subNome] = 0
-      }
-      subcategoriasSoma[subNome] += t.valor
-    })
-
-    return Object.entries(subcategoriasSoma)
-      .map(([descricao, valor]) => ({ 
-        descricao: descricao.length > 25 ? descricao.substring(0, 25) + '...' : descricao, 
-        valor 
-      }))
-      .sort((a, b) => b.valor - a.valor)
   }
 
   // Processar despesas por categoria e subcategoria
@@ -383,6 +364,27 @@ export default function Relatorios() {
       { name: 'Banco (Despesas)', value: resumo.despesasBanco, color: '#f56565' },
       { name: 'Dinheiro (Despesas)', value: resumo.despesasDinheiro, color: '#ed8936' }
     ].filter(item => item.value > 0)
+  }
+
+  // Dados para gráfico de barras - Despesas por Subcategoria (SEM LIMITE)
+  const getDespesasPorSubcategoriaGrafico = () => {
+    const despesas = dados.transacoes.filter(t => t.tipo === 'despesa' && !t.is_transferencia)
+    const subcategoriasSoma = {}
+
+    despesas.forEach(t => {
+      const subNome = t.subcategorias?.nome || 'Sem subcategoria'
+      if (!subcategoriasSoma[subNome]) {
+        subcategoriasSoma[subNome] = 0
+      }
+      subcategoriasSoma[subNome] += t.valor
+    })
+
+    return Object.entries(subcategoriasSoma)
+      .map(([descricao, valor]) => ({ 
+        descricao: descricao.length > 25 ? descricao.substring(0, 25) + '...' : descricao, 
+        valor 
+      }))
+      .sort((a, b) => b.valor - a.valor)
   }
 
   // Despesas agrupadas por subcategoria
