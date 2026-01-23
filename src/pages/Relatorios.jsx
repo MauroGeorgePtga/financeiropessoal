@@ -178,6 +178,57 @@ export default function Relatorios() {
       .sort((a, b) => b.value - a.value)
   }
 
+  // Dados para gráfico de barras - Receitas vs Despesas por Mês
+  const getReceitasDespesasMensal = () => {
+    const hoje = new Date()
+    const mesesData = []
+    
+    // Define quantos meses buscar baseado no período
+    let qtdMeses = 1
+    switch (periodo) {
+      case 'ultimos_3_meses':
+        qtdMeses = 3
+        break
+      case 'ultimos_6_meses':
+        qtdMeses = 6
+        break
+      case 'ano_atual':
+        qtdMeses = 12
+        break
+    }
+
+    // Gera os dados para cada mês
+    for (let i = qtdMeses - 1; i >= 0; i--) {
+      const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1)
+      const mes = data.toLocaleDateString('pt-BR', { month: 'short' })
+      const ano = data.getFullYear()
+      const mesAno = `${mes}. de ${ano.toString().slice(2)}`
+      
+      const transacoesMes = dados.transacoes.filter(t => {
+        const transacaoData = new Date(t.data_transacao)
+        return transacaoData.getMonth() === data.getMonth() && 
+               transacaoData.getFullYear() === data.getFullYear() &&
+               !t.is_transferencia
+      })
+      
+      const receitas = transacoesMes
+        .filter(t => t.tipo === 'receita')
+        .reduce((acc, t) => acc + t.valor, 0)
+      
+      const despesas = transacoesMes
+        .filter(t => t.tipo === 'despesa')
+        .reduce((acc, t) => acc + t.valor, 0)
+      
+      mesesData.push({
+        mes: mesAno,
+        Receitas: receitas,
+        Despesas: despesas
+      })
+    }
+    
+    return mesesData
+  }
+
   // Processar despesas por categoria e subcategoria
   const getDespesasPorCategoriaSubcategoria = () => {
     const despesas = dados.transacoes.filter(t => t.tipo === 'despesa' && !t.is_transferencia)
@@ -305,6 +356,78 @@ export default function Relatorios() {
     })
   }
 
+
+  // Dados para gráfico de barras - Receitas vs Despesas por Mês
+  const getReceitasDespesasMensal = () => {
+    const hoje = new Date()
+    const mesesData = []
+    
+    let qtdMeses = 1
+    switch (periodo) {
+      case 'ultimos_3_meses':
+        qtdMeses = 3
+        break
+      case 'ultimos_6_meses':
+        qtdMeses = 6
+        break
+      case 'ano_atual':
+        qtdMeses = 12
+        break
+    }
+
+    for (let i = qtdMeses - 1; i >= 0; i--) {
+      const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1)
+      const mes = data.toLocaleDateString('pt-BR', { month: 'short' })
+      const ano = data.getFullYear()
+      const mesAno = `${mes}. de ${ano.toString().slice(2)}`
+      
+      const transacoesMes = dados.transacoes.filter(t => {
+        const transacaoData = new Date(t.data_transacao)
+        return transacaoData.getMonth() === data.getMonth() && 
+               transacaoData.getFullYear() === data.getFullYear() &&
+               !t.is_transferencia
+      })
+      
+      const receitas = transacoesMes
+        .filter(t => t.tipo === 'receita')
+        .reduce((acc, t) => acc + t.valor, 0)
+      
+      const despesas = transacoesMes
+        .filter(t => t.tipo === 'despesa')
+        .reduce((acc, t) => acc + t.valor, 0)
+      
+      mesesData.push({
+        mes: mesAno,
+        Receitas: receitas,
+        Despesas: despesas
+      })
+    }
+    
+    return mesesData
+  }
+
+
+  // Dados para gráfico de barras - Despesas por Subcategoria (SEM LIMITE)
+  const getDespesasPorSubcategoriaGrafico = () => {
+    const despesas = dados.transacoes.filter(t => t.tipo === 'despesa' && !t.is_transferencia)
+    const subcategoriasSoma = {}
+
+    despesas.forEach(t => {
+      const subNome = t.subcategorias?.nome || 'Sem subcategoria'
+      if (!subcategoriasSoma[subNome]) {
+        subcategoriasSoma[subNome] = 0
+      }
+      subcategoriasSoma[subNome] += t.valor
+    })
+
+    return Object.entries(subcategoriasSoma)
+      .map(([descricao, valor]) => ({ 
+        descricao: descricao.length > 25 ? descricao.substring(0, 25) + '...' : descricao, 
+        valor 
+      }))
+      .sort((a, b) => b.valor - a.valor)
+  }
+
   // Dados para gráfico de pizza - Banco vs Dinheiro
   const getDadosPizzaFormaPagamento = () => {
     return [
@@ -315,17 +438,25 @@ export default function Relatorios() {
     ].filter(item => item.value > 0)
   }
 
-  // Dados para gráfico de barras - Top 10 Transações
-  const getTop10Transacoes = () => {
-    return [...dados.transacoes]
-      .filter(t => t.tipo === 'despesa' && !t.is_transferencia)
-      .sort((a, b) => b.valor - a.valor)
-      .slice(0, 10)
-      .map(t => ({
-        descricao: t.descricao.length > 20 ? t.descricao.substring(0, 20) + '...' : t.descricao,
-        valor: t.valor,
-        categoria: t.categorias?.nome || 'Sem categoria'
+  // Dados para gráfico de barras - Despesas por Subcategoria (SEM LIMITE)
+  const getDespesasPorSubcategoriaGrafico = () => {
+    const despesas = dados.transacoes.filter(t => t.tipo === 'despesa' && !t.is_transferencia)
+    const subcategoriasSoma = {}
+
+    despesas.forEach(t => {
+      const subNome = t.subcategorias?.nome || 'Sem subcategoria'
+      if (!subcategoriasSoma[subNome]) {
+        subcategoriasSoma[subNome] = 0
+      }
+      subcategoriasSoma[subNome] += t.valor
+    })
+
+    return Object.entries(subcategoriasSoma)
+      .map(([descricao, valor]) => ({ 
+        descricao: descricao.length > 25 ? descricao.substring(0, 25) + '...' : descricao, 
+        valor 
       }))
+      .sort((a, b) => b.valor - a.valor)
   }
 
   // Despesas agrupadas por subcategoria
@@ -453,8 +584,8 @@ export default function Relatorios() {
         </div>
       </div>
 
-      {/* Gráficos */}
-      <div className="graficos-grid">
+      {/* Gráficos - 4 em linha */}
+      <div className="graficos-grid graficos-4-colunas">
         {/* Receitas vs Despesas por Mês */}
         <div className="grafico-card">
           <div className="grafico-header">
@@ -464,27 +595,23 @@ export default function Relatorios() {
             </h3>
           </div>
           <div className="grafico-content">
-            {getDadosBarrasMensal().length === 0 ? (
+            {getReceitasDespesasMensal().length === 0 ? (
               <div className="grafico-empty">Nenhum dado disponível</div>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={getDadosBarrasMensal()}>
+                <BarChart data={getReceitasDespesasMensal()} barSize={30}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="mes" />
                   <YAxis />
                   <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Legend />
-                  <Bar dataKey="receitas" fill="#48bb78" name="Receitas" />
-                  <Bar dataKey="despesas" fill="#f56565" name="Despesas" />
+                  <Bar dataKey="Receitas" fill="#48bb78" name="Receitas" radius={[10, 10, 0, 0]} />
+                  <Bar dataKey="Despesas" fill="#f56565" name="Despesas" radius={[10, 10, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
         </div>
-
-
-        {/* Categorias e Subcategorias - Despesas e Receitas */}
-        <div className="categorias-container categorias-destaque">
           {/* Despesas */}
           <div className="categorias-card">
             <div className="categorias-header">
@@ -606,38 +733,6 @@ export default function Relatorios() {
           </div>
         </div>
 
-        {/* Evolução do Saldo */}
-        <div className="grafico-card grafico-full">
-          <div className="grafico-header">
-            <h3>
-              <TrendingUp size={20} />
-              Evolução do Saldo Acumulado
-            </h3>
-          </div>
-          <div className="grafico-content">
-            {getDadosLinhaEvolucao().length === 0 ? (
-              <div className="grafico-empty">Nenhum dado disponível</div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={getDadosLinhaEvolucao()}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="saldo" 
-                    stroke="#667eea" 
-                    strokeWidth={3}
-                    name="Saldo Acumulado"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </div>
-
         {/* Banco vs Dinheiro */}
         <div className="grafico-card">
           <div className="grafico-header">
@@ -673,20 +768,68 @@ export default function Relatorios() {
           </div>
         </div>
 
-        {/* Top 10 Maiores Despesas */}
+        {/* Maiores Despesas por Subcategoria */}
         <div className="grafico-card">
           <div className="grafico-header">
             <h3>
               <BarChart3 size={20} />
-              Top 10 Maiores Despesas
+              Despesas por Subcategoria
             </h3>
           </div>
           <div className="grafico-content">
-            {getTop10Transacoes().length === 0 ? (
+            {getDespesasPorSubcategoriaGrafico().length === 0 ? (
               <div className="grafico-empty">Nenhuma despesa no período</div>
             ) : (
+              <div className="grafico-barra-scroll">
+                <ResponsiveContainer width="100%" height={Math.max(300, getDespesasPorSubcategoriaGrafico().length * 35)}>
+                  <BarChart data={getDespesasPorSubcategoriaGrafico()} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis dataKey="descricao" type="category" width={150} />
+                    <Tooltip formatter={(value) => formatCurrency(value)} />
+                    <Bar dataKey="valor" fill="#f56565" name="Valor" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Evolução do Saldo */}
+        <div className="grafico-card">
+          <div className="grafico-header">
+            <h3>
+              <TrendingUp size={20} />
+              Evolução do Saldo
+            </h3>
+          </div>
+          <div className="grafico-content">
+            {getDadosLinhaEvolucao().length === 0 ? (
+              <div className="grafico-empty">Nenhum dado disponível</div>
+            ) : (
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={getTop10Transacoes()} layout="vertical">
+                <LineChart data={getDadosLinhaEvolucao()}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="mes" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => formatCurrency(value)} />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="saldo" 
+                    stroke="#667eea" 
+                    strokeWidth={3}
+                    name="Saldo Acumulado"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Categorias e Subcategorias - Despesas e Receitas */}
+      <div className="categorias-container categorias-compacto">
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" />
                   <YAxis dataKey="descricao" type="category" width={120} />
