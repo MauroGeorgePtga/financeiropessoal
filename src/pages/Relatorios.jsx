@@ -453,8 +453,11 @@ export default function Relatorios() {
         </div>
       </div>
 
-      {/* Categorias e Subcategorias - Despesas e Receitas */}
-      <div className="categorias-container categorias-destaque">
+      {/* Gráficos */}
+      <div className="graficos-grid">
+
+        {/* Categorias e Subcategorias - Despesas e Receitas */}
+        <div className="categorias-container categorias-destaque">
           {/* Despesas */}
           <div className="categorias-card">
             <div className="categorias-header">
@@ -575,10 +578,9 @@ export default function Relatorios() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Despesas por Subcategoria */}
-      <div className="grafico-card grafico-full">
+        {/* Despesas por Subcategoria */}
+        <div className="grafico-card">
           <div className="grafico-header">
             <div className="header-left">
               <h3>
