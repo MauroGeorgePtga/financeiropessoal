@@ -456,62 +456,6 @@ export default function Relatorios() {
       {/* Gráficos */}
       <div className="graficos-grid">
 
-        {/* Comparação Receitas vs Despesas - Gráfico Vertical Bonito */}
-        <div className="grafico-card grafico-full">
-          <div className="grafico-header">
-            <h3>
-              <BarChart3 size={20} />
-              Comparação: Receitas vs Despesas
-            </h3>
-          </div>
-          <div className="grafico-content">
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart 
-                data={[
-                  { categoria: 'Receitas', valor: resumo.totalReceitas, fill: '#48bb78' },
-                  { categoria: 'Despesas', valor: resumo.totalDespesas, fill: '#f56565' }
-                ]}
-                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="categoria" 
-                  tick={{ fill: '#666', fontSize: 14, fontWeight: 600 }}
-                  axisLine={{ stroke: '#e0e0e0' }}
-                />
-                <YAxis 
-                  tick={{ fill: '#666', fontSize: 12 }}
-                  axisLine={{ stroke: '#e0e0e0' }}
-                  tickFormatter={(value) => `R$ ${(value / 1000).toFixed(0)}k`}
-                />
-                <Tooltip 
-                  formatter={(value) => formatCurrency(value)}
-                  contentStyle={{ 
-                    background: 'white', 
-                    border: '2px solid #e0e0e0', 
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                  }}
-                  labelStyle={{ fontWeight: 700, color: '#333', marginBottom: 8 }}
-                />
-                <Bar 
-                  dataKey="valor" 
-                  fill="#8884d8" 
-                  radius={[12, 12, 0, 0]}
-                  maxBarSize={150}
-                >
-                  {[
-                    { categoria: 'Receitas', valor: resumo.totalReceitas, fill: '#48bb78' },
-                    { categoria: 'Despesas', valor: resumo.totalDespesas, fill: '#f56565' }
-                  ].map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
         {/* Categorias e Subcategorias - Despesas e Receitas */}
         <div className="categorias-container categorias-destaque">
           {/* Despesas */}
@@ -632,6 +576,62 @@ export default function Relatorios() {
                 })
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Comparação Receitas vs Despesas - Gráfico Vertical Bonito */}
+        <div className="grafico-card">
+          <div className="grafico-header">
+            <h3>
+              <BarChart3 size={20} />
+              Comparação: Receitas vs Despesas
+            </h3>
+          </div>
+          <div className="grafico-content">
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart 
+                data={[
+                  { categoria: 'Receitas', valor: resumo.totalReceitas, fill: '#48bb78' },
+                  { categoria: 'Despesas', valor: resumo.totalDespesas, fill: '#f56565' }
+                ]}
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="categoria" 
+                  tick={{ fill: '#666', fontSize: 14, fontWeight: 600 }}
+                  axisLine={{ stroke: '#e0e0e0' }}
+                />
+                <YAxis 
+                  tick={{ fill: '#666', fontSize: 12 }}
+                  axisLine={{ stroke: '#e0e0e0' }}
+                  tickFormatter={(value) => `R$ ${(value / 1000).toFixed(0)}k`}
+                />
+                <Tooltip 
+                  formatter={(value) => formatCurrency(value)}
+                  contentStyle={{ 
+                    background: 'white', 
+                    border: '2px solid #e0e0e0', 
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  }}
+                  labelStyle={{ fontWeight: 700, color: '#333', marginBottom: 8 }}
+                />
+                <Bar 
+                  dataKey="valor" 
+                  fill="#8884d8" 
+                  radius={[12, 12, 0, 0]}
+                  maxBarSize={150}
+                >
+                  {[
+                    { categoria: 'Receitas', valor: resumo.totalReceitas, fill: '#48bb78' },
+                    { categoria: 'Despesas', valor: resumo.totalDespesas, fill: '#f56565' }
+                  ].map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
