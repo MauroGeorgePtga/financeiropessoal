@@ -456,6 +456,62 @@ export default function Relatorios() {
       {/* Gráficos */}
       <div className="graficos-grid">
 
+        {/* Comparação Receitas vs Despesas - Gráfico Vertical Bonito */}
+        <div className="grafico-card grafico-full">
+          <div className="grafico-header">
+            <h3>
+              <BarChart3 size={20} />
+              Comparação: Receitas vs Despesas
+            </h3>
+          </div>
+          <div className="grafico-content">
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart 
+                data={[
+                  { categoria: 'Receitas', valor: resumo.totalReceitas, fill: '#48bb78' },
+                  { categoria: 'Despesas', valor: resumo.totalDespesas, fill: '#f56565' }
+                ]}
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="categoria" 
+                  tick={{ fill: '#666', fontSize: 14, fontWeight: 600 }}
+                  axisLine={{ stroke: '#e0e0e0' }}
+                />
+                <YAxis 
+                  tick={{ fill: '#666', fontSize: 12 }}
+                  axisLine={{ stroke: '#e0e0e0' }}
+                  tickFormatter={(value) => `R$ ${(value / 1000).toFixed(0)}k`}
+                />
+                <Tooltip 
+                  formatter={(value) => formatCurrency(value)}
+                  contentStyle={{ 
+                    background: 'white', 
+                    border: '2px solid #e0e0e0', 
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  }}
+                  labelStyle={{ fontWeight: 700, color: '#333', marginBottom: 8 }}
+                />
+                <Bar 
+                  dataKey="valor" 
+                  fill="#8884d8" 
+                  radius={[12, 12, 0, 0]}
+                  maxBarSize={150}
+                >
+                  {[
+                    { categoria: 'Receitas', valor: resumo.totalReceitas, fill: '#48bb78' },
+                    { categoria: 'Despesas', valor: resumo.totalDespesas, fill: '#f56565' }
+                  ].map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
         {/* Categorias e Subcategorias - Despesas e Receitas */}
         <div className="categorias-container categorias-destaque">
           {/* Despesas */}
@@ -609,43 +665,52 @@ export default function Relatorios() {
             {getDespesasPorSubcategoria().length === 0 ? (
               <div className="grafico-empty">Nenhuma despesa no período</div>
             ) : (
-              <>
-               
-
-
-
-
-
-                
-                <div className="subcategorias-list-scroll">
-                  <div className="subcategorias-list">
-                    {getDespesasPorSubcategoria().map((item, index) => {
-                      const percentual = resumo.totalDespesas > 0 
-                        ? (item.valor / resumo.totalDespesas) * 100 
-                        : 0
-                      
-                      return (
-                        <div key={index} className="subcategoria-item">
-                          <div className="subcategoria-info">
-                            <span className="subcategoria-nome">{item.nome}</span>
-                            <span className="subcategoria-categoria-parent">{item.categoriaNome}</span>
-                          </div>
-                          <div className="subcategoria-valores">
-                            <span className="subcategoria-valor">{formatCurrency(item.valor)}</span>
-                            <div className="subcategoria-barra-container">
-                              <div 
-                                className="subcategoria-barra"
-                                style={{ width: `${percentual}%` }}
-                              ></div>
-                            </div>
-                            <span className="subcategoria-percentual">{percentual.toFixed(1)}%</span>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              </>
+              <div style={{ width: '100%', height: '500px', overflowY: 'auto', overflowX: 'hidden' }}>
+                <ResponsiveContainer width="100%" height={Math.max(500, getDespesasPorSubcategoria().length * 40)}>
+                  <BarChart
+                    data={getDespesasPorSubcategoria()}
+                    layout="vertical"
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
+                    <defs>
+                      <linearGradient id="colorDespesas" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#f56565" />
+                        <stop offset="100%" stopColor="#fc8181" />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={true} vertical={false} />
+                    <XAxis
+                      type="number"
+                      tick={{ fill: '#666', fontSize: 12 }}
+                      axisLine={{ stroke: '#e0e0e0' }}
+                      tickFormatter={(value) => `R$ ${(value / 1000).toFixed(0)}k`}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="nome"
+                      width={180}
+                      tick={{ fill: '#333', fontSize: 13, fontWeight: 600 }}
+                      axisLine={{ stroke: '#e0e0e0' }}
+                    />
+                    <Tooltip
+                      formatter={(value) => formatCurrency(value)}
+                      contentStyle={{
+                        background: 'white',
+                        border: '2px solid #f56565',
+                        borderRadius: '12px',
+                        boxShadow: '0 4px 12px rgba(245, 101, 101, 0.2)'
+                      }}
+                      labelStyle={{ fontWeight: 700, color: '#333', marginBottom: 8 }}
+                    />
+                    <Bar
+                      dataKey="valor"
+                      fill="url(#colorDespesas)"
+                      radius={[0, 8, 8, 0]}
+                      maxBarSize={30}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             )}
           </div>
         </div>
