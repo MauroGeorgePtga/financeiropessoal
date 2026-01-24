@@ -575,9 +575,10 @@ export default function Relatorios() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Despesas por Subcategoria */}
-        <div className="grafico-card">
+      {/* Despesas por Subcategoria */}
+      <div className="grafico-card grafico-full">
           <div className="grafico-header">
             <div className="header-left">
               <h3>
