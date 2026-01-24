@@ -453,38 +453,8 @@ export default function Relatorios() {
         </div>
       </div>
 
-      {/* Gráficos */}
-      <div className="graficos-grid">
-        {/* Receitas vs Despesas por Mês */}
-        <div className="grafico-card">
-          <div className="grafico-header">
-            <h3>
-              <BarChart3 size={20} />
-              Receitas vs Despesas por Mês
-            </h3>
-          </div>
-          <div className="grafico-content">
-            {getDadosBarrasMensal().length === 0 ? (
-              <div className="grafico-empty">Nenhum dado disponível</div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={getDadosBarrasMensal()}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                  <Legend />
-                  <Bar dataKey="receitas" fill="#48bb78" name="Receitas" />
-                  <Bar dataKey="despesas" fill="#f56565" name="Despesas" />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </div>
-
-
-        {/* Categorias e Subcategorias - Despesas e Receitas */}
-        <div className="categorias-container categorias-destaque">
+      {/* Categorias e Subcategorias - Despesas e Receitas */}
+      <div className="categorias-container categorias-destaque">
           {/* Despesas */}
           <div className="categorias-card">
             <div className="categorias-header">
@@ -603,98 +573,6 @@ export default function Relatorios() {
                 })
               )}
             </div>
-          </div>
-        </div>
-
-        {/* Evolução do Saldo */}
-        <div className="grafico-card grafico-full">
-          <div className="grafico-header">
-            <h3>
-              <TrendingUp size={20} />
-              Evolução do Saldo Acumulado
-            </h3>
-          </div>
-          <div className="grafico-content">
-            {getDadosLinhaEvolucao().length === 0 ? (
-              <div className="grafico-empty">Nenhum dado disponível</div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={getDadosLinhaEvolucao()}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="saldo" 
-                    stroke="#667eea" 
-                    strokeWidth={3}
-                    name="Saldo Acumulado"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </div>
-
-        {/* Banco vs Dinheiro */}
-        <div className="grafico-card">
-          <div className="grafico-header">
-            <h3>
-              <PieChartIcon size={20} />
-              Banco vs Dinheiro
-            </h3>
-          </div>
-          <div className="grafico-content">
-            {getDadosPizzaFormaPagamento().length === 0 ? (
-              <div className="grafico-empty">Nenhum dado disponível</div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={getDadosPizzaFormaPagamento()}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {getDadosPizzaFormaPagamento().map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </div>
-
-        {/* Top 10 Maiores Despesas */}
-        <div className="grafico-card">
-          <div className="grafico-header">
-            <h3>
-              <BarChart3 size={20} />
-              Top 10 Maiores Despesas
-            </h3>
-          </div>
-          <div className="grafico-content">
-            {getTop10Transacoes().length === 0 ? (
-              <div className="grafico-empty">Nenhuma despesa no período</div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={getTop10Transacoes()} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="descricao" type="category" width={120} />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                  <Bar dataKey="valor" fill="#f56565" name="Valor" />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
           </div>
         </div>
 
