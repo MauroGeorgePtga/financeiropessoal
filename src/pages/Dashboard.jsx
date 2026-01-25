@@ -1008,10 +1008,19 @@ export default function Dashboard() {
                 </div>
                 <div className="contas-grid">
                   {cartoes.slice(0, 6).map((cartao) => {
-                    const limiteUsado = faturasCartoes.proximosVencimentos
-                      .filter(f => f.cartao_id === cartao.id)
-                      .reduce((sum, f) => sum + (f.valor_total || 0), 0)
+                    // Pegar apenas faturas deste cartão
+                    const faturasDoCartao = faturasCartoes.proximosVencimentos.filter(f => f.cartao_id === cartao.id)
+                    const limiteUsado = faturasDoCartao.reduce((sum, f) => sum + (f.valor_total || 0), 0)
                     const limiteDisponivel = (cartao.limite || 0) - limiteUsado
+                    
+                    // Fatura do mês atual (aberta)
+                    const mesAtual = new Date().getMonth() + 1
+                    const anoAtual = new Date().getFullYear()
+                    const faturaAtual = faturasDoCartao.find(f => 
+                      f.mes_referencia === mesAtual && 
+                      f.ano_referencia === anoAtual &&
+                      f.status === 'aberta'
+                    )
 
                     return (
                       <div key={cartao.id} className="conta-mini">
@@ -1024,11 +1033,16 @@ export default function Dashboard() {
                         <div className="conta-mini-info">
                           <strong>{cartao.nome}</strong>
                           <div className="cartao-mini-limites">
+                            {faturaAtual && (
+                              <span className="mini-fatura-atual">
+                                Fatura: <ValorOculto valor={formatCurrency(faturaAtual.valor_total)} />
+                              </span>
+                            )}
                             <span className="mini-usado">
-                              <ValorOculto valor={formatCurrency(limiteUsado)} />
+                              Usado: <ValorOculto valor={formatCurrency(limiteUsado)} />
                             </span>
                             <span className="mini-disponivel">
-                              <ValorOculto valor={formatCurrency(limiteDisponivel)} />
+                              Disponível: <ValorOculto valor={formatCurrency(limiteDisponivel)} />
                             </span>
                           </div>
                         </div>
