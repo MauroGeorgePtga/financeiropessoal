@@ -13,6 +13,7 @@ import Patrimonio from './pages/Patrimonio'
 import Relatorios from './pages/Relatorios'
 import Configuracoes from './pages/Configuracoes'
 import CartoesCredito from './pages/CartoesCredito'
+import Faturas from './pages/Faturas'
 import './styles/mobile.css'
 
 function App() {
@@ -70,6 +71,7 @@ function App() {
             <Route path="/patrimonio" element={<Patrimonio />} />
             <Route path="/relatorios" element={<Relatorios />} />
             <Route path="/cartoes" element={<CartoesCredito />} />
+            <Route path="/faturas" element={<Faturas />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
