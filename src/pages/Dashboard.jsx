@@ -555,6 +555,11 @@ export default function Dashboard() {
     }).format(value)
   }
 
+  const getMesNome = (mes) => {
+    const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+    return meses[mes - 1]
+  }
+
   const formatDate = (date) => {
     return new Date(date + 'T00:00:00').toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -1008,22 +1013,13 @@ export default function Dashboard() {
                 </div>
                 <div className="contas-grid">
                   {cartoes.slice(0, 6).map((cartao) => {
-                    // Pegar apenas faturas deste cartão (abertas e fechadas)
-                    const faturasDoCartao = faturasCartoes.proximosVencimentos.filter(f => 
+                    // Pegar apenas faturas ABERTAS deste cartão
+                    const faturasAbertasDoCartao = faturasCartoes.proximosVencimentos.filter(f => 
                       f.cartao_id === cartao.id && 
-                      (f.status === 'aberta' || f.status === 'fechada')
-                    )
-                    const limiteUsado = faturasDoCartao.reduce((sum, f) => sum + (f.valor_total || 0), 0)
-                    const limiteDisponivel = (cartao.limite || 0) - limiteUsado
-                    
-                    // Fatura do mês atual (aberta)
-                    const mesAtual = new Date().getMonth() + 1
-                    const anoAtual = new Date().getFullYear()
-                    const faturaAtual = faturasDoCartao.find(f => 
-                      f.mes_referencia === mesAtual && 
-                      f.ano_referencia === anoAtual &&
                       f.status === 'aberta'
                     )
+                    const limiteUsado = faturasAbertasDoCartao.reduce((sum, f) => sum + (f.valor_total || 0), 0)
+                    const limiteDisponivel = (cartao.limite || 0) - limiteUsado
 
                     return (
                       <div key={cartao.id} className="conta-mini cartao-mini-dashboard">
@@ -1042,14 +1038,6 @@ export default function Dashboard() {
                                 <ValorOculto valor={formatCurrency(cartao.limite)} />
                               </span>
                             </div>
-                            {faturaAtual && (
-                              <div className="detalhe-linha">
-                                <span className="mini-label">Fatura Atual:</span>
-                                <span className="mini-fatura-atual">
-                                  <ValorOculto valor={formatCurrency(faturaAtual.valor_total)} />
-                                </span>
-                              </div>
-                            )}
                             <div className="detalhe-linha">
                               <span className="mini-label">Usado Total:</span>
                               <span className="mini-usado">
@@ -1067,6 +1055,40 @@ export default function Dashboard() {
                       </div>
                     )
                   })}
+                </div>
+
+                {/* Próximas 3 Faturas */}
+                <div className="proximas-faturas-container">
+                  <h4>Próximas Faturas</h4>
+                  <div className="proximas-faturas-list">
+                    {faturasCartoes.proximosVencimentos
+                      .filter(f => f.status === 'aberta')
+                      .slice(0, 3)
+                      .map((fatura) => (
+                        <div key={fatura.id} className="fatura-item-dash">
+                          <div className="fatura-dash-info">
+                            <span 
+                              className="fatura-dash-cartao"
+                              style={{ borderLeftColor: fatura.cartoes_credito?.cor }}
+                            >
+                              {fatura.cartoes_credito?.nome}
+                            </span>
+                            <span className="fatura-dash-mes">
+                              {getMesNome(fatura.mes_referencia)}/{fatura.ano_referencia}
+                            </span>
+                          </div>
+                          <div className="fatura-dash-valores">
+                            <strong className="fatura-dash-valor">
+                              <ValorOculto valor={formatCurrency(fatura.valor_total)} />
+                            </strong>
+                            <span className="fatura-dash-vence">
+                              Vence: {new Date(fatura.data_vencimento).toLocaleDateString('pt-BR')}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    }
+                  </div>
                 </div>
               </>
             )}
