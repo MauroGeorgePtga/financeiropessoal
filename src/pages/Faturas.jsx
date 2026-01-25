@@ -31,8 +31,14 @@ export default function Faturas() {
   const [faturaSelecionada, setFaturaSelecionada] = useState(null)
   const [showModalLancamento, setShowModalLancamento] = useState(false)
   const [showModalPagamento, setShowModalPagamento] = useState(false)
+  const [showModalEditarFatura, setShowModalEditarFatura] = useState(false)
   const [faturaExpandida, setFaturaExpandida] = useState(null)
   const [editandoLancamento, setEditandoLancamento] = useState(null)
+  
+  const [formEditarFatura, setFormEditarFatura] = useState({
+    data_vencimento: '',
+    data_fechamento: ''
+  })
   
   const [formLancamento, setFormLancamento] = useState({
     descricao: '',
@@ -362,6 +368,36 @@ export default function Faturas() {
     }
   }
 
+  const handleEditarFatura = async (e) => {
+    e.preventDefault()
+
+    try {
+      const updates = {}
+      
+      if (formEditarFatura.data_vencimento) {
+        updates.data_vencimento = formEditarFatura.data_vencimento
+      }
+      
+      if (formEditarFatura.data_fechamento) {
+        updates.data_fechamento = formEditarFatura.data_fechamento
+      }
+
+      const { error } = await supabase
+        .from('faturas_cartao')
+        .update(updates)
+        .eq('id', faturaSelecionada)
+
+      if (error) throw error
+      alert('Fatura atualizada com sucesso!')
+      setShowModalEditarFatura(false)
+      setFormEditarFatura({ data_vencimento: '', data_fechamento: '' })
+      carregarFaturas(cartaoSelecionado)
+    } catch (error) {
+      console.error('Erro ao atualizar fatura:', error)
+      alert('Erro ao atualizar fatura')
+    }
+  }
+
   const handlePagarFatura = async (e) => {
     e.preventDefault()
 
@@ -595,6 +631,23 @@ export default function Faturas() {
                       title="Fechar Fatura"
                     >
                       <Lock size={16} />
+                    </button>
+                  )}
+                  {(fatura.status === 'aberta' || fatura.status === 'fechada') && (
+                    <button 
+                      className="btn-editar-inline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setFaturaSelecionada(fatura.id)
+                        setFormEditarFatura({
+                          data_vencimento: fatura.data_vencimento,
+                          data_fechamento: fatura.data_fechamento || ''
+                        })
+                        setShowModalEditarFatura(true)
+                      }}
+                      title="Editar Datas"
+                    >
+                      <Edit2 size={16} />
                     </button>
                   )}
                   {fatura.status === 'fechada' && (
@@ -912,6 +965,54 @@ export default function Faturas() {
                 <button type="submit" className="btn-primary">
                   <CheckCircle size={20} />
                   Confirmar Pagamento
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Fatura */}
+      {showModalEditarFatura && (
+        <div className="modal-overlay" onClick={() => setShowModalEditarFatura(false)}>
+          <div className="modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Editar Datas da Fatura</h2>
+              <button className="btn-icon" onClick={() => setShowModalEditarFatura(false)}>
+                <XCircle size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditarFatura}>
+              <div className="form-group">
+                <label>Data de Vencimento *</label>
+                <input
+                  type="date"
+                  value={formEditarFatura.data_vencimento}
+                  onChange={(e) => setFormEditarFatura({ ...formEditarFatura, data_vencimento: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Data de Fechamento</label>
+                <input
+                  type="date"
+                  value={formEditarFatura.data_fechamento}
+                  onChange={(e) => setFormEditarFatura({ ...formEditarFatura, data_fechamento: e.target.value })}
+                />
+                <small style={{color: '#999', fontSize: '12px'}}>
+                  Deixe vazio se a fatura ainda não foi fechada
+                </small>
+              </div>
+
+              <div className="modal-footer">
+                <button type="button" className="btn-secondary" onClick={() => setShowModalEditarFatura(false)}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-primary">
+                  <CheckCircle size={20} />
+                  Salvar Alterações
                 </button>
               </div>
             </form>
