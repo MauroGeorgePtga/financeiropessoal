@@ -1,0 +1,377 @@
+/* Faturas */
+
+.faturas-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Seletor de Cartão */
+.cartao-selector {
+  display: flex;
+  gap: 15px;
+  margin: 20px 0;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+.cartao-selector::-webkit-scrollbar {
+  height: 6px;
+}
+
+.cartao-selector::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.cartao-selector::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 3px;
+}
+
+.cartao-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 20px;
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-left: 5px solid #9f7aea;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 200px;
+}
+
+.cartao-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cartao-btn.active {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.cartao-nome-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cartao-nome {
+  font-weight: 700;
+  color: #333;
+  font-size: 14px;
+}
+
+.cartao-bandeira-small {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Lista de Faturas */
+.faturas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  color: #999;
+}
+
+/* Card da Fatura */
+.fatura-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.fatura-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.fatura-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.fatura-header:hover {
+  background: #fafafa;
+}
+
+.fatura-info h3 {
+  margin: 0 0 5px;
+  font-size: 20px;
+  color: #333;
+  font-weight: 700;
+}
+
+.fatura-vencimento {
+  font-size: 13px;
+  color: #666;
+}
+
+.fatura-valor-status {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.fatura-valor {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* Status Badge */
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-aberta {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-fechada {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-paga {
+  background: #d4edda;
+  color: #155724;
+}
+
+/* Detalhes da Fatura */
+.fatura-detalhes {
+  border-top: 1px solid #e0e0e0;
+  padding: 20px 25px;
+  background: #fafafa;
+}
+
+.fatura-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.data-pagamento {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #48bb78;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Lançamentos */
+.lancamentos-list {
+  margin-top: 20px;
+}
+
+.lancamentos-list h4 {
+  margin: 0 0 15px;
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+.empty-lancamentos {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 14px;
+}
+
+.lancamento-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  transition: transform 0.2s;
+}
+
+.lancamento-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.lancamento-info {
+  flex: 1;
+}
+
+.lancamento-descricao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.lancamento-descricao .descricao {
+  font-weight: 600;
+  color: #333;
+  font-size: 15px;
+}
+
+.parcela-info {
+  padding: 3px 8px;
+  background: #667eea;
+  color: white;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.lancamento-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.lancamento-meta .data {
+  font-size: 13px;
+  color: #666;
+}
+
+.categoria-tag {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+.lancamento-valor-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.lancamento-valor-actions .valor {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f56565;
+}
+
+/* Botões */
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+/* Modal */
+.modal-sm {
+  max-width: 500px;
+}
+
+.pagamento-info {
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.pagamento-info p {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.info-parcelas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  background: #e3f2fd;
+  border-radius: 8px;
+  color: #1976d2;
+  font-weight: 600;
+  margin-top: 15px;
+}
+
+/* Textarea */
+textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.3s;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .fatura-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .fatura-valor-status {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .lancamento-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .lancamento-valor-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .fatura-actions {
+    flex-direction: column;
+  }
+
+  .fatura-actions button {
+    width: 100%;
+  }
+
+  .cartao-selector {
+    flex-direction: column;
+  }
+
+  .cartao-btn {
+    width: 100%;
+  }
+}
