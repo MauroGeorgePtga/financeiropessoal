@@ -11,6 +11,7 @@ import {
   Calendar,
   DollarSign,
   TrendingUp,
+  TrendingDown,
   AlertCircle
 } from 'lucide-react'
 import './CartoesCredito.css'
