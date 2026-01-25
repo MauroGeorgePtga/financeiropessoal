@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import { VisibilityProvider } from './contexts/VisibilityContext'
+import { useSessionTracker } from './hooks/useSessionTracker'
 import Login from './components/auth/Login'
 import Layout from './components/layout/Layout'
 import Dashboard from './pages/Dashboard'
@@ -12,12 +13,13 @@ import CadastroAtivos from './pages/CadastroAtivos'
 import Patrimonio from './pages/Patrimonio'
 import Relatorios from './pages/Relatorios'
 import Configuracoes from './pages/Configuracoes'
-import CartoesCredito from './pages/CartoesCredito'
-import Faturas from './pages/Faturas'
 import './styles/mobile.css'
 
 function App() {
   const { user, loading } = useAuth()
+  
+  // Rastrear acesso automaticamente
+  useSessionTracker(user)
 
   // Mostrar loading enquanto verifica autenticação
   if (loading) {
@@ -70,8 +72,6 @@ function App() {
             <Route path="/cadastro-ativos" element={<CadastroAtivos />} />
             <Route path="/patrimonio" element={<Patrimonio />} />
             <Route path="/relatorios" element={<Relatorios />} />
-            <Route path="/cartoes" element={<CartoesCredito />} />
-            <Route path="/faturas" element={<Faturas />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
