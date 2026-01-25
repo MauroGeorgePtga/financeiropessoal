@@ -1268,3 +1268,47 @@ color: white; */
   color: #48bb78;
   font-weight: 600;
 }
+
+/* Cartões no Dashboard - Atualizado */
+.cartao-mini-dashboard {
+  padding: 15px !important;
+}
+
+.cartao-mini-detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.detalhe-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.mini-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.mini-limite {
+  color: #667eea;
+  font-weight: 700;
+}
+
+.mini-fatura-atual {
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+.mini-usado {
+  color: #f56565;
+  font-weight: 700;
+}
+
+.mini-disponivel {
+  color: #48bb78;
+  font-weight: 700;
+}
