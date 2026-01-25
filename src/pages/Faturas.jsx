@@ -294,7 +294,7 @@ export default function Faturas() {
         if (error) throw error
       }
 
-      alert(`Lançamento ${parcelas > 1 ? 'parcelado' : ''} adicionado com sucesso!`)
+      alert(`Lançamento ${editandoLancamento ? 'atualizado' : parcelas > 1 ? 'parcelado adicionado' : 'adicionado'} com sucesso!`)
       setShowModalLancamento(false)
       setEditandoLancamento(null)
       setFormLancamento({
