@@ -170,7 +170,7 @@ export default function Dashboard() {
       // Carregar faturas abertas e fechadas
       const { data: faturasData, error: faturasError } = await supabase
         .from('faturas_cartao')
-        .select('*, cartoes_credito(nome, cor)')
+        .select('*, cartoes_credito(nome, cor, id)')
         .eq('user_id', user.id)
         .in('status', ['aberta', 'fechada'])
         .order('data_vencimento', { ascending: true })
@@ -179,7 +179,7 @@ export default function Dashboard() {
 
       const totalAberto = faturasData?.filter(f => f.status === 'aberta').reduce((sum, f) => sum + (f.valor_total || 0), 0) || 0
       const totalFechado = faturasData?.filter(f => f.status === 'fechada').reduce((sum, f) => sum + (f.valor_total || 0), 0) || 0
-      const proximosVencimentos = faturasData?.slice(0, 3) || []
+      const proximosVencimentos = faturasData || [] // Todas as faturas para cálculo correto
 
       setFaturasCartoes({ totalAberto, totalFechado, proximosVencimentos })
     } catch (error) {
@@ -1057,33 +1057,31 @@ export default function Dashboard() {
                   })}
                 </div>
 
-                {/* Próximas 3 Faturas */}
+                {/* Próximas 4 Faturas */}
                 <div className="proximas-faturas-container">
                   <h4>Próximas Faturas</h4>
-                  <div className="proximas-faturas-list">
+                  <div className="proximas-faturas-grid">
                     {faturasCartoes.proximosVencimentos
                       .filter(f => f.status === 'aberta')
-                      .slice(0, 3)
+                      .slice(0, 4)
                       .map((fatura) => (
-                        <div key={fatura.id} className="fatura-item-dash">
-                          <div className="fatura-dash-info">
+                        <div key={fatura.id} className="fatura-card-dash">
+                          <div className="fatura-card-header">
+                            <span className="fatura-card-mes">
+                              {getMesNome(fatura.mes_referencia)}/{fatura.ano_referencia}
+                            </span>
                             <span 
-                              className="fatura-dash-cartao"
-                              style={{ borderLeftColor: fatura.cartoes_credito?.cor }}
+                              className="fatura-card-cartao"
+                              style={{ color: fatura.cartoes_credito?.cor }}
                             >
                               {fatura.cartoes_credito?.nome}
                             </span>
-                            <span className="fatura-dash-mes">
-                              {getMesNome(fatura.mes_referencia)}/{fatura.ano_referencia}
-                            </span>
                           </div>
-                          <div className="fatura-dash-valores">
-                            <strong className="fatura-dash-valor">
-                              <ValorOculto valor={formatCurrency(fatura.valor_total)} />
-                            </strong>
-                            <span className="fatura-dash-vence">
-                              Vence: {new Date(fatura.data_vencimento).toLocaleDateString('pt-BR')}
-                            </span>
+                          <div className="fatura-card-valor">
+                            <ValorOculto valor={formatCurrency(fatura.valor_total)} />
+                          </div>
+                          <div className="fatura-card-vence">
+                            Vence: {new Date(fatura.data_vencimento).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                           </div>
                         </div>
                       ))
