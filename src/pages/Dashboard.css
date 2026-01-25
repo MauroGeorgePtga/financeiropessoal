@@ -1245,3 +1245,26 @@ color: white; */
     grid-template-columns: 1fr;
   }
 }
+
+.cartao-mini-limites {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  margin-top: 6px;
+}
+
+.mini-fatura-atual {
+  color: #667eea;
+  font-weight: 700;
+}
+
+.mini-usado {
+  color: #f56565;
+  font-weight: 600;
+}
+
+.mini-disponivel {
+  color: #48bb78;
+  font-weight: 600;
+}
