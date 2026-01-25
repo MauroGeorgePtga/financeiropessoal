@@ -73,33 +73,35 @@
 
 /* Detalhes do Cartão */
 .cartao-detalhes {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
   margin-bottom: 20px;
   padding: 15px;
   background: #f8f9fa;
   border-radius: 10px;
 }
 
-.detalhe-item {
+.detalhe-item-horizontal {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-.detalhe-item svg {
+.detalhe-item-horizontal svg {
   color: #667eea;
+  flex-shrink: 0;
 }
 
-.detalhe-item > div {
+.detalhe-text {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .detalhe-label {
-  font-size: 11px;
+  font-size: 10px;
   color: #999;
   text-transform: uppercase;
   font-weight: 600;
@@ -107,9 +109,20 @@
 }
 
 .detalhe-valor {
-  font-size: 16px;
+  font-size: 14px;
   color: #333;
   font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detalhe-usado {
+  color: #f56565;
+}
+
+.detalhe-disponivel {
+  color: #48bb78;
 }
 
 /* Footer do Card */
