@@ -14,7 +14,8 @@ import {
   ArrowUpCircle,
   ArrowDownCircle,
   Landmark,
-  Banknote
+  Banknote,
+  CreditCard
 } from 'lucide-react'
 import './Dashboard.css'
 
@@ -44,6 +45,13 @@ export default function Dashboard() {
     proximosVencimentos: []
   })
 
+  const [cartoes, setCartoes] = useState([])
+  const [faturasCartoes, setFaturasCartoes] = useState({
+    totalAberto: 0,
+    totalFechado: 0,
+    proximosVencimentos: []
+  })
+
   const [investimentos, setInvestimentos] = useState({
     totalInvestido: 0,
     valorAtual: 0,
@@ -66,6 +74,7 @@ export default function Dashboard() {
     if (user) {
       carregarDados()
       carregarInvestimentos()
+      carregarCartoes()
     }
   }, [user])
 
@@ -143,6 +152,38 @@ export default function Dashboard() {
       console.error('Erro ao carregar investimentos:', error)
     } finally {
       setLoadingInvestimentos(false)
+    }
+  }
+
+  const carregarCartoes = async () => {
+    try {
+      // Carregar cartões
+      const { data: cartoesData, error: cartoesError } = await supabase
+        .from('cartoes_credito')
+        .select('id, nome, cor, icone, limite')
+        .eq('user_id', user.id)
+        .eq('ativo', true)
+
+      if (cartoesError) throw cartoesError
+      setCartoes(cartoesData || [])
+
+      // Carregar faturas abertas e fechadas
+      const { data: faturasData, error: faturasError } = await supabase
+        .from('faturas_cartao')
+        .select('*, cartoes_credito(nome, cor)')
+        .eq('user_id', user.id)
+        .in('status', ['aberta', 'fechada'])
+        .order('data_vencimento', { ascending: true })
+
+      if (faturasError) throw faturasError
+
+      const totalAberto = faturasData?.filter(f => f.status === 'aberta').reduce((sum, f) => sum + (f.valor_total || 0), 0) || 0
+      const totalFechado = faturasData?.filter(f => f.status === 'fechada').reduce((sum, f) => sum + (f.valor_total || 0), 0) || 0
+      const proximosVencimentos = faturasData?.slice(0, 3) || []
+
+      setFaturasCartoes({ totalAberto, totalFechado, proximosVencimentos })
+    } catch (error) {
+      console.error('Erro ao carregar cartões:', error)
     }
   }
 
@@ -916,12 +957,86 @@ export default function Dashboard() {
                     <div className="conta-mini-info">
                       <strong>{conta.nome}</strong>
                       <span className={conta.saldo_atual >= 0 ? 'positivo' : 'negativo'}>
-                        {formatCurrency(conta.saldo_atual || 0)}
+                        <ValorOculto valor={formatCurrency(conta.saldo_atual || 0)} />
                       </span>
                     </div>
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* Meus Cartões de Crédito */}
+        <div className="dashboard-widget widget-full">
+          <div className="widget-header">
+            <h3>
+              <CreditCard size={20} />
+              Meus Cartões
+            </h3>
+            <Link to="/cartoes" className="widget-link">Ver todos</Link>
+          </div>
+          <div className="widget-content">
+            {cartoes.length === 0 ? (
+              <div className="widget-empty">
+                <span>Nenhum cartão cadastrado</span>
+                <Link to="/cartoes" className="btn-secondary">
+                  Cadastrar Cartão
+                </Link>
+              </div>
+            ) : (
+              <>
+                <div className="cartoes-resumo">
+                  <div className="resumo-item">
+                    <Clock size={16} />
+                    <div>
+                      <span className="resumo-label">Faturas Abertas</span>
+                      <strong className="resumo-valor usado">
+                        <ValorOculto valor={formatCurrency(faturasCartoes.totalAberto)} />
+                      </strong>
+                    </div>
+                  </div>
+                  <div className="resumo-item">
+                    <AlertCircle size={16} />
+                    <div>
+                      <span className="resumo-label">Faturas Fechadas</span>
+                      <strong className="resumo-valor alerta">
+                        <ValorOculto valor={formatCurrency(faturasCartoes.totalFechado)} />
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+                <div className="contas-grid">
+                  {cartoes.slice(0, 6).map((cartao) => {
+                    const limiteUsado = faturasCartoes.proximosVencimentos
+                      .filter(f => f.cartao_id === cartao.id)
+                      .reduce((sum, f) => sum + (f.valor_total || 0), 0)
+                    const limiteDisponivel = (cartao.limite || 0) - limiteUsado
+
+                    return (
+                      <div key={cartao.id} className="conta-mini">
+                        <div 
+                          className="conta-mini-icon"
+                          style={{ backgroundColor: cartao.cor }}
+                        >
+                          {cartao.icone}
+                        </div>
+                        <div className="conta-mini-info">
+                          <strong>{cartao.nome}</strong>
+                          <div className="cartao-mini-limites">
+                            <span className="mini-usado">
+                              <ValorOculto valor={formatCurrency(limiteUsado)} />
+                            </span>
+                            <span className="mini-disponivel">
+                              <ValorOculto valor={formatCurrency(limiteDisponivel)} />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </>
             )}
           </div>
         </div>
