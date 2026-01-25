@@ -716,7 +716,15 @@ export default function Faturas() {
                   >
                     <option value="">Selecione...</option>
                     {subcategorias
-                      .filter(sub => sub.categoria_id === formLancamento.categoria_id)
+                      .filter(sub => {
+                        console.log('🔍 Comparando:', {
+                          subcategoria: sub.nome,
+                          sub_categoria_id: sub.categoria_id,
+                          form_categoria_id: formLancamento.categoria_id,
+                          igual: sub.categoria_id === formLancamento.categoria_id
+                        })
+                        return sub.categoria_id === formLancamento.categoria_id
+                      })
                       .map(sub => (
                         <option key={sub.id} value={sub.id}>{sub.nome}</option>
                       ))
