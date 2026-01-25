@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useVisibility } from '../contexts/VisibilityContext'
 import { 
   CreditCard, 
   Plus, 
@@ -18,6 +19,7 @@ import './CartoesCredito.css'
 
 export default function CartoesCredito() {
   const { user } = useAuth()
+  const { valoresVisiveis } = useVisibility()
   const [cartoes, setCartoes] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -294,7 +296,7 @@ export default function CartoesCredito() {
                   <DollarSign size={16} />
                   <div className="detalhe-text">
                     <span className="detalhe-label">Limite Total</span>
-                    <span className="detalhe-valor">{formatCurrency(cartao.limite)}</span>
+                    <span className="detalhe-valor">{valoresVisiveis ? formatCurrency(cartao.limite) : '••••••'}</span>
                   </div>
                 </div>
 
@@ -302,7 +304,7 @@ export default function CartoesCredito() {
                   <TrendingDown size={16} />
                   <div className="detalhe-text">
                     <span className="detalhe-label">Usado</span>
-                    <span className="detalhe-valor detalhe-usado">{formatCurrency(totaisFaturas[cartao.id] || 0)}</span>
+                    <span className="detalhe-valor detalhe-usado">{valoresVisiveis ? formatCurrency(totaisFaturas[cartao.id] || 0) : '••••••'}</span>
                   </div>
                 </div>
 
@@ -310,7 +312,7 @@ export default function CartoesCredito() {
                   <TrendingUp size={16} />
                   <div className="detalhe-text">
                     <span className="detalhe-label">Disponível</span>
-                    <span className="detalhe-valor detalhe-disponivel">{formatCurrency((cartao.limite || 0) - (totaisFaturas[cartao.id] || 0))}</span>
+                    <span className="detalhe-valor detalhe-disponivel">{valoresVisiveis ? formatCurrency((cartao.limite || 0) - (totaisFaturas[cartao.id] || 0)) : '••••••'}</span>
                   </div>
                 </div>
 
