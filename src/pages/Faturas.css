@@ -132,6 +132,41 @@
   gap: 15px;
 }
 
+/* Botões inline no header */
+.btn-fechar-inline,
+.btn-pagar-inline {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-fechar-inline {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.btn-fechar-inline:hover {
+  background: #f5c6cb;
+  transform: scale(1.05);
+}
+
+.btn-pagar-inline {
+  background: #d4edda;
+  color: #155724;
+}
+
+.btn-pagar-inline:hover {
+  background: #c3e6cb;
+  transform: scale(1.05);
+}
+
 .fatura-valor {
   font-size: 24px;
   font-weight: 700;
@@ -274,6 +309,20 @@
   display: flex;
   align-items: center;
   gap: 15px;
+}
+
+.lancamento-btns {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-icon.btn-edit {
+  background: #eef2ff;
+  color: #667eea;
+}
+
+.btn-icon.btn-edit:hover {
+  background: #ddd6fe;
 }
 
 .lancamento-valor-actions .valor {
