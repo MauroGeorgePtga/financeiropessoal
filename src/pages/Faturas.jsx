@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useVisibility } from '../contexts/VisibilityContext'
 import { 
   CreditCard, 
   Plus, 
@@ -21,6 +22,7 @@ import './Faturas.css'
 
 export default function Faturas() {
   const { user } = useAuth()
+  const { valoresVisiveis } = useVisibility()
   const [cartoes, setCartoes] = useState([])
   const [faturas, setFaturas] = useState([])
   const [lancamentos, setLancamentos] = useState([])
@@ -604,10 +606,10 @@ export default function Faturas() {
                 </div>
                 <div className="cartao-limites">
                   <span className="limite-item">
-                    <small>Usado:</small> <strong className="usado">{formatCurrency(limiteUsado)}</strong>
+                    <small>Usado:</small> <strong className="usado">{valoresVisiveis ? formatCurrency(limiteUsado) : '••••••'}</strong>
                   </span>
                   <span className="limite-item">
-                    <small>Disponível:</small> <strong className="disponivel">{formatCurrency(limiteDisponivel)}</strong>
+                    <small>Disponível:</small> <strong className="disponivel">{valoresVisiveis ? formatCurrency(limiteDisponivel) : '••••••'}</strong>
                   </span>
                 </div>
               </div>
@@ -636,7 +638,7 @@ export default function Faturas() {
                   </span>
                 </div>
                 <div className="fatura-valor-status">
-                  <span className="fatura-valor">{formatCurrency(fatura.valor_total)}</span>
+                  <span className="fatura-valor">{valoresVisiveis ? formatCurrency(fatura.valor_total) : '••••••'}</span>
                   {getStatusBadge(fatura.status)}
                   {fatura.status === 'aberta' && (
                     <button 
@@ -742,7 +744,7 @@ export default function Faturas() {
                             </div>
                           </div>
                           <div className="lancamento-valor-actions">
-                            <span className="valor">{formatCurrency(lanc.valor)}</span>
+                            <span className="valor">{valoresVisiveis ? formatCurrency(lanc.valor) : '••••••'}</span>
                             {fatura.status === 'aberta' && (
                               <div className="lancamento-btns">
                                 <button 
