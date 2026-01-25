@@ -1177,3 +1177,71 @@ color: white; */
     font-size: 24px !important;
   }
 }
+
+/* Cartões no Dashboard */
+.cartoes-resumo {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.resumo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.resumo-item svg {
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.resumo-label {
+  display: block;
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.resumo-valor {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.resumo-valor.usado {
+  color: #f56565;
+}
+
+.resumo-valor.alerta {
+  color: #f59e0b;
+}
+
+.cartao-mini-limites {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.mini-usado {
+  color: #f56565;
+  font-weight: 600;
+}
+
+.mini-disponivel {
+  color: #48bb78;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .cartoes-resumo {
+    grid-template-columns: 1fr;
+  }
+}
