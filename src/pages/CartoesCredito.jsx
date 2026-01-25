@@ -21,6 +21,7 @@ export default function CartoesCredito() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editando, setEditando] = useState(null)
+  const [totaisFaturas, setTotaisFaturas] = useState({})
   const [formData, setFormData] = useState({
     nome: '',
     bandeira: 'Visa',
@@ -59,6 +60,21 @@ export default function CartoesCredito() {
 
       if (error) throw error
       setCartoes(data || [])
+
+      // Carregar totais das faturas abertas e fechadas para cada cartão
+      if (data && data.length > 0) {
+        const totais = {}
+        for (const cartao of data) {
+          const { data: faturas } = await supabase
+            .from('faturas_cartao')
+            .select('valor_total')
+            .eq('cartao_id', cartao.id)
+            .in('status', ['aberta', 'fechada'])
+
+          totais[cartao.id] = faturas?.reduce((sum, f) => sum + (f.valor_total || 0), 0) || 0
+        }
+        setTotaisFaturas(totais)
+      }
     } catch (error) {
       console.error('Erro ao carregar cartões:', error)
       alert('Erro ao carregar cartões')
@@ -273,25 +289,41 @@ export default function CartoesCredito() {
               </div>
 
               <div className="cartao-detalhes">
-                <div className="detalhe-item">
+                <div className="detalhe-item-horizontal">
                   <DollarSign size={16} />
-                  <div>
-                    <span className="detalhe-label">Limite</span>
+                  <div className="detalhe-text">
+                    <span className="detalhe-label">Limite Total</span>
                     <span className="detalhe-valor">{formatCurrency(cartao.limite)}</span>
                   </div>
                 </div>
 
-                <div className="detalhe-item">
+                <div className="detalhe-item-horizontal">
+                  <TrendingDown size={16} />
+                  <div className="detalhe-text">
+                    <span className="detalhe-label">Usado</span>
+                    <span className="detalhe-valor detalhe-usado">{formatCurrency(totaisFaturas[cartao.id] || 0)}</span>
+                  </div>
+                </div>
+
+                <div className="detalhe-item-horizontal">
+                  <TrendingUp size={16} />
+                  <div className="detalhe-text">
+                    <span className="detalhe-label">Disponível</span>
+                    <span className="detalhe-valor detalhe-disponivel">{formatCurrency((cartao.limite || 0) - (totaisFaturas[cartao.id] || 0))}</span>
+                  </div>
+                </div>
+
+                <div className="detalhe-item-horizontal">
                   <Calendar size={16} />
-                  <div>
+                  <div className="detalhe-text">
                     <span className="detalhe-label">Fechamento</span>
                     <span className="detalhe-valor">Dia {cartao.dia_fechamento}</span>
                   </div>
                 </div>
 
-                <div className="detalhe-item">
-                  <TrendingUp size={16} />
-                  <div>
+                <div className="detalhe-item-horizontal">
+                  <Calendar size={16} />
+                  <div className="detalhe-text">
                     <span className="detalhe-label">Vencimento</span>
                     <span className="detalhe-valor">Dia {cartao.dia_vencimento}</span>
                   </div>
