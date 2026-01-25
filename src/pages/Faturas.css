@@ -337,6 +337,24 @@
   font-size: 13px;
 }
 
+.btn-danger {
+  background: #f56565;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-danger:hover {
+  background: #e53e3e;
+  transform: scale(1.02);
+}
+
 /* Modal */
 .modal-sm {
   max-width: 500px;
