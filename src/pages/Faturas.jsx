@@ -131,7 +131,7 @@ export default function Faturas() {
         .from('faturas_cartao')
         .select(`
           *,
-          cartoes_credito (nome, cor, icone)
+          cartoes_credito (nome, cor, icone, limite)
         `)
         .eq('cartao_id', cartaoId)
         .order('ano_referencia', { ascending: true })
@@ -578,25 +578,42 @@ export default function Faturas() {
 
       {/* Seletor de Cartão */}
       <div className="cartao-selector">
-        {cartoes.map(cartao => (
-          <button
-            key={cartao.id}
-            className={`cartao-btn ${cartaoSelecionado === cartao.id ? 'active' : ''}`}
-            onClick={() => {
-              setCartaoSelecionado(cartao.id)
-              setFaturaSelecionada(null)
-              setFaturaExpandida(null)
-              setLancamentos([])
-            }}
-            style={{ borderLeftColor: cartao.cor }}
-          >
-            <span className="cartao-icone">{cartao.icone}</span>
-            <div className="cartao-nome-wrapper">
-              <span className="cartao-nome">{cartao.nome}</span>
-              <span className="cartao-bandeira-small">{cartao.bandeira}</span>
-            </div>
-          </button>
-        ))}
+        {cartoes.map(cartao => {
+          const limiteUsado = faturas
+            .filter(f => f.cartao_id === cartao.id && (f.status === 'aberta' || f.status === 'fechada'))
+            .reduce((sum, f) => sum + (f.valor_total || 0), 0)
+          const limiteDisponivel = (cartao.limite || 0) - limiteUsado
+
+          return (
+            <button
+              key={cartao.id}
+              className={`cartao-btn ${cartaoSelecionado === cartao.id ? 'active' : ''}`}
+              onClick={() => {
+                setCartaoSelecionado(cartao.id)
+                setFaturaSelecionada(null)
+                setFaturaExpandida(null)
+                setLancamentos([])
+              }}
+              style={{ borderLeftColor: cartao.cor }}
+            >
+              <span className="cartao-icone">{cartao.icone}</span>
+              <div className="cartao-info-completa">
+                <div className="cartao-nome-wrapper">
+                  <span className="cartao-nome">{cartao.nome}</span>
+                  <span className="cartao-bandeira-small">{cartao.bandeira}</span>
+                </div>
+                <div className="cartao-limites">
+                  <span className="limite-item">
+                    <small>Usado:</small> <strong className="usado">{formatCurrency(limiteUsado)}</strong>
+                  </span>
+                  <span className="limite-item">
+                    <small>Disponível:</small> <strong className="disponivel">{formatCurrency(limiteDisponivel)}</strong>
+                  </span>
+                </div>
+              </div>
+            </button>
+          )
+        })}
       </div>
 
       {/* Lista de Faturas */}
