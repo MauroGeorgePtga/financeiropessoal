@@ -40,7 +40,7 @@
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 200px;
+  min-width: 250px;
 }
 
 .cartao-btn:hover {
@@ -52,6 +52,13 @@
   border-color: #667eea;
   background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.cartao-info-completa {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
 }
 
 .cartao-nome-wrapper {
@@ -71,6 +78,33 @@
   color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.cartao-limites {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.limite-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.limite-item small {
+  color: #999;
+}
+
+.limite-item strong.usado {
+  color: #f56565;
+  font-weight: 700;
+}
+
+.limite-item strong.disponivel {
+  color: #48bb78;
+  font-weight: 700;
 }
 
 /* Lista de Faturas */
