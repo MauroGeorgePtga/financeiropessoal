@@ -12,6 +12,7 @@ import CadastroAtivos from './pages/CadastroAtivos'
 import Patrimonio from './pages/Patrimonio'
 import Relatorios from './pages/Relatorios'
 import Configuracoes from './pages/Configuracoes'
+import CartoesCredito from './pages/CartoesCredito'
 import './styles/mobile.css'
 
 function App() {
@@ -68,6 +69,7 @@ function App() {
             <Route path="/cadastro-ativos" element={<CadastroAtivos />} />
             <Route path="/patrimonio" element={<Patrimonio />} />
             <Route path="/relatorios" element={<Relatorios />} />
+            <Route path="/cartoes" element={<CartoesCredito />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
