@@ -32,6 +32,7 @@ export default function Faturas() {
   const [showModalLancamento, setShowModalLancamento] = useState(false)
   const [showModalPagamento, setShowModalPagamento] = useState(false)
   const [faturaExpandida, setFaturaExpandida] = useState(null)
+  const [editandoLancamento, setEditandoLancamento] = useState(null)
   
   const [formLancamento, setFormLancamento] = useState({
     descricao: '',
@@ -127,8 +128,8 @@ export default function Faturas() {
           cartoes_credito (nome, cor, icone)
         `)
         .eq('cartao_id', cartaoId)
-        .order('ano_referencia', { ascending: false })
-        .order('mes_referencia', { ascending: false })
+        .order('ano_referencia', { ascending: true })
+        .order('mes_referencia', { ascending: true })
 
       if (error) throw error
       setFaturas(data || [])
@@ -225,6 +226,24 @@ export default function Faturas() {
     }
 
     try {
+      if (editandoLancamento) {
+        // EDITAR lançamento existente
+        const { error } = await supabase
+          .from('lancamentos_cartao')
+          .update({
+            descricao: formLancamento.descricao,
+            valor: parseFloat(formLancamento.valor),
+            data_compra: formLancamento.data_compra,
+            categoria_id: formLancamento.categoria_id || null,
+            subcategoria_id: formLancamento.subcategoria_id || null,
+            observacao: formLancamento.observacao || null
+          })
+          .eq('id', editandoLancamento)
+
+        if (error) throw error
+        alert('Lançamento atualizado com sucesso!')
+      } else {
+        // CRIAR novo lançamento
       const valorTotal = parseFloat(formLancamento.valor)
       const parcelas = parseInt(formLancamento.parcelas) || 1
       const valorParcela = valorTotal / parcelas
@@ -277,6 +296,7 @@ export default function Faturas() {
 
       alert(`Lançamento ${parcelas > 1 ? 'parcelado' : ''} adicionado com sucesso!`)
       setShowModalLancamento(false)
+      setEditandoLancamento(null)
       setFormLancamento({
         descricao: '',
         valor: '',
@@ -542,6 +562,31 @@ export default function Faturas() {
                 <div className="fatura-valor-status">
                   <span className="fatura-valor">{formatCurrency(fatura.valor_total)}</span>
                   {getStatusBadge(fatura.status)}
+                  {fatura.status === 'aberta' && (
+                    <button 
+                      className="btn-fechar-inline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleFecharFatura(fatura.id)
+                      }}
+                      title="Fechar Fatura"
+                    >
+                      <Lock size={16} />
+                    </button>
+                  )}
+                  {fatura.status === 'fechada' && (
+                    <button 
+                      className="btn-pagar-inline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setFaturaSelecionada(fatura.id)
+                        setShowModalPagamento(true)
+                      }}
+                      title="Pagar Fatura"
+                    >
+                      <DollarSign size={16} />
+                    </button>
+                  )}
                   {faturaExpandida === fatura.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                 </div>
               </div>
@@ -549,35 +594,14 @@ export default function Faturas() {
               {faturaExpandida === fatura.id && (
                 <div className="fatura-detalhes">
                   {/* Ações da Fatura */}
-                  <div className="fatura-actions">
-                    {fatura.status === 'aberta' && (
-                      <button 
-                        className="btn-secondary btn-sm"
-                        onClick={() => handleFecharFatura(fatura.id)}
-                      >
-                        <Lock size={16} />
-                        Fechar Fatura
-                      </button>
-                    )}
-                    {fatura.status === 'fechada' && (
-                      <button 
-                        className="btn-primary btn-sm"
-                        onClick={() => {
-                          setFaturaSelecionada(fatura.id)
-                          setShowModalPagamento(true)
-                        }}
-                      >
-                        <DollarSign size={16} />
-                        Pagar Fatura
-                      </button>
-                    )}
-                    {fatura.status === 'paga' && fatura.data_pagamento && (
+                  {fatura.status === 'paga' && fatura.data_pagamento && (
+                    <div className="fatura-actions">
                       <span className="data-pagamento">
                         <CheckCircle size={16} />
                         Pago em {new Date(fatura.data_pagamento).toLocaleDateString('pt-BR')}
                       </span>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {/* Lançamentos */}
                   <div className="lancamentos-list">
@@ -614,13 +638,34 @@ export default function Faturas() {
                           <div className="lancamento-valor-actions">
                             <span className="valor">{formatCurrency(lanc.valor)}</span>
                             {fatura.status === 'aberta' && (
-                              <button 
-                                className="btn-icon btn-delete"
-                                onClick={() => handleDeletarLancamento(lanc.id, lanc.grupo_parcelamento_id)}
-                                title="Excluir"
-                              >
-                                <Trash2 size={16} />
-                              </button>
+                              <div className="lancamento-btns">
+                                <button 
+                                  className="btn-icon btn-edit"
+                                  onClick={() => {
+                                    setEditandoLancamento(lanc.id)
+                                    setFormLancamento({
+                                      descricao: lanc.descricao,
+                                      valor: lanc.valor,
+                                      data_compra: lanc.data_compra,
+                                      categoria_id: lanc.categoria_id || '',
+                                      subcategoria_id: lanc.subcategoria_id || '',
+                                      parcelas: 1,
+                                      observacao: lanc.observacao || ''
+                                    })
+                                    setShowModalLancamento(true)
+                                  }}
+                                  title="Editar"
+                                >
+                                  <Edit2 size={16} />
+                                </button>
+                                <button 
+                                  className="btn-icon btn-delete"
+                                  onClick={() => handleDeletarLancamento(lanc.id, lanc.grupo_parcelamento_id)}
+                                  title="Excluir"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -639,8 +684,20 @@ export default function Faturas() {
         <div className="modal-overlay" onClick={() => setShowModalLancamento(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Nova Compra</h2>
-              <button className="btn-icon" onClick={() => setShowModalLancamento(false)}>
+              <h2>{editandoLancamento ? 'Editar Compra' : 'Nova Compra'}</h2>
+              <button className="btn-icon" onClick={() => {
+                setShowModalLancamento(false)
+                setEditandoLancamento(null)
+                setFormLancamento({
+                  descricao: '',
+                  valor: '',
+                  data_compra: new Date().toISOString().split('T')[0],
+                  categoria_id: '',
+                  subcategoria_id: '',
+                  parcelas: 1,
+                  observacao: ''
+                })
+              }}>
                 <XCircle size={20} />
               </button>
             </div>
@@ -678,7 +735,11 @@ export default function Faturas() {
                     max="48"
                     value={formLancamento.parcelas}
                     onChange={(e) => setFormLancamento({ ...formLancamento, parcelas: e.target.value })}
+                    disabled={editandoLancamento}
                   />
+                  {editandoLancamento && (
+                    <small style={{color: '#999', fontSize: '12px'}}>Não é possível alterar parcelas em edição</small>
+                  )}
                 </div>
               </div>
 
@@ -752,12 +813,15 @@ export default function Faturas() {
               )}
 
               <div className="modal-footer">
-                <button type="button" className="btn-secondary" onClick={() => setShowModalLancamento(false)}>
+                <button type="button" className="btn-secondary" onClick={() => {
+                  setShowModalLancamento(false)
+                  setEditandoLancamento(null)
+                }}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary">
                   <Plus size={20} />
-                  Adicionar
+                  {editandoLancamento ? 'Salvar' : 'Adicionar'}
                 </button>
               </div>
             </form>
