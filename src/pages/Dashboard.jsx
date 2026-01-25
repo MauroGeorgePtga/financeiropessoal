@@ -1008,8 +1008,11 @@ export default function Dashboard() {
                 </div>
                 <div className="contas-grid">
                   {cartoes.slice(0, 6).map((cartao) => {
-                    // Pegar apenas faturas deste cartão
-                    const faturasDoCartao = faturasCartoes.proximosVencimentos.filter(f => f.cartao_id === cartao.id)
+                    // Pegar apenas faturas deste cartão (abertas e fechadas)
+                    const faturasDoCartao = faturasCartoes.proximosVencimentos.filter(f => 
+                      f.cartao_id === cartao.id && 
+                      (f.status === 'aberta' || f.status === 'fechada')
+                    )
                     const limiteUsado = faturasDoCartao.reduce((sum, f) => sum + (f.valor_total || 0), 0)
                     const limiteDisponivel = (cartao.limite || 0) - limiteUsado
                     
@@ -1023,7 +1026,7 @@ export default function Dashboard() {
                     )
 
                     return (
-                      <div key={cartao.id} className="conta-mini">
+                      <div key={cartao.id} className="conta-mini cartao-mini-dashboard">
                         <div 
                           className="conta-mini-icon"
                           style={{ backgroundColor: cartao.cor }}
@@ -1032,18 +1035,33 @@ export default function Dashboard() {
                         </div>
                         <div className="conta-mini-info">
                           <strong>{cartao.nome}</strong>
-                          <div className="cartao-mini-limites">
-                            {faturaAtual && (
-                              <span className="mini-fatura-atual">
-                                Fatura: <ValorOculto valor={formatCurrency(faturaAtual.valor_total)} />
+                          <div className="cartao-mini-detalhes">
+                            <div className="detalhe-linha">
+                              <span className="mini-label">Limite:</span>
+                              <span className="mini-limite">
+                                <ValorOculto valor={formatCurrency(cartao.limite)} />
                               </span>
+                            </div>
+                            {faturaAtual && (
+                              <div className="detalhe-linha">
+                                <span className="mini-label">Fatura Atual:</span>
+                                <span className="mini-fatura-atual">
+                                  <ValorOculto valor={formatCurrency(faturaAtual.valor_total)} />
+                                </span>
+                              </div>
                             )}
-                            <span className="mini-usado">
-                              Usado: <ValorOculto valor={formatCurrency(limiteUsado)} />
-                            </span>
-                            <span className="mini-disponivel">
-                              Disponível: <ValorOculto valor={formatCurrency(limiteDisponivel)} />
-                            </span>
+                            <div className="detalhe-linha">
+                              <span className="mini-label">Usado Total:</span>
+                              <span className="mini-usado">
+                                <ValorOculto valor={formatCurrency(limiteUsado)} />
+                              </span>
+                            </div>
+                            <div className="detalhe-linha">
+                              <span className="mini-label">Disponível:</span>
+                              <span className="mini-disponivel">
+                                <ValorOculto valor={formatCurrency(limiteDisponivel)} />
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
