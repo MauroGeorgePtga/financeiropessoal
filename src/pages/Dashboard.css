@@ -1313,14 +1313,6 @@ color: white; */
   font-weight: 700;
 }
 
-/* Próximas Faturas */
-.proximas-faturas-container {
-  margin-top: 25px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 12px;
-}
-
 .proximas-faturas-container h4 {
   margin: 0 0 15px;
   font-size: 16px;
@@ -1397,5 +1389,69 @@ color: white; */
   .fatura-dash-valores {
     align-items: flex-start;
     width: 100%;
+  }
+}
+
+/* Próximas Faturas - GRID */
+.proximas-faturas-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+}
+
+.fatura-card-dash {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border-top: 4px solid #667eea;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.fatura-card-dash:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.fatura-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 15px;
+}
+
+.fatura-card-mes {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+}
+
+.fatura-card-cartao {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.fatura-card-valor {
+  font-size: 22px;
+  font-weight: 700;
+  color: #f56565;
+  margin-bottom: 10px;
+}
+
+.fatura-card-vence {
+  font-size: 11px;
+  color: #999;
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+  .proximas-faturas-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .proximas-faturas-grid {
+    grid-template-columns: 1fr;
   }
 }
