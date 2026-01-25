@@ -244,57 +244,58 @@ export default function Faturas() {
         alert('Lançamento atualizado com sucesso!')
       } else {
         // CRIAR novo lançamento
-      const valorTotal = parseFloat(formLancamento.valor)
-      const parcelas = parseInt(formLancamento.parcelas) || 1
-      const valorParcela = valorTotal / parcelas
+        const valorTotal = parseFloat(formLancamento.valor)
+        const parcelas = parseInt(formLancamento.parcelas) || 1
+        const valorParcela = valorTotal / parcelas
 
-      // Calcular fatura para cada parcela
-      const grupoId = crypto.randomUUID()
+        // Calcular fatura para cada parcela
+        const grupoId = crypto.randomUUID()
 
-      for (let i = 0; i < parcelas; i++) {
-        // Calcular data da parcela (mes atual + i meses)
-        const dataCompra = new Date(formLancamento.data_compra)
-        dataCompra.setMonth(dataCompra.getMonth() + i)
-        const dataCompraParcela = dataCompra.toISOString().split('T')[0]
+        for (let i = 0; i < parcelas; i++) {
+          // Calcular data da parcela (mes atual + i meses)
+          const dataCompra = new Date(formLancamento.data_compra)
+          dataCompra.setMonth(dataCompra.getMonth() + i)
+          const dataCompraParcela = dataCompra.toISOString().split('T')[0]
 
-        // Calcular em qual fatura cai esta parcela
-        const faturaInfo = await calcularFatura(cartaoSelecionado, dataCompraParcela)
-        
-        if (!faturaInfo) {
-          alert('Erro ao calcular fatura')
-          return
+          // Calcular em qual fatura cai esta parcela
+          const faturaInfo = await calcularFatura(cartaoSelecionado, dataCompraParcela)
+          
+          if (!faturaInfo) {
+            alert('Erro ao calcular fatura')
+            return
+          }
+
+          // Criar ou buscar fatura
+          const faturaId = await criarOuBuscarFatura(
+            cartaoSelecionado,
+            faturaInfo.mes_referencia,
+            faturaInfo.ano_referencia,
+            faturaInfo.data_vencimento
+          )
+
+          // Inserir lançamento
+          const { error } = await supabase
+            .from('lancamentos_cartao')
+            .insert([{
+              fatura_id: faturaId,
+              cartao_id: cartaoSelecionado,
+              user_id: user.id,
+              descricao: formLancamento.descricao,
+              valor: valorParcela,
+              data_compra: dataCompraParcela,
+              categoria_id: formLancamento.categoria_id || null,
+              subcategoria_id: formLancamento.subcategoria_id || null,
+              parcela_atual: i + 1,
+              total_parcelas: parcelas,
+              grupo_parcelamento_id: parcelas > 1 ? grupoId : null,
+              observacao: formLancamento.observacao || null
+            }])
+
+          if (error) throw error
         }
-
-        // Criar ou buscar fatura
-        const faturaId = await criarOuBuscarFatura(
-          cartaoSelecionado,
-          faturaInfo.mes_referencia,
-          faturaInfo.ano_referencia,
-          faturaInfo.data_vencimento
-        )
-
-        // Inserir lançamento
-        const { error } = await supabase
-          .from('lancamentos_cartao')
-          .insert([{
-            fatura_id: faturaId,
-            cartao_id: cartaoSelecionado,
-            user_id: user.id,
-            descricao: formLancamento.descricao,
-            valor: valorParcela,
-            data_compra: dataCompraParcela,
-            categoria_id: formLancamento.categoria_id || null,
-            subcategoria_id: formLancamento.subcategoria_id || null,
-            parcela_atual: i + 1,
-            total_parcelas: parcelas,
-            grupo_parcelamento_id: parcelas > 1 ? grupoId : null,
-            observacao: formLancamento.observacao || null
-          }])
-
-        if (error) throw error
+        alert('Lançamento adicionado com sucesso!')
       }
 
-      alert(`Lançamento ${editandoLancamento ? 'atualizado' : parcelas > 1 ? 'parcelado adicionado' : 'adicionado'} com sucesso!`)
       setShowModalLancamento(false)
       setEditandoLancamento(null)
       setFormLancamento({
