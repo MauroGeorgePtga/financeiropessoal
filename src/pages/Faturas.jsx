@@ -340,6 +340,28 @@ export default function Faturas() {
     }
   }
 
+  const handleDeletarFatura = async (faturaId) => {
+    if (!confirm('Tem certeza que deseja excluir esta fatura? Ela será deletada permanentemente.')) {
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('faturas_cartao')
+        .delete()
+        .eq('id', faturaId)
+
+      if (error) throw error
+      alert('Fatura excluída com sucesso!')
+      setFaturaExpandida(null)
+      setFaturaSelecionada(null)
+      carregarFaturas(cartaoSelecionado)
+    } catch (error) {
+      console.error('Erro ao excluir fatura:', error)
+      alert('Erro ao excluir fatura')
+    }
+  }
+
   const handlePagarFatura = async (e) => {
     e.preventDefault()
 
@@ -601,6 +623,19 @@ export default function Faturas() {
                         <CheckCircle size={16} />
                         Pago em {new Date(fatura.data_pagamento).toLocaleDateString('pt-BR')}
                       </span>
+                    </div>
+                  )}
+
+                  {/* Botão deletar fatura vazia */}
+                  {lancamentos.length === 0 && fatura.status === 'aberta' && (
+                    <div className="fatura-actions">
+                      <button 
+                        className="btn-danger btn-sm"
+                        onClick={() => handleDeletarFatura(fatura.id)}
+                      >
+                        <Trash2 size={16} />
+                        Excluir Fatura Vazia
+                      </button>
                     </div>
                   )}
 
