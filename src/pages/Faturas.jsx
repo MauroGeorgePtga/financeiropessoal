@@ -98,7 +98,6 @@ export default function Faturas() {
       const { data: subcategoriasData } = await supabase
         .from('subcategorias')
         .select('*')
-        .eq('user_id', user.id)
         .order('nome')
 
       setSubcategorias(subcategoriasData || [])
