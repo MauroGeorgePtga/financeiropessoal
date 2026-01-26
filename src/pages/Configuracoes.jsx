@@ -173,30 +173,44 @@ export default function Configuracoes() {
     try {
       setLoadingSessoes(true)
       
-      // Admin vê todas as sessões com nome dos usuários
       if (isAdmin) {
-        const { data, error } = await supabase
+        // Admin vê todas as sessões
+        const { data: sessoesData, error } = await supabase
           .from('user_sessions')
-          .select(`
-            *,
-            user_profiles!inner(name)
-          `)
+          .select('*')
           .order('accessed_at', { ascending: false })
           .limit(50)
 
         if (error) throw error
-        setSessoes(data || [])
-      } else {
-        // Usuário comum vê apenas suas sessões
-        const { data, error } = await supabase
-          .from('user_sessions')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('accessed_at', { ascending: false })
-          .limit(20)
-
-        if (error) throw error
-        setSessoes(data || [])
+        
+        // Buscar nomes dos usuários
+        if (sessoesData && sessoesData.length > 0) {
+          const userIds = [...new Set(sessoesData.map(s => s.user_id))]
+          
+          // Buscar perfis
+          const { data: profilesData } = await supabase
+            .from('user_profiles')
+            .select('user_id, name')
+            .in('user_id', userIds)
+          
+          // Buscar de auth.users também
+          const { data: { users } } = await supabase.auth.admin.listUsers()
+          
+          // Mapear nomes
+          const sessoesComNomes = sessoesData.map(sessao => {
+            const profile = profilesData?.find(p => p.user_id === sessao.user_id)
+            const authUser = users?.find(u => u.id === sessao.user_id)
+            
+            return {
+              ...sessao,
+              user_name: profile?.name || authUser?.user_metadata?.name || authUser?.email?.split('@')[0] || 'Sem nome'
+            }
+          })
+          
+          setSessoes(sessoesComNomes)
+        } else {
+          setSessoes([])
+        }
       }
     } catch (error) {
       console.error('Erro ao carregar sessões:', error)
@@ -1052,7 +1066,7 @@ export default function Configuracoes() {
                     return <Monitor size={20} />
                   }
 
-                  const nomeUsuario = sessao.user_profiles?.name || 'Usuário'
+                  const nomeUsuario = sessao.user_name || 'Usuário'
 
                   return (
                     <div key={sessao.id} className="session-item">
