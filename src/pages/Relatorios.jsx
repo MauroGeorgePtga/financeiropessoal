@@ -207,6 +207,7 @@ export default function Relatorios() {
   const carregarDadosCartao = async () => {
     try {
       setLoadingCartao(true)
+      console.log('🔍 Iniciando carregamento de dados do cartão:', cartaoSelecionado)
 
       // Buscar fatura aberta
       const { data: faturaData, error: faturaError } = await supabase
@@ -216,25 +217,35 @@ export default function Relatorios() {
         .eq('status', 'aberta')
         .single()
 
+      console.log('📄 Fatura encontrada:', faturaData)
+      if (faturaError) console.error('❌ Erro na fatura:', faturaError)
+
       if (faturaError && faturaError.code !== 'PGRST116') throw faturaError
 
       setFaturaAberta(faturaData)
 
       if (!faturaData) {
+        console.log('⚠️ Nenhuma fatura aberta')
         setDadosCartaoCategorizados([])
         setLoadingCartao(false)
         return
       }
 
       // Buscar lançamentos SEM JOIN (para evitar erro 406)
+      console.log('📋 Buscando lançamentos da fatura:', faturaData.id)
       const { data: lancamentosData, error: lancamentosError } = await supabase
         .from('lancamentos_cartao')
         .select('*')
         .eq('fatura_id', faturaData.id)
 
-      if (lancamentosError) throw lancamentosError
+      console.log('✅ Lançamentos:', lancamentosData?.length || 0)
+      if (lancamentosError) {
+        console.error('❌ Erro nos lançamentos:', lancamentosError)
+        throw lancamentosError
+      }
 
       if (!lancamentosData || lancamentosData.length === 0) {
+        console.log('⚠️ Nenhum lançamento encontrado')
         setDadosCartaoCategorizados([])
         setLoadingCartao(false)
         return
@@ -244,18 +255,32 @@ export default function Relatorios() {
       const categoriaIds = [...new Set(lancamentosData.map(l => l.categoria_id).filter(Boolean))]
       const subcategoriaIds = [...new Set(lancamentosData.map(l => l.subcategoria_id).filter(Boolean))]
 
-      const { data: categoriasData } = await supabase
+      console.log('🏷️ IDs de categorias:', categoriaIds)
+      console.log('🏷️ IDs de subcategorias:', subcategoriaIds)
+
+      const { data: categoriasData, error: catError } = await supabase
         .from('categorias')
         .select('id, nome, icone, cor, tipo')
         .in('id', categoriaIds)
         .eq('tipo', 'despesa')
 
-      const { data: subcategoriasData } = subcategoriaIds.length > 0
+      console.log('📂 Categorias encontradas:', categoriasData?.length || 0)
+      if (catError) {
+        console.error('❌ Erro nas categorias:', catError)
+        throw catError
+      }
+
+      const { data: subcategoriasData, error: subError } = subcategoriaIds.length > 0
         ? await supabase
             .from('subcategorias')
             .select('id, nome')
             .in('id', subcategoriaIds)
         : { data: [] }
+
+      console.log('📂 Subcategorias encontradas:', subcategoriasData?.length || 0)
+      if (subError) {
+        console.error('❌ Erro nas subcategorias:', subError)
+      }
 
       // Criar maps para acesso rápido
       const categoriasMap = {}
