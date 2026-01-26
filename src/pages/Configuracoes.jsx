@@ -655,6 +655,10 @@ export default function Configuracoes() {
           <h1>Configurações</h1>
           <p>Gerencie suas preferências e dados da conta</p>
         </div>
+        <div className="perfil-badge">
+          <User size={20} />
+          <span>{perfil.nome || 'Usuário'}</span>
+        </div>
       </div>
 
       {message.text && (
@@ -880,83 +884,59 @@ export default function Configuracoes() {
       </div>
 
       {/* Temas e Cores */}
-      <div className="config-section">
-        <div className="config-section-header">
-          <Palette size={24} />
-          <h2>Temas e Cores</h2>
-        </div>
-        <div className="config-section-content">
-          <div className="temas-container">
-            <div className="temas-grid">
-              {temasPredefinidos.map(tema => (
-                <div
-                  key={tema.id}
-                  className={`tema-card ${preferencias.tema === tema.id ? 'ativo' : ''}`}
-                  onClick={() => handleSelecionarTema(tema.id)}
-                >
-                  <div className="tema-preview">
-                    <div 
-                      className="cor-preview primaria" 
-                      style={{ backgroundColor: tema.cores.primaria }}
-                    ></div>
-                    <div 
-                      className="cor-preview secundaria" 
-                      style={{ backgroundColor: tema.cores.secundaria }}
-                    ></div>
-                  </div>
-                  <div className="tema-info">
-                    <span className="tema-nome">{tema.nome}</span>
-                    {preferencias.tema === tema.id && (
-                      <CheckCircle size={18} className="tema-check" />
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="cores-personalizadas">
-              <h3>Cores Atuais</h3>
-              <div className="cores-preview-grid">
-                <div className="cor-item">
-                  <div 
-                    className="cor-box" 
-                    style={{ backgroundColor: preferencias.cor_primaria }}
-                  ></div>
-                  <span>Primária</span>
-                </div>
-                <div className="cor-item">
-                  <div 
-                    className="cor-box" 
-                    style={{ backgroundColor: preferencias.cor_secundaria }}
-                  ></div>
-                  <span>Secundária</span>
-                </div>
-                <div className="cor-item">
-                  <div 
-                    className="cor-box" 
-                    style={{ backgroundColor: preferencias.cor_sucesso }}
-                  ></div>
-                  <span>Sucesso</span>
-                </div>
-                <div className="cor-item">
-                  <div 
-                    className="cor-box" 
-                    style={{ backgroundColor: preferencias.cor_erro }}
-                  ></div>
-                  <span>Erro</span>
-                </div>
-                <div className="cor-item">
-                  <div 
-                    className="cor-box" 
-                    style={{ backgroundColor: preferencias.cor_aviso }}
-                  ></div>
-                  <span>Aviso</span>
-                </div>
-              </div>
-            </div>
+      <section className="config-section">
+        <div className="section-header">
+          <div className="section-title">
+            <Palette size={24} />
+            <h2>Temas e Cores</h2>
           </div>
         </div>
-      </div>
+        <div className="config-card">
+          <div className="temas-grid-horizontal">
+            {temasPredefinidos.map(tema => (
+              <div
+                key={tema.id}
+                className={`tema-card-horizontal ${preferencias.tema === tema.id ? 'ativo' : ''}`}
+                onClick={() => handleSelecionarTema(tema.id)}
+              >
+                <div className="tema-cores">
+                  <div 
+                    className="cor-circle" 
+                    style={{ backgroundColor: tema.cores.primaria }}
+                    title="Primária"
+                  ></div>
+                  <div 
+                    className="cor-circle" 
+                    style={{ backgroundColor: tema.cores.secundaria }}
+                    title="Secundária"
+                  ></div>
+                  <div 
+                    className="cor-circle" 
+                    style={{ backgroundColor: tema.cores.sucesso }}
+                    title="Sucesso"
+                  ></div>
+                  <div 
+                    className="cor-circle" 
+                    style={{ backgroundColor: tema.cores.erro }}
+                    title="Erro"
+                  ></div>
+                  <div 
+                    className="cor-circle" 
+                    style={{ backgroundColor: tema.cores.aviso }}
+                    title="Aviso"
+                  ></div>
+                </div>
+                <div className="tema-nome-wrapper">
+                  <span className="tema-nome">{tema.nome}</span>
+                  {preferencias.tema === tema.id && (
+                    <CheckCircle size={18} className="tema-check" />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Alterar Senha */}
       <section className="config-section">
