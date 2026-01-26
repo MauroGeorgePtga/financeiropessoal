@@ -209,13 +209,16 @@ export default function Relatorios() {
       setLoadingCartao(true)
       console.log('🔍 Iniciando carregamento de dados do cartão:', cartaoSelecionado)
 
-      // Buscar fatura aberta
+      // Buscar fatura aberta (pega a mais recente)
       const { data: faturaData, error: faturaError } = await supabase
         .from('faturas_cartao')
         .select('*')
         .eq('cartao_id', cartaoSelecionado)
         .eq('status', 'aberta')
-        .single()
+        .order('ano_referencia', { ascending: false })
+        .order('mes_referencia', { ascending: false })
+        .limit(1)
+        .maybeSingle()
 
       console.log('📄 Fatura encontrada:', faturaData)
       if (faturaError) console.error('❌ Erro na fatura:', faturaError)
