@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useVisibility } from '../contexts/VisibilityContext'
 import { ValorOculto } from '../components/ValorOculto'
 import { Link } from 'react-router-dom'
 import { 
@@ -21,6 +22,7 @@ import './Dashboard.css'
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const { valoresVisiveis } = useVisibility()
   const [loading, setLoading] = useState(true)
   const [dados, setDados] = useState({
     contas: [],
