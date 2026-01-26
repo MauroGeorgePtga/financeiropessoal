@@ -513,12 +513,11 @@ export default function Faturas() {
     }
 
     try {
-      // Buscar todas as parcelas do grupo
       const { data, error } = await supabase
         .from('lancamentos_cartao')
         .select(`
           *,
-          faturas_cartao!inner(mes, ano)
+          faturas_cartao!inner(mes, ano, status)
         `)
         .eq('grupo_parcelamento_id', lancamento.grupo_parcelamento_id)
         .order('parcela_numero', { ascending: true })
@@ -1113,19 +1112,19 @@ export default function Faturas() {
 
               <div className="parcelas-lista">
                 {parcelasModal.map((parcela) => {
-                  const isPaga = parcela.faturas_cartao?.status === 'fechada'
+                  const isPaga = parcela.faturas_cartao?.status === 'fechada' || parcela.faturas_cartao?.status === 'paga'
                   
                   return (
                     <div key={parcela.id} className={`parcela-card ${isPaga ? 'paga' : 'pendente'}`}>
                       <div className="parcela-numero">
                         <span className="numero">{parcela.parcela_numero}/{parcela.total_parcelas}</span>
                         {isPaga ? (
-                          <span className="status-badge paga">
+                          <span className="status-badge-parcela paga">
                             <CheckCircle size={16} />
                             Paga
                           </span>
                         ) : (
-                          <span className="status-badge pendente">
+                          <span className="status-badge-parcela pendente">
                             <Clock size={16} />
                             Pendente
                           </span>
