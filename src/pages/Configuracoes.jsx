@@ -165,9 +165,15 @@ export default function Configuracoes() {
   useEffect(() => {
     if (user) {
       carregarDados()
-      carregarSessoes()
     }
   }, [user])
+
+  // Carregar sessões DEPOIS que isAdmin for definido
+  useEffect(() => {
+    if (user && isAdmin) {
+      carregarSessoes()
+    }
+  }, [user, isAdmin])
 
   const carregarSessoes = async () => {
     try {
