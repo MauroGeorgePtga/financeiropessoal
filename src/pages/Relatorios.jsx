@@ -226,25 +226,61 @@ export default function Relatorios() {
         return
       }
 
-      // Buscar lançamentos com categorias
+      // Buscar lançamentos SEM JOIN (para evitar erro 406)
       const { data: lancamentosData, error: lancamentosError } = await supabase
         .from('lancamentos_cartao')
-        .select(`
-          *,
-          categorias(id, nome, icone, cor, tipo),
-          subcategorias(id, nome)
-        `)
+        .select('*')
         .eq('fatura_id', faturaData.id)
 
       if (lancamentosError) throw lancamentosError
 
-      // Filtrar apenas despesas
-      const lancamentosDespesas = lancamentosData.filter(l => l.categorias?.tipo === 'despesa')
+      if (!lancamentosData || lancamentosData.length === 0) {
+        setDadosCartaoCategorizados([])
+        setLoadingCartao(false)
+        return
+      }
+
+      // Buscar categorias e subcategorias separadamente
+      const categoriaIds = [...new Set(lancamentosData.map(l => l.categoria_id).filter(Boolean))]
+      const subcategoriaIds = [...new Set(lancamentosData.map(l => l.subcategoria_id).filter(Boolean))]
+
+      const { data: categoriasData } = await supabase
+        .from('categorias')
+        .select('id, nome, icone, cor, tipo')
+        .in('id', categoriaIds)
+        .eq('tipo', 'despesa')
+
+      const { data: subcategoriasData } = subcategoriaIds.length > 0
+        ? await supabase
+            .from('subcategorias')
+            .select('id, nome')
+            .in('id', subcategoriaIds)
+        : { data: [] }
+
+      // Criar maps para acesso rápido
+      const categoriasMap = {}
+      categoriasData?.forEach(cat => {
+        categoriasMap[cat.id] = cat
+      })
+
+      const subcategoriasMap = {}
+      subcategoriasData?.forEach(sub => {
+        subcategoriasMap[sub.id] = sub
+      })
+
+      // Filtrar e enriquecer lançamentos
+      const lancamentosEnriquecidos = lancamentosData
+        .filter(l => categoriasMap[l.categoria_id]) // Só lançamentos com categoria de despesa
+        .map(l => ({
+          ...l,
+          categorias: categoriasMap[l.categoria_id],
+          subcategorias: l.subcategoria_id ? subcategoriasMap[l.subcategoria_id] : null
+        }))
 
       // Agrupar por categoria e subcategoria
       const agrupado = {}
 
-      lancamentosDespesas.forEach(lanc => {
+      lancamentosEnriquecidos.forEach(lanc => {
         const catId = lanc.categoria_id
         const catNome = lanc.categorias.nome
         const catIcone = lanc.categorias.icone
