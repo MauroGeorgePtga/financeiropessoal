@@ -518,7 +518,7 @@ export default function Faturas() {
         .from('lancamentos_cartao')
         .select('*')
         .eq('grupo_parcelamento_id', lancamento.grupo_parcelamento_id)
-        .order('parcela_numero', { ascending: true })
+        .order('parcela_atual', { ascending: true })
 
       if (parcelasError) throw parcelasError
 
@@ -1133,7 +1133,7 @@ export default function Faturas() {
                   return (
                     <div key={parcela.id} className={`parcela-card ${isPaga ? 'paga' : 'pendente'}`}>
                       <div className="parcela-numero">
-                        <span className="numero">{parcela.parcela_numero}/{parcela.total_parcelas}</span>
+                        <span className="numero">{parcela.parcela_atual}/{parcela.total_parcelas}</span>
                         {isPaga ? (
                           <span className="status-badge-parcela paga">
                             <CheckCircle size={16} />
