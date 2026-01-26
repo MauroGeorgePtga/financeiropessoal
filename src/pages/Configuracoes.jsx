@@ -735,23 +735,26 @@ export default function Configuracoes() {
 
       {/* Gerenciamento de Usuários (apenas para admins) */}
       {isAdmin && (
-        <div className="config-section">
-          <div className="config-section-header">
-            <Users size={24} />
-            <h2>Gerenciamento de Usuários</h2>
+        <section className="config-section">
+          <div className="section-header">
+            <div className="section-title">
+              <Users size={24} />
+              <h2>Gerenciamento de Usuários</h2>
+            </div>
+          </div>
+          <div className="config-card">
             <button 
-              className="btn-primary btn-novo-usuario"
+              className="btn-novo-usuario"
               onClick={() => setModalNovoUsuario(true)}
             >
               <UserPlus size={18} />
               Novo Usuário
             </button>
-          </div>
-          <div className="config-section-content">
+
             {loadingUsuarios ? (
-              <div className="loading-small">Carregando usuários...</div>
+              <div className="loading-sessions">Carregando usuários...</div>
             ) : (
-              <div className="usuarios-table-container">
+              <div className="usuarios-table-wrapper">
                 <table className="usuarios-table">
                   <thead>
                     <tr>
@@ -765,11 +768,11 @@ export default function Configuracoes() {
                   </thead>
                   <tbody>
                     {usuarios.map(usuario => (
-                      <tr key={usuario.id} className={!usuario.is_active ? 'usuario-inativo' : ''}>
+                      <tr key={usuario.id}>
                         <td>{usuario.nome}</td>
                         <td>{usuario.email}</td>
                         <td>
-                          <span className={`badge badge-${usuario.role}`}>
+                          <span className={`funcao-badge ${usuario.role}`}>
                             {usuario.role === 'admin' ? 'Administrador' : 'Usuário'}
                           </span>
                         </td>
@@ -785,9 +788,9 @@ export default function Configuracoes() {
                           }
                         </td>
                         <td>
-                          <div className="acoes-usuario">
+                          <div className="acoes-cell">
                             <button
-                              className="btn-icon btn-toggle"
+                              className="btn-icon-table btn-toggle"
                               onClick={() => handleToggleUsuario(usuario.id, usuario.is_active)}
                               title={usuario.is_active ? 'Desativar' : 'Ativar'}
                               disabled={usuario.id === user.id}
@@ -795,7 +798,7 @@ export default function Configuracoes() {
                               <Power size={16} />
                             </button>
                             <button
-                              className="btn-icon btn-reset"
+                              className="btn-icon-table btn-reset"
                               onClick={() => setModalResetSenha({ 
                                 show: true, 
                                 userId: usuario.id,
@@ -806,7 +809,7 @@ export default function Configuracoes() {
                               <KeyRound size={16} />
                             </button>
                             <button
-                              className="btn-icon btn-delete"
+                              className="btn-icon-table btn-delete"
                               onClick={() => handleExcluirUsuario(usuario.id, usuario.email)}
                               title="Excluir"
                               disabled={usuario.id === user.id}
@@ -822,7 +825,7 @@ export default function Configuracoes() {
               </div>
             )}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Backup de Dados */}
@@ -956,26 +959,28 @@ export default function Configuracoes() {
       </div>
 
       {/* Alterar Senha */}
-      <div className="config-section">
-        <div className="config-section-header">
-          <Lock size={24} />
-          <h2>Alterar Senha</h2>
+      <section className="config-section">
+        <div className="section-header">
+          <div className="section-title">
+            <Lock size={24} />
+            <h2>Alterar Senha</h2>
+          </div>
         </div>
-        <div className="config-section-content">
-          <form onSubmit={handleAlterarSenha} className="config-form">
-            <div className="form-group-config">
+        <div className="config-card">
+          <form onSubmit={handleAlterarSenha} className="senha-form-grid">
+            <div className="senha-group">
               <label>Nova Senha</label>
-              <div className="password-input-wrapper">
+              <div className="senha-input-wrapper">
                 <input
                   type={mostrarSenhas.nova ? 'text' : 'password'}
                   value={senhas.novaSenha}
                   onChange={(e) => setSenhas({ ...senhas, novaSenha: e.target.value })}
                   placeholder="Digite a nova senha (mínimo 6 caracteres)"
-                  className="input-senha"
+                  required
                 />
                 <button
                   type="button"
-                  className="btn-toggle-password"
+                  className="senha-toggle"
                   onClick={() => setMostrarSenhas({ ...mostrarSenhas, nova: !mostrarSenhas.nova })}
                 >
                   {mostrarSenhas.nova ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -983,19 +988,19 @@ export default function Configuracoes() {
               </div>
             </div>
 
-            <div className="form-group-config">
+            <div className="senha-group">
               <label>Confirmar Nova Senha</label>
-              <div className="password-input-wrapper">
+              <div className="senha-input-wrapper">
                 <input
                   type={mostrarSenhas.confirmar ? 'text' : 'password'}
                   value={senhas.confirmarSenha}
                   onChange={(e) => setSenhas({ ...senhas, confirmarSenha: e.target.value })}
                   placeholder="Confirme a nova senha"
-                  className="input-senha"
+                  required
                 />
                 <button
                   type="button"
-                  className="btn-toggle-password"
+                  className="senha-toggle"
                   onClick={() => setMostrarSenhas({ ...mostrarSenhas, confirmar: !mostrarSenhas.confirmar })}
                 >
                   {mostrarSenhas.confirmar ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -1005,7 +1010,7 @@ export default function Configuracoes() {
 
             <button 
               type="submit" 
-              className="btn-primary btn-salvar"
+              className="btn-alterar-senha"
               disabled={saving}
             >
               <Save size={18} />
@@ -1013,7 +1018,7 @@ export default function Configuracoes() {
             </button>
           </form>
         </div>
-      </div>
+      </section>
 
       {/* Histórico de Acessos */}
       <section className="config-section">
