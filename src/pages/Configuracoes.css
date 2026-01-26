@@ -1,6 +1,4 @@
-/* Adicione ao final do Configuracoes.css */
-
-/* Histórico de Sessões */
+/* Histórico de Sessões - MELHORADO */
 .loading-sessions,
 .empty-sessions {
   text-align: center;
@@ -16,81 +14,73 @@
 .sessions-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 15px;
 }
 
 .session-item {
   display: flex;
   align-items: flex-start;
   gap: 15px;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 10px;
-  border-left: 4px solid #ddd;
+  padding: 18px;
+  background: white;
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.2s;
 }
 
 .session-item:hover {
-  transform: translateX(5px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.session-item.ativa {
-  border-left-color: #48bb78;
-  background: #f0fdf4;
-}
-
-.session-item.finalizada {
-  border-left-color: #667eea;
-}
-
-.session-item.expirada {
-  border-left-color: #f59e0b;
-  opacity: 0.8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .session-icon {
-  padding: 10px;
-  background: white;
-  border-radius: 8px;
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #667eea;
+  color: white;
+  flex-shrink: 0;
 }
 
 .session-info {
   flex: 1;
+  min-width: 0;
 }
 
 .session-device {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
 .session-device strong {
-  font-size: 15px;
-  color: #333;
+  font-size: 16px;
+  color: #2d3748;
+  font-weight: 600;
 }
 
 .badge-atual {
-  padding: 3px 8px;
-  background: #48bb78;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
   color: white;
-  border-radius: 12px;
+  border-radius: 20px;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  box-shadow: 0 2px 6px rgba(72, 187, 120, 0.3);
 }
 
 .session-details {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  font-size: 12px;
-  color: #666;
+  gap: 15px;
+  font-size: 13px;
+  color: #718096;
 }
 
 .session-date,
@@ -98,40 +88,27 @@
 .session-duration {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
-.session-status {
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.status-ativa {
-  background: #d4edda;
-  color: #155724;
-}
-
-.status-finalizada {
-  background: #d1d5db;
-  color: #374151;
-}
-
-.status-expirada {
-  background: #fef3c7;
-  color: #92400e;
+.session-date svg,
+.session-logout svg,
+.session-duration svg {
+  color: #a0aec0;
 }
 
 @media (max-width: 768px) {
   .session-item {
     flex-direction: column;
+    gap: 12px;
+  }
+  
+  .session-icon {
+    align-self: flex-start;
   }
   
   .session-details {
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
   }
 }
