@@ -231,18 +231,20 @@ export default function Relatorios() {
         .from('lancamentos_cartao')
         .select(`
           *,
-          categorias!inner(id, nome, icone, cor, tipo),
+          categorias(id, nome, icone, cor, tipo),
           subcategorias(id, nome)
         `)
         .eq('fatura_id', faturaData.id)
-        .eq('categorias.tipo', 'despesa')
 
       if (lancamentosError) throw lancamentosError
+
+      // Filtrar apenas despesas
+      const lancamentosDespesas = lancamentosData.filter(l => l.categorias?.tipo === 'despesa')
 
       // Agrupar por categoria e subcategoria
       const agrupado = {}
 
-      lancamentosData.forEach(lanc => {
+      lancamentosDespesas.forEach(lanc => {
         const catId = lanc.categoria_id
         const catNome = lanc.categorias.nome
         const catIcone = lanc.categorias.icone
