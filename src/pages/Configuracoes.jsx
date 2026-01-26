@@ -172,6 +172,7 @@ export default function Configuracoes() {
   const carregarSessoes = async () => {
     try {
       setLoadingSessoes(true)
+      console.log('🔍 carregarSessoes - isAdmin:', isAdmin)
       
       if (isAdmin) {
         // Admin vê todas as sessões
@@ -181,16 +182,26 @@ export default function Configuracoes() {
           .order('accessed_at', { ascending: false })
           .limit(50)
 
-        if (error) throw error
+        console.log('📊 Sessões carregadas:', sessoesData?.length)
+        if (error) {
+          console.error('❌ Erro ao buscar sessões:', error)
+          throw error
+        }
         
         // Buscar nomes dos usuários do user_profiles
         if (sessoesData && sessoesData.length > 0) {
           const userIds = [...new Set(sessoesData.map(s => s.user_id))]
+          console.log('👥 User IDs únicos:', userIds)
           
-          const { data: profilesData } = await supabase
+          const { data: profilesData, error: profileError } = await supabase
             .from('user_profiles')
             .select('user_id, name')
             .in('user_id', userIds)
+          
+          console.log('📝 Perfis encontrados:', profilesData)
+          if (profileError) {
+            console.error('❌ Erro ao buscar perfis:', profileError)
+          }
           
           // Mapear nomes
           const sessoesComNomes = sessoesData.map(sessao => {
@@ -202,13 +213,16 @@ export default function Configuracoes() {
             }
           })
           
+          console.log('✅ Sessões com nomes:', sessoesComNomes.slice(0, 3))
           setSessoes(sessoesComNomes)
         } else {
           setSessoes([])
         }
+      } else {
+        console.log('⚠️ Usuário NÃO é admin, pulando carregamento de sessões')
       }
     } catch (error) {
-      console.error('Erro ao carregar sessões:', error)
+      console.error('💥 Erro geral ao carregar sessões:', error)
       setSessoes([])
     } finally {
       setLoadingSessoes(false)
