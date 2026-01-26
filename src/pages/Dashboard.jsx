@@ -857,7 +857,7 @@ export default function Dashboard() {
                       <span className="categoria-nome">{cat.nome}</span>
                     </div>
                     <span className="categoria-valor">
-                      {formatCurrency(cat.valor)}
+                      {valoresVisiveis ? formatCurrency(cat.valor) : '••••••'}
                     </span>
                   </div>
                 ))}
@@ -923,7 +923,7 @@ export default function Dashboard() {
                       <span className="categoria-nome">{cat.nome}</span>
                     </div>
                     <span className="categoria-valor categoria-valor-receita">
-                      {formatCurrency(cat.valor)}
+                      {valoresVisiveis ? formatCurrency(cat.valor) : '••••••'}
                     </span>
                   </div>
                 ))}
@@ -1130,10 +1130,10 @@ export default function Dashboard() {
                 {dadosMensais.map((dados, index) => (
                   <tr key={index}>
                     <td className="mes-nome">{dados.mes}</td>
-                    <td className="valor receita">{formatCurrency(dados.receitas)}</td>
-                    <td className="valor despesa">{formatCurrency(dados.despesas)}</td>
+                    <td className="valor receita">{valoresVisiveis ? formatCurrency(dados.receitas) : '••••••'}</td>
+                    <td className="valor despesa">{valoresVisiveis ? formatCurrency(dados.despesas) : '••••••'}</td>
                     <td className={`valor resultado ${dados.resultado >= 0 ? 'positivo' : 'negativo'}`}>
-                      {formatCurrency(dados.resultado)}
+                      {valoresVisiveis ? formatCurrency(dados.resultado) : '••••••'}
                     </td>
                   </tr>
                 ))}
@@ -1142,13 +1142,13 @@ export default function Dashboard() {
                 <tr className="total-row">
                   <td><strong>TOTAL</strong></td>
                   <td className="valor receita">
-                    <strong>{formatCurrency(dadosMensais.reduce((acc, m) => acc + m.receitas, 0))}</strong>
+                    <strong>{valoresVisiveis ? formatCurrency(dadosMensais.reduce((acc, m) => acc + m.receitas, 0)) : '••••••'}</strong>
                   </td>
                   <td className="valor despesa">
-                    <strong>{formatCurrency(dadosMensais.reduce((acc, m) => acc + m.despesas, 0))}</strong>
+                    <strong>{valoresVisiveis ? formatCurrency(dadosMensais.reduce((acc, m) => acc + m.despesas, 0)) : '••••••'}</strong>
                   </td>
                   <td className={`valor resultado ${dadosMensais.reduce((acc, m) => acc + m.resultado, 0) >= 0 ? 'positivo' : 'negativo'}`}>
-                    <strong>{formatCurrency(dadosMensais.reduce((acc, m) => acc + m.resultado, 0))}</strong>
+                    <strong>{valoresVisiveis ? formatCurrency(dadosMensais.reduce((acc, m) => acc + m.resultado, 0)) : '••••••'}</strong>
                   </td>
                 </tr>
               </tfoot>
@@ -1171,14 +1171,14 @@ export default function Dashboard() {
                         style={{ height: `${alturaReceita}%` }}
                         title={`Receitas: ${formatCurrency(dados.receitas)}`}
                       >
-                        {dados.receitas > 0 && <span className="barra-valor">{formatCurrency(dados.receitas)}</span>}
+                        {dados.receitas > 0 && <span className="barra-valor">{valoresVisiveis ? formatCurrency(dados.receitas) : '•••'}</span>}
                       </div>
                       <div
                         className="barra barra-despesa"
                         style={{ height: `${alturaDespesa}%` }}
                         title={`Despesas: ${formatCurrency(dados.despesas)}`}
                       >
-                        {dados.despesas > 0 && <span className="barra-valor">{formatCurrency(dados.despesas)}</span>}
+                        {dados.despesas > 0 && <span className="barra-valor">{valoresVisiveis ? formatCurrency(dados.despesas) : '•••'}</span>}
                       </div>
                     </div>
                     <span className="barra-mes">{dados.mes.substring(0, 3)}</span>
