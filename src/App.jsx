@@ -7,6 +7,8 @@ import Layout from './components/layout/Layout'
 import Dashboard from './pages/Dashboard'
 import Transacoes from './pages/Transacoes'
 import ContasBancarias from './pages/ContasBancarias'
+import CartoesCredito from './pages/CartoesCredito'
+import Faturas from './pages/Faturas'
 import Categorias from './pages/Categorias'
 import Investimentos from './pages/Investimentos'
 import CadastroAtivos from './pages/CadastroAtivos'
@@ -67,6 +69,8 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/transacoes" element={<Transacoes />} />
             <Route path="/contas" element={<ContasBancarias />} />
+            <Route path="/cartoes" element={<CartoesCredito />} />
+            <Route path="/faturas" element={<Faturas />} />
             <Route path="/categorias" element={<Categorias />} />
             <Route path="/investimentos" element={<Investimentos />} />
             <Route path="/cadastro-ativos" element={<CadastroAtivos />} />
