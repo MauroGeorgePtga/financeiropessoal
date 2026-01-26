@@ -183,27 +183,22 @@ export default function Configuracoes() {
 
         if (error) throw error
         
-        // Buscar nomes dos usuários
+        // Buscar nomes dos usuários do user_profiles
         if (sessoesData && sessoesData.length > 0) {
           const userIds = [...new Set(sessoesData.map(s => s.user_id))]
           
-          // Buscar perfis
           const { data: profilesData } = await supabase
             .from('user_profiles')
             .select('user_id, name')
             .in('user_id', userIds)
           
-          // Buscar de auth.users também
-          const { data: { users } } = await supabase.auth.admin.listUsers()
-          
           // Mapear nomes
           const sessoesComNomes = sessoesData.map(sessao => {
             const profile = profilesData?.find(p => p.user_id === sessao.user_id)
-            const authUser = users?.find(u => u.id === sessao.user_id)
             
             return {
               ...sessao,
-              user_name: profile?.name || authUser?.user_metadata?.name || authUser?.email?.split('@')[0] || 'Sem nome'
+              user_name: profile?.name || 'Sem nome'
             }
           })
           
@@ -214,6 +209,7 @@ export default function Configuracoes() {
       }
     } catch (error) {
       console.error('Erro ao carregar sessões:', error)
+      setSessoes([])
     } finally {
       setLoadingSessoes(false)
     }
