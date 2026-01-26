@@ -657,10 +657,10 @@ export default function Relatorios() {
           <TrendingUp size={32} />
           <div className="resumo-info">
             <span className="resumo-label">Total Receitas</span>
-            <span className="resumo-valor">{formatCurrency(resumo.totalReceitas)}</span>
+            <span className="resumo-valor">{valoresVisiveis ? formatCurrency(resumo.totalReceitas) : '••••••'}</span>
             <span className="resumo-detalhe">
-              Banco: {formatCurrency(resumo.receitasBanco)} | 
-              Dinheiro: {formatCurrency(resumo.receitasDinheiro)}
+              Banco: {valoresVisiveis ? formatCurrency(resumo.receitasBanco) : '••••••'} | 
+              Dinheiro: {valoresVisiveis ? formatCurrency(resumo.receitasDinheiro) : '••••••'}
             </span>
           </div>
         </div>
@@ -669,10 +669,10 @@ export default function Relatorios() {
           <TrendingDown size={32} />
           <div className="resumo-info">
             <span className="resumo-label">Total Despesas</span>
-            <span className="resumo-valor">{formatCurrency(resumo.totalDespesas)}</span>
+            <span className="resumo-valor">{valoresVisiveis ? formatCurrency(resumo.totalDespesas) : '••••••'}</span>
             <span className="resumo-detalhe">
-              Banco: {formatCurrency(resumo.despesasBanco)} | 
-              Dinheiro: {formatCurrency(resumo.despesasDinheiro)}
+              Banco: {valoresVisiveis ? formatCurrency(resumo.despesasBanco) : '••••••'} | 
+              Dinheiro: {valoresVisiveis ? formatCurrency(resumo.despesasDinheiro) : '••••••'}
             </span>
           </div>
         </div>
@@ -681,7 +681,7 @@ export default function Relatorios() {
           <Calendar size={32} />
           <div className="resumo-info">
             <span className="resumo-label">Saldo do Período</span>
-            <span className="resumo-valor">{formatCurrency(resumo.saldo)}</span>
+            <span className="resumo-valor">{valoresVisiveis ? formatCurrency(resumo.saldo) : '••••••'}</span>
             <span className="resumo-detalhe">
               {resumo.saldo >= 0 ? 'Superávit' : 'Déficit'}
             </span>
@@ -702,7 +702,7 @@ export default function Relatorios() {
                 Despesas por Categoria
               </h3>
               <span className="categorias-total despesas">
-                {formatCurrency(resumo.totalDespesas)}
+                {valoresVisiveis ? formatCurrency(resumo.totalDespesas) : '••••••'}
               </span>
             </div>
             <div className="categorias-content">
@@ -731,7 +731,7 @@ export default function Relatorios() {
                           <span className="categoria-count">({cat.subcategorias.length})</span>
                         </div>
                         <span className="categoria-valor-item">
-                          {formatCurrency(cat.total)}
+                          {valoresVisiveis ? formatCurrency(cat.total) : '••••••'}
                         </span>
                       </div>
                       
@@ -741,7 +741,7 @@ export default function Relatorios() {
                             <div key={subIndex} className="subcategoria-row">
                               <span className="subcategoria-nome-item">{sub.nome}</span>
                               <span className="subcategoria-valor-item">
-                                {formatCurrency(sub.valor)}
+                                {valoresVisiveis ? formatCurrency(sub.valor) : '••••••'}
                               </span>
                             </div>
                           ))}
@@ -762,7 +762,7 @@ export default function Relatorios() {
                 Receitas por Categoria
               </h3>
               <span className="categorias-total receitas">
-                {formatCurrency(resumo.totalReceitas)}
+                {valoresVisiveis ? formatCurrency(resumo.totalReceitas) : '••••••'}
               </span>
             </div>
             <div className="categorias-content">
@@ -791,7 +791,7 @@ export default function Relatorios() {
                           <span className="categoria-count">({cat.subcategorias.length})</span>
                         </div>
                         <span className="categoria-valor-item receita-valor">
-                          {formatCurrency(cat.total)}
+                          {valoresVisiveis ? formatCurrency(cat.total) : '••••••'}
                         </span>
                       </div>
                       
@@ -801,7 +801,7 @@ export default function Relatorios() {
                             <div key={subIndex} className="subcategoria-row">
                               <span className="subcategoria-nome-item">{sub.nome}</span>
                               <span className="subcategoria-valor-item receita-valor">
-                                {formatCurrency(sub.valor)}
+                                {valoresVisiveis ? formatCurrency(sub.valor) : '••••••'}
                               </span>
                             </div>
                           ))}
@@ -883,7 +883,7 @@ export default function Relatorios() {
             <div className="header-right">
               <div className="total-despesas-badge">
                 <span className="total-label">Total:</span>
-                <span className="total-valor-badge">{formatCurrency(resumo.totalDespesas)}</span>
+                <span className="total-valor-badge">{valoresVisiveis ? formatCurrency(resumo.totalDespesas) : '••••••'}</span>
               </div>
               <select 
                 value={periodo}
