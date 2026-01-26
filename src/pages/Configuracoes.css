@@ -683,3 +683,106 @@ button[type="submit"]:disabled {
   letter-spacing: 0.5px;
   margin-right: 10px;
 }
+
+/* ====== AÇÕES DE DELETAR SESSÕES ====== */
+.section-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-deletar-selecionadas,
+.btn-deletar-todas {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-deletar-selecionadas {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.btn-deletar-selecionadas:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.btn-deletar-selecionadas:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-deletar-todas {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.btn-deletar-todas:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.btn-deletar-todas:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ====== CHECKBOX SELECIONAR ====== */
+.sessions-header-actions {
+  padding: 16px;
+  background: #f7fafc;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.checkbox-selecionar-todas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 15px;
+}
+
+.checkbox-selecionar-todas input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+/* ====== CHECKBOX NAS SESSÕES ====== */
+.session-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #667eea;
+  flex-shrink: 0;
+}
+
+.session-item.selecionada {
+  background: #eef2ff;
+  border-left-color: #667eea;
+}
+
+@media (max-width: 768px) {
+  .section-actions {
+    flex-direction: column;
+  }
+  
+  .btn-deletar-selecionadas,
+  .btn-deletar-todas {
+    width: 100%;
+    justify-content: center;
+  }
+}
