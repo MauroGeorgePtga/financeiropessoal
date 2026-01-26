@@ -526,7 +526,7 @@ export default function Faturas() {
       const faturaIds = parcelasData.map(p => p.fatura_id)
       const { data: faturasData, error: faturasError } = await supabase
         .from('faturas_cartao')
-        .select('id, mes, ano, status')
+        .select('id, mes_referencia, ano_referencia, status')
         .in('id', faturaIds)
 
       if (faturasError) throw faturasError
@@ -1150,7 +1150,7 @@ export default function Faturas() {
                         <div className="parcela-fatura">
                           <Calendar size={14} />
                           <span>
-                            {getMesNome(parcela.faturas_cartao?.mes)}/{parcela.faturas_cartao?.ano}
+                            {getMesNome(parcela.faturas_cartao?.mes_referencia)}/{parcela.faturas_cartao?.ano_referencia}
                           </span>
                         </div>
                         <div className="parcela-valor">
