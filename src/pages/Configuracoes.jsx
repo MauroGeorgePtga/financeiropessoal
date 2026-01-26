@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { 
@@ -42,6 +42,7 @@ export default function Configuracoes() {
   const [loadingSessoes, setLoadingSessoes] = useState(false)
   const [sessoesSelecionadas, setSessoesSelecionadas] = useState([])
   const [deletando, setDeletando] = useState(false)
+  const sessoesCarregadas = useRef(false)
   
   const [perfil, setPerfil] = useState({
     email: '',
@@ -170,9 +171,10 @@ export default function Configuracoes() {
     }
   }, [user])
 
-  // Carregar sessões DEPOIS que isAdmin for definido
+  // Carregar sessões DEPOIS que isAdmin for definido - apenas UMA VEZ
   useEffect(() => {
-    if (user && isAdmin) {
+    if (user && isAdmin && !sessoesCarregadas.current) {
+      sessoesCarregadas.current = true
       carregarSessoes()
     }
   }, [user, isAdmin])
@@ -180,7 +182,6 @@ export default function Configuracoes() {
   const carregarSessoes = async () => {
     try {
       setLoadingSessoes(true)
-      console.log('🔍 carregarSessoes - isAdmin:', isAdmin)
       
       if (isAdmin) {
         // Admin vê todas as sessões
@@ -190,26 +191,16 @@ export default function Configuracoes() {
           .order('accessed_at', { ascending: false })
           .limit(50)
 
-        console.log('📊 Sessões carregadas:', sessoesData?.length)
-        if (error) {
-          console.error('❌ Erro ao buscar sessões:', error)
-          throw error
-        }
+        if (error) throw error
         
         // Buscar nomes dos usuários do user_profiles
         if (sessoesData && sessoesData.length > 0) {
           const userIds = [...new Set(sessoesData.map(s => s.user_id))]
-          console.log('👥 User IDs únicos:', userIds)
           
-          const { data: profilesData, error: profileError } = await supabase
+          const { data: profilesData } = await supabase
             .from('user_profiles')
             .select('user_id, name')
             .in('user_id', userIds)
-          
-          console.log('📝 Perfis encontrados:', profilesData)
-          if (profileError) {
-            console.error('❌ Erro ao buscar perfis:', profileError)
-          }
           
           // Mapear nomes
           const sessoesComNomes = sessoesData.map(sessao => {
@@ -221,20 +212,18 @@ export default function Configuracoes() {
             }
           })
           
-          console.log('✅ Sessões com nomes:', sessoesComNomes.slice(0, 3))
           setSessoes(sessoesComNomes)
+          setSessoesSelecionadas([]) // Limpar seleção após recarregar
         } else {
           setSessoes([])
+          setSessoesSelecionadas([])
         }
-      } else {
-        console.log('⚠️ Usuário NÃO é admin, pulando carregamento de sessões')
       }
     } catch (error) {
-      console.error('💥 Erro geral ao carregar sessões:', error)
+      console.error('Erro ao carregar sessões:', error)
       setSessoes([])
     } finally {
       setLoadingSessoes(false)
-      setSessoesSelecionadas([]) // Limpar seleção
     }
   }
 
