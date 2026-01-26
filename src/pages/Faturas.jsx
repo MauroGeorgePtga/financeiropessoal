@@ -513,23 +513,39 @@ export default function Faturas() {
     }
 
     try {
-      const { data, error } = await supabase
+      // Buscar todas as parcelas do grupo
+      const { data: parcelasData, error: parcelasError } = await supabase
         .from('lancamentos_cartao')
-        .select(`
-          *,
-          faturas_cartao!inner(mes, ano, status)
-        `)
+        .select('*')
         .eq('grupo_parcelamento_id', lancamento.grupo_parcelamento_id)
         .order('parcela_numero', { ascending: true })
 
-      if (error) throw error
+      if (parcelasError) throw parcelasError
 
-      setParcelasModal(data || [])
+      // Buscar dados das faturas para cada parcela
+      const faturaIds = parcelasData.map(p => p.fatura_id)
+      const { data: faturasData, error: faturasError } = await supabase
+        .from('faturas_cartao')
+        .select('id, mes, ano, status')
+        .in('id', faturaIds)
+
+      if (faturasError) throw faturasError
+
+      // Juntar dados
+      const parcelasComFaturas = parcelasData.map(parcela => {
+        const fatura = faturasData.find(f => f.id === parcela.fatura_id)
+        return {
+          ...parcela,
+          faturas_cartao: fatura
+        }
+      })
+
+      setParcelasModal(parcelasComFaturas)
       setLancamentoParcelasModal(lancamento)
       setShowModalParcelas(true)
     } catch (error) {
       console.error('Erro ao carregar parcelas:', error)
-      alert('Erro ao carregar parcelas')
+      alert('Erro ao carregar parcelas: ' + error.message)
     }
   }
 
