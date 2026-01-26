@@ -40,6 +40,8 @@ export default function Configuracoes() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [sessoes, setSessoes] = useState([])
   const [loadingSessoes, setLoadingSessoes] = useState(false)
+  const [sessoesSelecionadas, setSessoesSelecionadas] = useState([])
+  const [deletando, setDeletando] = useState(false)
   
   const [perfil, setPerfil] = useState({
     email: '',
@@ -232,6 +234,82 @@ export default function Configuracoes() {
       setSessoes([])
     } finally {
       setLoadingSessoes(false)
+      setSessoesSelecionadas([]) // Limpar seleção
+    }
+  }
+
+  const handleSelecionarSessao = (sessaoId) => {
+    setSessoesSelecionadas(prev => 
+      prev.includes(sessaoId)
+        ? prev.filter(id => id !== sessaoId)
+        : [...prev, sessaoId]
+    )
+  }
+
+  const handleSelecionarTodas = () => {
+    if (sessoesSelecionadas.length === sessoes.length) {
+      setSessoesSelecionadas([])
+    } else {
+      setSessoesSelecionadas(sessoes.map(s => s.id))
+    }
+  }
+
+  const handleDeletarSelecionadas = async () => {
+    if (sessoesSelecionadas.length === 0) {
+      showMessage('error', 'Selecione pelo menos uma sessão para deletar')
+      return
+    }
+
+    if (!confirm(`Deseja deletar ${sessoesSelecionadas.length} sessão(ões) selecionada(s)?`)) {
+      return
+    }
+
+    try {
+      setDeletando(true)
+      const { error } = await supabase
+        .from('user_sessions')
+        .delete()
+        .in('id', sessoesSelecionadas)
+
+      if (error) throw error
+
+      showMessage('success', `${sessoesSelecionadas.length} sessão(ões) deletada(s) com sucesso!`)
+      carregarSessoes()
+    } catch (error) {
+      console.error('Erro ao deletar sessões:', error)
+      showMessage('error', 'Erro ao deletar sessões')
+    } finally {
+      setDeletando(false)
+    }
+  }
+
+  const handleDeletarTodas = async () => {
+    if (sessoes.length === 0) {
+      showMessage('error', 'Não há sessões para deletar')
+      return
+    }
+
+    if (!confirm(`⚠️ ATENÇÃO: Deseja deletar TODAS as ${sessoes.length} sessões do histórico? Esta ação não pode ser desfeita!`)) {
+      return
+    }
+
+    try {
+      setDeletando(true)
+      const { error } = await supabase
+        .from('user_sessions')
+        .delete()
+        .gte('id', '00000000-0000-0000-0000-000000000000') // Deleta tudo
+
+      if (error) throw error
+
+      showMessage('success', 'Todas as sessões foram deletadas!')
+      setSessoes([])
+      setSessoesSelecionadas([])
+    } catch (error) {
+      console.error('Erro ao deletar todas sessões:', error)
+      showMessage('error', 'Erro ao deletar sessões')
+    } finally {
+      setDeletando(false)
     }
   }
 
@@ -1055,6 +1133,28 @@ export default function Configuracoes() {
               <Activity size={24} />
               <h2>Histórico de Acessos (Todos Usuários)</h2>
             </div>
+            <div className="section-actions">
+              {sessoes.length > 0 && (
+                <>
+                  <button 
+                    className="btn-deletar-selecionadas"
+                    onClick={handleDeletarSelecionadas}
+                    disabled={deletando || sessoesSelecionadas.length === 0}
+                  >
+                    <Trash2 size={16} />
+                    Deletar Selecionadas ({sessoesSelecionadas.length})
+                  </button>
+                  <button 
+                    className="btn-deletar-todas"
+                    onClick={handleDeletarTodas}
+                    disabled={deletando}
+                  >
+                    <Trash2 size={16} />
+                    Deletar Todas
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="config-card">
@@ -1070,48 +1170,67 @@ export default function Configuracoes() {
                 <p>Nenhum acesso registrado</p>
               </div>
             ) : (
-              <div className="sessions-list">
-                {sessoes.map((sessao, index) => {
-                  const isAtual = index === 0 && sessao.user_id === user.id
-                  const duracao = sessao.session_duration 
-                    ? `${Math.floor(sessao.session_duration / 60)}min`
-                    : '-'
-                  
-                  const getDeviceIcon = (type) => {
-                    if (type === 'mobile' || type === 'tablet') return <Smartphone size={20} />
-                    return <Monitor size={20} />
-                  }
+              <>
+                <div className="sessions-header-actions">
+                  <label className="checkbox-selecionar-todas">
+                    <input 
+                      type="checkbox"
+                      checked={sessoesSelecionadas.length === sessoes.length}
+                      onChange={handleSelecionarTodas}
+                    />
+                    <span>Selecionar todas ({sessoes.length})</span>
+                  </label>
+                </div>
+                <div className="sessions-list">
+                  {sessoes.map((sessao, index) => {
+                    const isAtual = index === 0 && sessao.user_id === user.id
+                    const duracao = sessao.session_duration 
+                      ? `${Math.floor(sessao.session_duration / 60)}min`
+                      : '-'
+                    
+                    const getDeviceIcon = (type) => {
+                      if (type === 'mobile' || type === 'tablet') return <Smartphone size={20} />
+                      return <Monitor size={20} />
+                    }
 
-                  const nomeUsuario = sessao.user_name || 'Usuário'
+                    const nomeUsuario = sessao.user_name || 'Usuário'
+                    const isSelecionada = sessoesSelecionadas.includes(sessao.id)
 
-                  return (
-                    <div key={sessao.id} className="session-item">
-                      <div className="session-icon">
-                        {getDeviceIcon(sessao.device_type)}
-                      </div>
-                      <div className="session-info">
-                        <div className="session-device">
-                          <span className="session-user-name">{nomeUsuario}</span>
-                          <strong>{sessao.browser}</strong> em {sessao.os}
-                          {isAtual && <span className="badge-atual">ATUAL</span>}
+                    return (
+                      <div key={sessao.id} className={`session-item ${isSelecionada ? 'selecionada' : ''}`}>
+                        <input 
+                          type="checkbox"
+                          className="session-checkbox"
+                          checked={isSelecionada}
+                          onChange={() => handleSelecionarSessao(sessao.id)}
+                        />
+                        <div className="session-icon">
+                          {getDeviceIcon(sessao.device_type)}
                         </div>
-                        <div className="session-details">
-                          <span className="session-date">
-                            <Clock size={14} />
-                            {new Date(sessao.accessed_at).toLocaleString('pt-BR')}
-                          </span>
-                          {sessao.logout_at && (
-                            <span className="session-logout">
-                              Saiu: {new Date(sessao.logout_at).toLocaleString('pt-BR')}
+                        <div className="session-info">
+                          <div className="session-device">
+                            <span className="session-user-name">{nomeUsuario}</span>
+                            <strong>{sessao.browser}</strong> em {sessao.os}
+                            {isAtual && <span className="badge-atual">ATUAL</span>}
+                          </div>
+                          <div className="session-details">
+                            <span className="session-date">
+                              <Clock size={14} />
+                              {new Date(sessao.accessed_at).toLocaleString('pt-BR')}
                             </span>
-                          )}
-                          <span className="session-duration">Duração: {duracao}</span>
+                            {sessao.logout_at && (
+                              <span className="session-logout">
+                                Saiu: {new Date(sessao.logout_at).toLocaleString('pt-BR')}
+                              </span>
+                            )}
+                            <span className="session-duration">Duração: {duracao}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                })}
-              </div>
+                    )
+                  })}
+                </div>
+              </>
             )}
           </div>
         </section>
