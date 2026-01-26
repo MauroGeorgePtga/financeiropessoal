@@ -172,15 +172,32 @@ export default function Configuracoes() {
   const carregarSessoes = async () => {
     try {
       setLoadingSessoes(true)
-      const { data, error } = await supabase
-        .from('user_sessions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('accessed_at', { ascending: false })
-        .limit(20)
+      
+      // Admin vê todas as sessões com nome dos usuários
+      if (isAdmin) {
+        const { data, error } = await supabase
+          .from('user_sessions')
+          .select(`
+            *,
+            user_profiles!inner(name)
+          `)
+          .order('accessed_at', { ascending: false })
+          .limit(50)
 
-      if (error) throw error
-      setSessoes(data || [])
+        if (error) throw error
+        setSessoes(data || [])
+      } else {
+        // Usuário comum vê apenas suas sessões
+        const { data, error } = await supabase
+          .from('user_sessions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('accessed_at', { ascending: false })
+          .limit(20)
+
+        if (error) throw error
+        setSessoes(data || [])
+      }
     } catch (error) {
       console.error('Erro ao carregar sessões:', error)
     } finally {
@@ -1000,70 +1017,75 @@ export default function Configuracoes() {
         </div>
       </section>
 
-      {/* Histórico de Acessos */}
-      <section className="config-section">
-        <div className="section-header">
-          <div className="section-title">
-            <Activity size={24} />
-            <h2>Histórico de Acessos</h2>
+      {/* Histórico de Acessos - APENAS ADMIN */}
+      {isAdmin && (
+        <section className="config-section">
+          <div className="section-header">
+            <div className="section-title">
+              <Activity size={24} />
+              <h2>Histórico de Acessos (Todos Usuários)</h2>
+            </div>
           </div>
-        </div>
 
-        <div className="config-card">
-          <p className="section-description">
-            Registro automático dos últimos 20 acessos ao sistema (rastreado mesmo sem logout)
-          </p>
+          <div className="config-card">
+            <p className="section-description">
+              Registro automático dos últimos 50 acessos de todos os usuários do sistema
+            </p>
 
-          {loadingSessoes ? (
-            <div className="loading-sessions">Carregando...</div>
-          ) : sessoes.length === 0 ? (
-            <div className="empty-sessions">
-              <Clock size={48} />
-              <p>Nenhum acesso registrado</p>
-            </div>
-          ) : (
-            <div className="sessions-list">
-              {sessoes.map((sessao, index) => {
-                const isAtual = index === 0
-                const duracao = sessao.session_duration 
-                  ? `${Math.floor(sessao.session_duration / 60)}min`
-                  : '-'
-                
-                const getDeviceIcon = (type) => {
-                  if (type === 'mobile' || type === 'tablet') return <Smartphone size={20} />
-                  return <Monitor size={20} />
-                }
+            {loadingSessoes ? (
+              <div className="loading-sessions">Carregando...</div>
+            ) : sessoes.length === 0 ? (
+              <div className="empty-sessions">
+                <Clock size={48} />
+                <p>Nenhum acesso registrado</p>
+              </div>
+            ) : (
+              <div className="sessions-list">
+                {sessoes.map((sessao, index) => {
+                  const isAtual = index === 0 && sessao.user_id === user.id
+                  const duracao = sessao.session_duration 
+                    ? `${Math.floor(sessao.session_duration / 60)}min`
+                    : '-'
+                  
+                  const getDeviceIcon = (type) => {
+                    if (type === 'mobile' || type === 'tablet') return <Smartphone size={20} />
+                    return <Monitor size={20} />
+                  }
 
-                return (
-                  <div key={sessao.id} className="session-item">
-                    <div className="session-icon">
-                      {getDeviceIcon(sessao.device_type)}
-                    </div>
-                    <div className="session-info">
-                      <div className="session-device">
-                        <strong>{sessao.browser}</strong> em {sessao.os}
-                        {isAtual && <span className="badge-atual">ATUAL</span>}
+                  const nomeUsuario = sessao.user_profiles?.name || 'Usuário'
+
+                  return (
+                    <div key={sessao.id} className="session-item">
+                      <div className="session-icon">
+                        {getDeviceIcon(sessao.device_type)}
                       </div>
-                      <div className="session-details">
-                        <span className="session-date">
-                          <Clock size={14} />
-                          {new Date(sessao.accessed_at).toLocaleString('pt-BR')}
-                        </span>
-                        {sessao.logout_at && (
-                          <span className="session-logout">
-                            Saiu: {new Date(sessao.logout_at).toLocaleString('pt-BR')}
+                      <div className="session-info">
+                        <div className="session-device">
+                          <span className="session-user-name">{nomeUsuario}</span>
+                          <strong>{sessao.browser}</strong> em {sessao.os}
+                          {isAtual && <span className="badge-atual">ATUAL</span>}
+                        </div>
+                        <div className="session-details">
+                          <span className="session-date">
+                            <Clock size={14} />
+                            {new Date(sessao.accessed_at).toLocaleString('pt-BR')}
                           </span>
-                        )}
-                        <span className="session-duration">Duração: {duracao}</span>
+                          {sessao.logout_at && (
+                            <span className="session-logout">
+                              Saiu: {new Date(sessao.logout_at).toLocaleString('pt-BR')}
+                            </span>
+                          )}
+                          <span className="session-duration">Duração: {duracao}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      </section>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Modal Novo Usuário */}
       {modalNovoUsuario && (
