@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useVisibility } from '../contexts/VisibilityContext'
 import { 
   Calendar,
   TrendingUp,
@@ -8,7 +9,10 @@ import {
   PieChart as PieChartIcon,
   BarChart3,
   Download,
-  Filter
+  Filter,
+  CreditCard,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react'
 import {
   BarChart,
@@ -29,7 +33,9 @@ import './Relatorios.css'
 
 export default function Relatorios() {
   const { user } = useAuth()
+  const { valoresVisiveis } = useVisibility()
   const [loading, setLoading] = useState(true)
+  const [abaAtiva, setAbaAtiva] = useState('transacoes') // transacoes, cartoes
   const [periodo, setPeriodo] = useState('mes_atual') // mes_atual, ultimos_3_meses, ultimos_6_meses, ano_atual
   const [dados, setDados] = useState({
     transacoes: [],
@@ -46,6 +52,13 @@ export default function Relatorios() {
     despesasDinheiro: 0
   })
   const [categoriasExpandidas, setCategoriasExpandidas] = useState({})
+  
+  // Estados para Relatório de Cartões
+  const [cartoes, setCartoes] = useState([])
+  const [cartaoSelecionado, setCartaoSelecionado] = useState(null)
+  const [faturaAberta, setFaturaAberta] = useState(null)
+  const [dadosCartaoCategorizados, setDadosCartaoCategorizados] = useState([])
+  const [loadingCartao, setLoadingCartao] = useState(false)
 
   const COLORS = [
     '#667eea', '#48bb78', '#f56565', '#ed8936', '#38b2ac',
@@ -159,6 +172,140 @@ export default function Relatorios() {
       setLoading(false)
     }
   }
+
+  // ========== FUNÇÕES PARA RELATÓRIO DE CARTÕES ==========
+  useEffect(() => {
+    if (user && abaAtiva === 'cartoes') {
+      carregarCartoes()
+    }
+  }, [user, abaAtiva])
+
+  useEffect(() => {
+    if (cartaoSelecionado) {
+      carregarDadosCartao()
+    }
+  }, [cartaoSelecionado])
+
+  const carregarCartoes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('cartoes_credito')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('nome')
+
+      if (error) throw error
+      setCartoes(data || [])
+      if (data && data.length > 0) {
+        setCartaoSelecionado(data[0].id)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar cartões:', error)
+    }
+  }
+
+  const carregarDadosCartao = async () => {
+    try {
+      setLoadingCartao(true)
+
+      // Buscar fatura aberta
+      const { data: faturaData, error: faturaError } = await supabase
+        .from('faturas_cartao')
+        .select('*')
+        .eq('cartao_id', cartaoSelecionado)
+        .eq('status', 'aberta')
+        .single()
+
+      if (faturaError && faturaError.code !== 'PGRST116') throw faturaError
+
+      setFaturaAberta(faturaData)
+
+      if (!faturaData) {
+        setDadosCartaoCategorizados([])
+        setLoadingCartao(false)
+        return
+      }
+
+      // Buscar lançamentos com categorias
+      const { data: lancamentosData, error: lancamentosError } = await supabase
+        .from('lancamentos_cartao')
+        .select(`
+          *,
+          categorias!inner(id, nome, icone, cor, tipo),
+          subcategorias(id, nome)
+        `)
+        .eq('fatura_id', faturaData.id)
+        .eq('categorias.tipo', 'despesa')
+
+      if (lancamentosError) throw lancamentosError
+
+      // Agrupar por categoria e subcategoria
+      const agrupado = {}
+
+      lancamentosData.forEach(lanc => {
+        const catId = lanc.categoria_id
+        const catNome = lanc.categorias.nome
+        const catIcone = lanc.categorias.icone
+        const catCor = lanc.categorias.cor
+
+        if (!agrupado[catId]) {
+          agrupado[catId] = {
+            id: catId,
+            nome: catNome,
+            icone: catIcone,
+            cor: catCor,
+            total: 0,
+            subcategorias: {}
+          }
+        }
+
+        agrupado[catId].total += parseFloat(lanc.valor || 0)
+
+        const subId = lanc.subcategoria_id || 'sem_sub'
+        const subNome = lanc.subcategorias?.nome || 'Sem subcategoria'
+
+        if (!agrupado[catId].subcategorias[subId]) {
+          agrupado[catId].subcategorias[subId] = {
+            id: subId,
+            nome: subNome,
+            total: 0,
+            lancamentos: []
+          }
+        }
+
+        agrupado[catId].subcategorias[subId].total += parseFloat(lanc.valor || 0)
+        agrupado[catId].subcategorias[subId].lancamentos.push(lanc)
+      })
+
+      // Converter para array e ordenar
+      const categorias = Object.values(agrupado)
+        .map(cat => ({
+          ...cat,
+          subcategorias: Object.values(cat.subcategorias).sort((a, b) => b.total - a.total)
+        }))
+        .sort((a, b) => b.total - a.total)
+
+      setDadosCartaoCategorizados(categorias)
+    } catch (error) {
+      console.error('Erro ao carregar dados do cartão:', error)
+    } finally {
+      setLoadingCartao(false)
+    }
+  }
+
+  const toggleCategoriaCartao = (categoriaId) => {
+    setCategoriasExpandidas(prev => ({
+      ...prev,
+      [categoriaId]: !prev[categoriaId]
+    }))
+  }
+
+  const getMesNome = (mes) => {
+    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+    return meses[mes - 1]
+  }
+  // ========== FIM FUNÇÕES CARTÕES ==========
 
   // Dados para gráfico de pizza - Despesas por Categoria
   const getDadosPizzaCategorias = () => {
@@ -404,8 +551,27 @@ export default function Relatorios() {
         </div>
       </div>
 
-      {/* Filtro de Período */}
-      <div className="filtro-periodo">
+      {/* Abas */}
+      <div className="relatorio-tabs">
+        <button 
+          className={`tab-btn ${abaAtiva === 'transacoes' ? 'active' : ''}`}
+          onClick={() => setAbaAtiva('transacoes')}
+        >
+          <BarChart3 size={20} />
+          Transações Bancárias
+        </button>
+        <button 
+          className={`tab-btn ${abaAtiva === 'cartoes' ? 'active' : ''}`}
+          onClick={() => setAbaAtiva('cartoes')}
+        >
+          <CreditCard size={20} />
+          Faturas de Cartão
+        </button>
+      </div>
+
+      {/* Filtro de Período - Apenas para transações */}
+      {abaAtiva === 'transacoes' && (
+        <div className="filtro-periodo">
         <Filter size={20} />
         <select value={periodo} onChange={(e) => setPeriodo(e.target.value)}>
           <option value="mes_atual">Mês Atual</option>
@@ -414,7 +580,11 @@ export default function Relatorios() {
           <option value="ano_atual">Ano Atual</option>
         </select>
       </div>
+      )}
 
+      {/* Conteúdo - Transações */}
+      {abaAtiva === 'transacoes' && (
+        <>
       {/* Cards de Resumo */}
       <div className="resumo-cards">
         <div className="resumo-card card-receita">
@@ -715,6 +885,157 @@ export default function Relatorios() {
           </div>
         </div>
       </div>
+        </>
+      )}
+
+      {/* Conteúdo - Cartões */}
+      {abaAtiva === 'cartoes' && (
+        <div className="relatorio-cartoes-container">
+          {/* Seletor de Cartão */}
+          {cartoes.length > 0 && (
+            <div className="cartao-selector-relatorio">
+              {cartoes.map(cartao => (
+                <button
+                  key={cartao.id}
+                  className={`cartao-btn-relatorio ${cartaoSelecionado === cartao.id ? 'active' : ''}`}
+                  onClick={() => setCartaoSelecionado(cartao.id)}
+                >
+                  <CreditCard size={20} />
+                  <span>{cartao.nome}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Header com Info do Cartão */}
+          {cartoes.find(c => c.id === cartaoSelecionado) && faturaAberta && (
+            <div className="relatorio-header-card">
+              <div className="header-info-cartao">
+                <div className="cartao-info-section">
+                  <CreditCard size={32} />
+                  <div>
+                    <h2>{cartoes.find(c => c.id === cartaoSelecionado).nome}</h2>
+                    <p className="cartao-bandeira">{cartoes.find(c => c.id === cartaoSelecionado).bandeira}</p>
+                  </div>
+                </div>
+                <div className="fatura-info-section">
+                  <div className="info-item-cartao">
+                    <Calendar size={20} />
+                    <div>
+                      <span className="label">Fatura</span>
+                      <span className="value">
+                        {getMesNome(faturaAberta.mes_referencia)}/{faturaAberta.ano_referencia}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="info-item-cartao">
+                    <TrendingDown size={20} />
+                    <div>
+                      <span className="label">Total Gasto</span>
+                      <span className="value total">
+                        {valoresVisiveis ? formatCurrency(dadosCartaoCategorizados.reduce((sum, cat) => sum + cat.total, 0)) : '••••••'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Conteúdo */}
+          {loadingCartao ? (
+            <div className="loading-state">Carregando dados...</div>
+          ) : !faturaAberta ? (
+            <div className="empty-state-cartao">
+              <CreditCard size={48} />
+              <p>Nenhuma fatura aberta para este cartão</p>
+            </div>
+          ) : dadosCartaoCategorizados.length === 0 ? (
+            <div className="empty-state-cartao">
+              <TrendingDown size={48} />
+              <p>Nenhum lançamento nesta fatura</p>
+            </div>
+          ) : (
+            <div className="relatorio-content-cartao">
+              <div className="categorias-scroll-container">
+                {dadosCartaoCategorizados.map(categoria => {
+                  const isExpanded = categoriasExpandidas[categoria.id]
+                  const totalFatura = dadosCartaoCategorizados.reduce((sum, cat) => sum + cat.total, 0)
+                  const percentual = (categoria.total / totalFatura) * 100
+
+                  return (
+                    <div key={categoria.id} className="categoria-grupo-cartao">
+                      <div 
+                        className="categoria-header-cartao"
+                        onClick={() => toggleCategoriaCartao(categoria.id)}
+                      >
+                        <div className="categoria-left-cartao">
+                          <button className="expand-btn">
+                            {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                          </button>
+                          <div 
+                            className="categoria-icon-cartao"
+                            style={{ backgroundColor: categoria.cor }}
+                          >
+                            {categoria.icone}
+                          </div>
+                          <div className="categoria-info-cartao">
+                            <span className="categoria-nome-cartao">{categoria.nome}</span>
+                            <span className="categoria-percentual-cartao">{percentual.toFixed(1)}% do total</span>
+                          </div>
+                        </div>
+                        <span className="categoria-total-cartao">
+                          {valoresVisiveis ? formatCurrency(categoria.total) : '••••••'}
+                        </span>
+                      </div>
+
+                      {isExpanded && (
+                        <div className="subcategorias-container-cartao">
+                          {categoria.subcategorias.map(sub => {
+                            const subPercentual = (sub.total / categoria.total) * 100
+
+                            return (
+                              <div key={sub.id} className="subcategoria-item-cartao">
+                                <div className="subcategoria-header-cartao">
+                                  <div className="subcategoria-info-cartao">
+                                    <span className="subcategoria-nome-cartao">{sub.nome}</span>
+                                    <span className="subcategoria-count-cartao">
+                                      {sub.lancamentos.length} lançamento{sub.lancamentos.length !== 1 ? 's' : ''}
+                                    </span>
+                                  </div>
+                                  <div className="subcategoria-valores-cartao">
+                                    <span className="subcategoria-percentual-cartao">
+                                      {subPercentual.toFixed(1)}%
+                                    </span>
+                                    <span className="subcategoria-total-cartao">
+                                      {valoresVisiveis ? formatCurrency(sub.total) : '••••••'}
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                <div className="lancamentos-lista-cartao">
+                                  {sub.lancamentos.map(lanc => (
+                                    <div key={lanc.id} className="lancamento-mini-cartao">
+                                      <span className="lancamento-descricao-cartao">{lanc.descricao}</span>
+                                      <span className="lancamento-valor-cartao">
+                                        {valoresVisiveis ? formatCurrency(lanc.valor) : '••••••'}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
