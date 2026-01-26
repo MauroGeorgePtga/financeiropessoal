@@ -1118,9 +1118,9 @@ export default function Faturas() {
                         ) : '••••••'}
                       </span>
                     </div>
-                    <div className="resumo-item pago">
+                    <div className="resumo-item">
                       <span className="label">Valor Pago:</span>
-                      <span className="valor pago-valor">
+                      <span className="valor">
                         {valoresVisiveis ? formatCurrency(
                           parcelasModal
                             .filter(p => p.faturas_cartao?.status === 'fechada' || p.faturas_cartao?.status === 'paga')
@@ -1128,19 +1128,15 @@ export default function Faturas() {
                         ) : '••••••'}
                       </span>
                     </div>
-                    <div className="resumo-item pendente">
+                    <div className="resumo-item">
                       <span className="label">Valor Pendente:</span>
-                      <span className="valor pendente-valor">
+                      <span className="valor">
                         {valoresVisiveis ? formatCurrency(
                           parcelasModal
                             .filter(p => p.faturas_cartao?.status !== 'fechada' && p.faturas_cartao?.status !== 'paga')
                             .reduce((sum, p) => sum + parseFloat(p.valor || 0), 0)
                         ) : '••••••'}
                       </span>
-                    </div>
-                    <div className="resumo-item">
-                      <span className="label">Total de Parcelas:</span>
-                      <span className="valor">{parcelasModal.length}x</span>
                     </div>
                   </div>
                 </div>
