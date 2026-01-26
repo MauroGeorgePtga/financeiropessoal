@@ -34,6 +34,9 @@ export default function Faturas() {
   const [showModalLancamento, setShowModalLancamento] = useState(false)
   const [showModalPagamento, setShowModalPagamento] = useState(false)
   const [showModalEditarFatura, setShowModalEditarFatura] = useState(false)
+  const [showModalParcelas, setShowModalParcelas] = useState(false)
+  const [parcelasModal, setParcelasModal] = useState([])
+  const [lancamentoParcelasModal, setLancamentoParcelasModal] = useState(null)
   const [faturaExpandida, setFaturaExpandida] = useState(null)
   const [editandoLancamento, setEditandoLancamento] = useState(null)
   
@@ -503,6 +506,34 @@ export default function Faturas() {
     carregarLancamentos(faturaSelecionada)
   }
 
+  const handleAbrirParcelas = async (lancamento) => {
+    if (!lancamento.grupo_parcelamento_id) {
+      alert('Este lançamento não possui parcelamento')
+      return
+    }
+
+    try {
+      // Buscar todas as parcelas do grupo
+      const { data, error } = await supabase
+        .from('lancamentos_cartao')
+        .select(`
+          *,
+          faturas_cartao!inner(mes, ano)
+        `)
+        .eq('grupo_parcelamento_id', lancamento.grupo_parcelamento_id)
+        .order('parcela_numero', { ascending: true })
+
+      if (error) throw error
+
+      setParcelasModal(data || [])
+      setLancamentoParcelasModal(lancamento)
+      setShowModalParcelas(true)
+    } catch (error) {
+      console.error('Erro ao carregar parcelas:', error)
+      alert('Erro ao carregar parcelas')
+    }
+  }
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -718,7 +749,13 @@ export default function Faturas() {
                       <p className="empty-lancamentos">Nenhum lançamento nesta fatura</p>
                     ) : (
                       lancamentos.map(lanc => (
-                        <div key={lanc.id} className="lancamento-item">
+                        <div 
+                          key={lanc.id} 
+                          className="lancamento-item"
+                          onDoubleClick={() => lanc.grupo_parcelamento_id && handleAbrirParcelas(lanc)}
+                          style={{ cursor: lanc.grupo_parcelamento_id ? 'pointer' : 'default' }}
+                          title={lanc.grupo_parcelamento_id ? 'Clique 2x para ver todas as parcelas' : ''}
+                        >
                           <div className="lancamento-info">
                             <div className="lancamento-descricao">
                               <span className="descricao">{lanc.descricao}</span>
@@ -1035,6 +1072,87 @@ export default function Faturas() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Parcelas */}
+      {showModalParcelas && (
+        <div className="modal-overlay" onClick={() => setShowModalParcelas(false)}>
+          <div className="modal-content modal-parcelas" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <Receipt size={24} />
+                Todas as Parcelas
+              </h2>
+              <button className="btn-close" onClick={() => setShowModalParcelas(false)}>
+                <XCircle size={24} />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              {lancamentoParcelasModal && (
+                <div className="parcelas-resumo">
+                  <h3>{lancamentoParcelasModal.descricao}</h3>
+                  <div className="resumo-valores">
+                    <div className="resumo-item">
+                      <span className="label">Valor Total:</span>
+                      <span className="valor total">
+                        {valoresVisiveis ? formatCurrency(
+                          parcelasModal.reduce((sum, p) => sum + parseFloat(p.valor || 0), 0)
+                        ) : '••••••'}
+                      </span>
+                    </div>
+                    <div className="resumo-item">
+                      <span className="label">Total de Parcelas:</span>
+                      <span className="valor">{parcelasModal.length}x</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="parcelas-lista">
+                {parcelasModal.map((parcela) => {
+                  const isPaga = parcela.faturas_cartao?.status === 'fechada'
+                  
+                  return (
+                    <div key={parcela.id} className={`parcela-card ${isPaga ? 'paga' : 'pendente'}`}>
+                      <div className="parcela-numero">
+                        <span className="numero">{parcela.parcela_numero}/{parcela.total_parcelas}</span>
+                        {isPaga ? (
+                          <span className="status-badge paga">
+                            <CheckCircle size={16} />
+                            Paga
+                          </span>
+                        ) : (
+                          <span className="status-badge pendente">
+                            <Clock size={16} />
+                            Pendente
+                          </span>
+                        )}
+                      </div>
+                      <div className="parcela-info-row">
+                        <div className="parcela-fatura">
+                          <Calendar size={14} />
+                          <span>
+                            {getMesNome(parcela.faturas_cartao?.mes)}/{parcela.faturas_cartao?.ano}
+                          </span>
+                        </div>
+                        <div className="parcela-valor">
+                          {valoresVisiveis ? formatCurrency(parcela.valor) : '••••••'}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={() => setShowModalParcelas(false)}>
+                Fechar
+              </button>
+            </div>
           </div>
         </div>
       )}
