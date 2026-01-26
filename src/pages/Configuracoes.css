@@ -1,13 +1,14 @@
 /* ================================================================
-   COPIE TUDO ABAIXO E COLE NO FINAL DO SEU Configuracoes.css
+   ADICIONE ESTE CSS AO SEU Configuracoes.css
+   Melhorias para Alterar Senha e Gerenciamento de Usuários
    ================================================================ */
 
-/* ====== CAMPOS MELHORADOS ====== */
-.form-group-config {
-  margin-bottom: 20px;
+/* ====== SEÇÃO ALTERAR SENHA - MELHORADA ====== */
+.senha-group {
+  position: relative;
 }
 
-.form-group-config label {
+.senha-group label {
   display: block;
   font-weight: 600;
   color: #2d3748;
@@ -15,40 +16,209 @@
   font-size: 14px;
 }
 
-.form-group-config input[type="text"],
-.form-group-config input[type="email"],
-.form-group-config input[type="tel"],
-.form-group-config input[type="password"] {
+.senha-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.senha-input-wrapper input {
   width: 100%;
-  padding: 12px 16px;
+  padding: 12px 45px 12px 16px;
   border: 2px solid #e2e8f0;
   border-radius: 8px;
   font-size: 14px;
   transition: all 0.2s;
   background: white;
-  color: #2d3748;
 }
 
-.form-group-config input:focus {
+.senha-input-wrapper input:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.form-group-config input:disabled,
-.form-group-config input:read-only {
-  background: #f7fafc;
+.senha-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
   color: #718096;
-  cursor: not-allowed;
+  transition: color 0.2s;
 }
 
-.config-card form {
+.senha-toggle:hover {
+  color: #667eea;
+}
+
+/* ====== TABELA DE USUÁRIOS - MELHORADA ====== */
+.usuarios-table-wrapper {
+  overflow-x: auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.usuarios-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.usuarios-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.usuarios-table th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.usuarios-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+  transition: background 0.2s;
+}
+
+.usuarios-table tbody tr:hover {
+  background: #f7fafc;
+}
+
+.usuarios-table td {
+  padding: 16px;
+  font-size: 14px;
+  color: #2d3748;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.ativo {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.inativo {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Função Badge */
+.funcao-badge {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.funcao-badge.admin {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.funcao-badge.usuario {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* Botões de Ação */
+.acoes-cell {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-icon-table {
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  background: transparent;
+}
+
+.btn-icon-table:hover {
+  transform: scale(1.1);
+}
+
+.btn-icon-table.btn-toggle {
+  color: #667eea;
+}
+
+.btn-icon-table.btn-toggle:hover {
+  background: #eef2ff;
+}
+
+.btn-icon-table.btn-reset {
+  color: #f59e0b;
+}
+
+.btn-icon-table.btn-reset:hover {
+  background: #fef3c7;
+}
+
+.btn-icon-table.btn-delete {
+  color: #ef4444;
+}
+
+.btn-icon-table.btn-delete:hover {
+  background: #fee2e2;
+}
+
+/* Botão Novo Usuário */
+.btn-novo-usuario {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.btn-novo-usuario:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+}
+
+/* Formulário de Senha - Layout Melhorado */
+.senha-form-grid {
   display: grid;
   gap: 20px;
+  max-width: 500px;
 }
 
-.btn-save-config,
-button[type="submit"] {
+/* Botão Alterar Senha */
+.btn-alterar-senha {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
@@ -62,150 +232,33 @@ button[type="submit"] {
   gap: 8px;
   transition: all 0.2s;
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  margin-top: 10px;
 }
 
-.btn-save-config:hover,
-button[type="submit"]:hover {
+.btn-alterar-senha:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
-.btn-save-config:disabled,
-button[type="submit"]:disabled {
+.btn-alterar-senha:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
-.form-group-config input[readonly] {
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
-  background: #edf2f7;
-  border-color: #cbd5e0;
-}
-
-.config-section {
-  margin-bottom: 35px;
-}
-
-.section-description {
-  color: #718096;
-  font-size: 14px;
-  margin-bottom: 20px;
-  line-height: 1.6;
-}
-
-/* ====== HISTÓRICO DE ACESSOS ====== */
-.loading-sessions,
-.empty-sessions {
-  text-align: center;
-  padding: 40px;
-  color: #999;
-}
-
-.empty-sessions svg {
-  color: #ddd;
-  margin-bottom: 15px;
-}
-
-.sessions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.session-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 15px;
-  padding: 18px;
-  background: white;
-  border-radius: 12px;
-  border-left: 4px solid #667eea;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.2s;
-}
-
-.session-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.session-icon {
-  padding: 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  flex-shrink: 0;
-}
-
-.session-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.session-device {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-}
-
-.session-device strong {
-  font-size: 16px;
-  color: #2d3748;
-  font-weight: 600;
-}
-
-.badge-atual {
-  padding: 4px 10px;
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-  color: white;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  box-shadow: 0 2px 6px rgba(72, 187, 120, 0.3);
-}
-
-.session-details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  font-size: 13px;
-  color: #718096;
-}
-
-.session-date,
-.session-logout,
-.session-duration {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.session-date svg,
-.session-logout svg,
-.session-duration svg {
-  color: #a0aec0;
-}
-
+/* Responsive */
 @media (max-width: 768px) {
-  .session-item {
-    flex-direction: column;
-    gap: 12px;
+  .usuarios-table {
+    font-size: 12px;
   }
   
-  .session-icon {
-    align-self: flex-start;
+  .usuarios-table th,
+  .usuarios-table td {
+    padding: 12px 8px;
   }
   
-  .session-details {
+  .acoes-cell {
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
   }
 }
