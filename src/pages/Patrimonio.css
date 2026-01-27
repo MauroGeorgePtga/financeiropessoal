@@ -339,3 +339,177 @@
     order: -1;
   }
 }
+
+/* ================================================
+   SISTEMA DE BAIXA DE BENS
+   ================================================ */
+
+/* Filtros de Status */
+.filtros-status {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+/* Badge de Status no Card */
+.bem-status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.bem-status-badge.status-vendido {
+  background: #e6fffa;
+  color: #38b2ac;
+}
+
+.bem-status-badge.status-doado {
+  background: #e6f2ff;
+  color: #667eea;
+}
+
+.bem-status-badge.status-perdido {
+  background: #fff5f5;
+  color: #f56565;
+}
+
+/* Botões de Ação */
+.btn-baixa {
+  color: #f59e0b !important;
+}
+
+.btn-baixa:hover {
+  background: #fffbeb !important;
+  color: #d97706 !important;
+}
+
+.btn-reativar {
+  color: #48bb78 !important;
+}
+
+.btn-reativar:hover {
+  background: #f0fff4 !important;
+  color: #38a169 !important;
+}
+
+/* Modal de Baixa */
+.bem-baixa-info {
+  background: #f7fafc;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.bem-baixa-info h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.bem-baixa-info p {
+  margin: 5px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.tipo-buttons-baixa {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.tipo-btn-baixa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 15px;
+  border: 2px solid;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+}
+
+.tipo-btn-baixa:hover {
+  transform: scale(1.05);
+}
+
+.tipo-btn-baixa span {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Preview de Lucro/Prejuízo */
+.lucro-preview {
+  padding: 20px;
+  background: #f7fafc;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lucro-preview > div {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.lucro-positivo {
+  color: #38b2ac;
+}
+
+.lucro-negativo {
+  color: #f56565;
+}
+
+.lucro-preview .lucro-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.8;
+  margin-bottom: 5px;
+}
+
+.lucro-preview .lucro-valor {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* Card de Lucro/Prejuízo Vendas */
+.card-valorizacao .resumo-diferenca,
+.card-desvalorizacao .resumo-diferenca {
+  font-size: 11px;
+  margin-top: 5px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .filtros-status {
+    width: 100%;
+  }
+
+  .filtro-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .tipo-buttons-baixa {
+    grid-template-columns: 1fr;
+  }
+
+  .bem-header {
+    flex-wrap: wrap;
+  }
+
+  .bem-status-badge {
+    width: 100%;
+    text-align: center;
+    order: -1;
+  }
+}
