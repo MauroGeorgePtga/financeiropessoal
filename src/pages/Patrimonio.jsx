@@ -365,8 +365,6 @@ export default function Patrimonio() {
             </span>
           </div>
         </div>
-          </div>
-        </div>
       </div>
 
       {/* Filtros */}
