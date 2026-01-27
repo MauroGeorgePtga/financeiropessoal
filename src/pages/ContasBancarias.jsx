@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useVisibility } from '../contexts/VisibilityContext'
 import { Plus, Edit2, Trash2, Search, X } from 'lucide-react'
 import './ContasBancarias.css'
 import { ValorOculto } from '../components/ValorOculto'
 
 export default function ContasBancarias() {
   const { user } = useAuth()
+  const { valoresVisiveis } = useVisibility()
   const [contas, setContas] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -394,10 +396,10 @@ export default function ContasBancarias() {
               <div className="conta-saldo">
                 <span>Saldo Atual</span>
                 <strong className={conta.saldo_atual >= 0 ? 'saldo-positivo' : 'saldo-negativo'}>
-                  {new Intl.NumberFormat('pt-BR', {
+                  {valoresVisiveis ? new Intl.NumberFormat('pt-BR', {
                     style: 'currency',
                     currency: 'BRL'
-                  }).format(conta.saldo_atual || 0)}
+                  }).format(conta.saldo_atual || 0) : '••••••'}
                 </strong>
               </div>
 
