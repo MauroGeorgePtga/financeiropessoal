@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useVisibility } from '../contexts/VisibilityContext'
 import { Plus, Edit2, Trash2, Search, TrendingUp, TrendingDown, Home, Car, MapPin, Package, X } from 'lucide-react'
 import './Patrimonio.css'
 import { ValorOculto } from '../components/ValorOculto'
 
 export default function Patrimonio() {
   const { user } = useAuth()
+  const { valoresVisiveis } = useVisibility()
   const [bens, setBens] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -244,7 +246,7 @@ export default function Patrimonio() {
               {variacaoTotal >= 0 ? '+' : ''}{variacaoTotal.toFixed(2)}%
             </span>
             <span className="resumo-diferenca">
-              {formatCurrency(totalValorAtual - totalValorCompra)}
+              {valoresVisiveis ? formatCurrency(totalValorAtual - totalValorCompra) : '••••••'}
             </span>
           </div>
         </div>
@@ -349,14 +351,14 @@ export default function Patrimonio() {
                   <div className="valor-item">
                     <span className="valor-label">Valor de Compra</span>
                     <span className="valor-number">
-                      {formatCurrency(bem.valor_compra)}
+                      {valoresVisiveis ? formatCurrency(bem.valor_compra) : '••••••'}
                     </span>
                   </div>
 
                   <div className="valor-item">
                     <span className="valor-label">Valor Atual</span>
                     <span className="valor-number valor-destaque">
-                      {formatCurrency(bem.valor_atual)}
+                      {valoresVisiveis ? formatCurrency(bem.valor_atual) : '••••••'}
                     </span>
                   </div>
 
@@ -364,7 +366,7 @@ export default function Patrimonio() {
                     {variacao >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                     <span>{variacao >= 0 ? '+' : ''}{variacao.toFixed(2)}%</span>
                     <span className="variacao-valor">
-                      ({formatCurrency(bem.valor_atual - bem.valor_compra)})
+                      ({valoresVisiveis ? formatCurrency(bem.valor_atual - bem.valor_compra) : '••••••'})
                     </span>
                   </div>
                 </div>
@@ -478,7 +480,7 @@ export default function Patrimonio() {
                             {variacao >= 0 ? '+' : ''}{variacao.toFixed(2)}%
                           </span>
                           <span className="variacao-valor">
-                            ({formatCurrency(diferenca)})
+                            ({valoresVisiveis ? formatCurrency(diferenca) : '••••••'})
                           </span>
                         </div>
                       )
