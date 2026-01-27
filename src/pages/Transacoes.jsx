@@ -367,8 +367,24 @@ export default function Transacoes() {
     .filter(t => t.tipo === 'receita' && t.pago && !t.is_transferencia)
     .reduce((acc, t) => acc + t.valor, 0)
   
+  const receitasBanco = transacoes
+    .filter(t => t.tipo === 'receita' && t.pago && !t.is_transferencia && t.tipo_conta === 'banco')
+    .reduce((acc, t) => acc + t.valor, 0)
+  
+  const receitasDinheiro = transacoes
+    .filter(t => t.tipo === 'receita' && t.pago && !t.is_transferencia && t.tipo_conta === 'dinheiro')
+    .reduce((acc, t) => acc + t.valor, 0)
+  
   const totalDespesas = transacoes
     .filter(t => t.tipo === 'despesa' && t.pago && !t.is_transferencia)
+    .reduce((acc, t) => acc + t.valor, 0)
+  
+  const despesasBanco = transacoes
+    .filter(t => t.tipo === 'despesa' && t.pago && !t.is_transferencia && t.tipo_conta === 'banco')
+    .reduce((acc, t) => acc + t.valor, 0)
+  
+  const despesasDinheiro = transacoes
+    .filter(t => t.tipo === 'despesa' && t.pago && !t.is_transferencia && t.tipo_conta === 'dinheiro')
     .reduce((acc, t) => acc + t.valor, 0)
   
   const totalPendente = transacoes
@@ -462,6 +478,10 @@ export default function Transacoes() {
             <span className="resumo-valor">
               <ValorOculto valor={formatCurrency(totalReceitas)} />
             </span>
+            <div className="resumo-detalhe">
+              <span>🏦 Banco: <ValorOculto valor={formatCurrency(receitasBanco)} /></span>
+              <span>💵 Dinheiro: <ValorOculto valor={formatCurrency(receitasDinheiro)} /></span>
+            </div>
           </div>
         </div>
 
@@ -472,6 +492,10 @@ export default function Transacoes() {
             <span className="resumo-valor">
               <ValorOculto valor={formatCurrency(totalDespesas)} />
             </span>
+            <div className="resumo-detalhe">
+              <span>🏦 Banco: <ValorOculto valor={formatCurrency(despesasBanco)} /></span>
+              <span>💵 Dinheiro: <ValorOculto valor={formatCurrency(despesasDinheiro)} /></span>
+            </div>
           </div>
         </div>
 
