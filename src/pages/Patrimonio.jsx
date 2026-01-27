@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useVisibility } from '../contexts/VisibilityContext'
-import { Plus, Edit2, Trash2, Search, TrendingUp, TrendingDown, Home, Car, MapPin, Package, X, DollarSign, HandCoins, Gift, AlertTriangle } from 'lucide-react'
+import { Plus, Edit2, Trash2, Search, TrendingUp, TrendingDown, Home, Car, MapPin, Package, X, DollarSign, CircleDollarSign, Gift, AlertTriangle } from 'lucide-react'
 import './Patrimonio.css'
 import { ValorOculto } from '../components/ValorOculto'
 
@@ -482,7 +482,7 @@ export default function Patrimonio() {
                           onClick={() => abrirModalBaixa(bem)}
                           title="Dar Baixa (Vender/Doar)"
                         >
-                          <HandCoins size={16} />
+                          <CircleDollarSign size={16} />
                         </button>
                         <button
                           className="btn-icon"
