@@ -69,7 +69,7 @@ export default function Transacoes() {
         .from('transacoes')
         .select(`
           *,
-          contas_bancarias(nome, cor),
+          contas_bancarias(nome, cor, tipo),
           categorias(nome, cor, icone, tipo),
           subcategorias(nome)
         `)
@@ -368,11 +368,11 @@ export default function Transacoes() {
     .reduce((acc, t) => acc + t.valor, 0)
   
   const receitasBanco = transacoes
-    .filter(t => t.tipo === 'receita' && t.pago && !t.is_transferencia && t.tipo_conta === 'banco')
+    .filter(t => t.tipo === 'receita' && t.pago && !t.is_transferencia && t.contas_bancarias?.tipo !== 'dinheiro')
     .reduce((acc, t) => acc + t.valor, 0)
   
   const receitasDinheiro = transacoes
-    .filter(t => t.tipo === 'receita' && t.pago && !t.is_transferencia && t.tipo_conta === 'dinheiro')
+    .filter(t => t.tipo === 'receita' && t.pago && !t.is_transferencia && t.contas_bancarias?.tipo === 'dinheiro')
     .reduce((acc, t) => acc + t.valor, 0)
   
   const totalDespesas = transacoes
@@ -380,11 +380,11 @@ export default function Transacoes() {
     .reduce((acc, t) => acc + t.valor, 0)
   
   const despesasBanco = transacoes
-    .filter(t => t.tipo === 'despesa' && t.pago && !t.is_transferencia && t.tipo_conta === 'banco')
+    .filter(t => t.tipo === 'despesa' && t.pago && !t.is_transferencia && t.contas_bancarias?.tipo !== 'dinheiro')
     .reduce((acc, t) => acc + t.valor, 0)
   
   const despesasDinheiro = transacoes
-    .filter(t => t.tipo === 'despesa' && t.pago && !t.is_transferencia && t.tipo_conta === 'dinheiro')
+    .filter(t => t.tipo === 'despesa' && t.pago && !t.is_transferencia && t.contas_bancarias?.tipo === 'dinheiro')
     .reduce((acc, t) => acc + t.valor, 0)
   
   const totalPendente = transacoes
