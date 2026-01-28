@@ -601,8 +601,90 @@ export default function Configuracoes() {
 
   const handleCriarUsuario = async (e) => {
     e.preventDefault()
-    showMessage('error', 'Função de criar usuário em desenvolvimento. Use o painel do Supabase Auth para criar novos usuários.')
-    setModalNovoUsuario(false)
+    
+    // Validações
+    if (!novoUsuario.email || !novoUsuario.senha || !novoUsuario.nome) {
+      showMessage('error', 'Preencha todos os campos obrigatórios')
+      return
+    }
+
+    if (novoUsuario.senha.length < 6) {
+      showMessage('error', 'A senha deve ter pelo menos 6 caracteres')
+      return
+    }
+
+    try {
+      setSaving(true)
+      
+      // 1. Criar usuário no Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: novoUsuario.email,
+        password: novoUsuario.senha,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: {
+            name: novoUsuario.nome
+          }
+        }
+      })
+
+      if (authError) throw authError
+      
+      if (!authData.user) {
+        throw new Error('Erro ao criar usuário no Auth')
+      }
+
+      const userId = authData.user.id
+
+      // 2. Criar perfil na tabela user_profiles
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .insert({
+          user_id: userId,
+          name: novoUsuario.nome,
+          phone: '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+
+      if (profileError) {
+        console.error('Erro ao criar perfil:', profileError)
+        // Tentar deletar o usuário criado no Auth
+        await supabase.auth.admin.deleteUser(userId)
+        throw new Error('Erro ao criar perfil do usuário')
+      }
+
+      // 3. Criar role na tabela user_roles
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: userId,
+          role: novoUsuario.role,
+          is_active: true,
+          created_at: new Date().toISOString()
+        })
+
+      if (roleError) {
+        console.error('Erro ao criar role:', roleError)
+        // Em caso de erro, continua mas avisa
+        showMessage('error', 'Usuário criado mas role não configurada. Configure manualmente.')
+      }
+
+      showMessage('success', `Usuário ${novoUsuario.nome} criado com sucesso!`)
+      
+      // Limpar form e fechar modal
+      setNovoUsuario({ email: '', senha: '', nome: '', role: 'user' })
+      setModalNovoUsuario(false)
+      
+      // Recarregar lista de usuários
+      await carregarUsuarios()
+      
+    } catch (error) {
+      console.error('Erro ao criar usuário:', error)
+      showMessage('error', error.message || 'Erro ao criar usuário')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleExportarDados = async () => {
