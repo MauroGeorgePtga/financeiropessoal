@@ -616,58 +616,18 @@ export default function Configuracoes() {
     try {
       setSaving(true)
       
-      // 1. Criar usuário no Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: novoUsuario.email,
-        password: novoUsuario.senha,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: {
-            name: novoUsuario.nome
-          }
-        }
+      // SOLUÇÃO: Criar via função RPC do Supabase
+      // Esta função precisa ser criada no banco de dados
+      const { data, error } = await supabase.rpc('create_new_user', {
+        p_email: novoUsuario.email,
+        p_password: novoUsuario.senha,
+        p_name: novoUsuario.nome,
+        p_role: novoUsuario.role
       })
 
-      if (authError) throw authError
-      
-      if (!authData.user) {
-        throw new Error('Erro ao criar usuário no Auth')
-      }
-
-      const userId = authData.user.id
-
-      // 2. Criar perfil na tabela user_profiles
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .insert({
-          user_id: userId,
-          name: novoUsuario.nome,
-          phone: '',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-
-      if (profileError) {
-        console.error('Erro ao criar perfil:', profileError)
-        // Tentar deletar o usuário criado no Auth
-        await supabase.auth.admin.deleteUser(userId)
-        throw new Error('Erro ao criar perfil do usuário')
-      }
-
-      // 3. Criar role na tabela user_roles
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: userId,
-          role: novoUsuario.role,
-          is_active: true,
-          created_at: new Date().toISOString()
-        })
-
-      if (roleError) {
-        console.error('Erro ao criar role:', roleError)
-        // Em caso de erro, continua mas avisa
-        showMessage('error', 'Usuário criado mas role não configurada. Configure manualmente.')
+      if (error) {
+        console.error('Erro ao criar usuário:', error)
+        throw error
       }
 
       showMessage('success', `Usuário ${novoUsuario.nome} criado com sucesso!`)
@@ -681,7 +641,19 @@ export default function Configuracoes() {
       
     } catch (error) {
       console.error('Erro ao criar usuário:', error)
-      showMessage('error', error.message || 'Erro ao criar usuário')
+      
+      // Mensagens de erro mais amigáveis
+      let errorMessage = 'Erro ao criar usuário'
+      
+      if (error.message?.includes('already exists')) {
+        errorMessage = 'Este email já está cadastrado'
+      } else if (error.message?.includes('not allowed')) {
+        errorMessage = 'Erro: Cadastro não permitido. Verifique a função RPC no banco.'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      showMessage('error', errorMessage)
     } finally {
       setSaving(false)
     }
