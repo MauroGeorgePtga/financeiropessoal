@@ -64,17 +64,77 @@ export default function Categorias() {
 
   const handleSubmitSubcategoria = async (e) => {
     e.preventDefault()
+    
+    if (!subFormData.nome.trim()) {
+      setError('Nome da subcategoria é obrigatório')
+      return
+    }
+
     try {
-      if (editingItem) {
-        await supabase.from('subcategorias').update({ nome: subFormData.nome }).eq('id', editingItem.id)
-      } else {
-        await supabase.from('subcategorias').insert([{ categoria_id: subFormData.categoria_id, nome: subFormData.nome }])
+      // Verificar se já existe subcategoria com mesmo nome na categoria destino
+      const { data: existing } = await supabase
+        .from('subcategorias')
+        .select('id')
+        .eq('nome', subFormData.nome.trim())
+        .eq('categoria_id', subFormData.categoria_id)
+        .eq('ativo', true)
+        .neq('id', editingItem?.id || '')
+        .maybeSingle()
+
+      if (existing) {
+        setError('Já existe uma subcategoria com este nome nesta categoria')
+        return
       }
+
+      // Se está editando e mudou de categoria, verificar se há transações
+      if (editingItem && subFormData.categoria_id !== editingItem.categoria_id) {
+        const { count } = await supabase
+          .from('transacoes')
+          .select('id', { count: 'exact', head: true })
+          .eq('subcategoria_id', editingItem.id)
+
+        if (count > 0) {
+          const catOrigem = categorias.find(c => c.id === editingItem.categoria_id)
+          const catDestino = categorias.find(c => c.id === subFormData.categoria_id)
+          
+          const confirma = confirm(
+            `⚠️ ATENÇÃO!\n\n` +
+            `Esta subcategoria possui ${count} transação(ões) associada(s).\n\n` +
+            `Movendo de: ${catOrigem?.icone} ${catOrigem?.nome}\n` +
+            `Para: ${catDestino?.icone} ${catDestino?.nome}\n\n` +
+            `As transações continuarão vinculadas a esta subcategoria.\n\n` +
+            `Deseja continuar?`
+          )
+          
+          if (!confirma) return
+        }
+      }
+
+      if (editingItem) {
+        await supabase
+          .from('subcategorias')
+          .update({ 
+            nome: subFormData.nome.trim(),
+            categoria_id: subFormData.categoria_id
+          })
+          .eq('id', editingItem.id)
+      } else {
+        await supabase
+          .from('subcategorias')
+          .insert([{ 
+            categoria_id: subFormData.categoria_id, 
+            nome: subFormData.nome.trim() 
+          }])
+      }
+      
       await carregarDados()
       fecharModalSub()
-      setSuccess('Salvo!')
+      setSuccess(editingItem ? 'Subcategoria atualizada com sucesso!' : 'Subcategoria criada com sucesso!')
       setTimeout(() => setSuccess(''), 3000)
-    } catch (err) { setError(err.message) }
+    } catch (err) { 
+      console.error('Erro:', err)
+      setError('Erro ao salvar subcategoria') 
+    }
   }
 
   const fecharModal = () => { setShowModal(false); setEditingItem(null); setFormData({ nome: '', tipo: 'despesa', cor: '#667eea', icone: '💰' }) }
@@ -188,10 +248,65 @@ export default function Categorias() {
       {showSubModal && (
         <div className="modal-overlay" onClick={fecharModalSub}>
           <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header"><h2>{editingItem ? 'Editar' : 'Nova'} Subcategoria</h2><button className="btn-close" onClick={fecharModalSub}><X size={24} /></button></div>
+            <div className="modal-header">
+              <h2>{editingItem ? 'Editar' : 'Nova'} Subcategoria</h2>
+              <button className="btn-close" onClick={fecharModalSub}>
+                <X size={24} />
+              </button>
+            </div>
             <form onSubmit={handleSubmitSubcategoria}>
-              <div className="form-group"><label>Nome *</label><input type="text" value={subFormData.nome} onChange={(e) => setSubFormData({...subFormData, nome: e.target.value})} required /></div>
-              <div className="modal-footer"><button type="button" className="btn-secondary" onClick={fecharModalSub}>Cancelar</button><button type="submit" className="btn-primary">Salvar</button></div>
+              <div className="form-group">
+                <label>Nome da Subcategoria *</label>
+                <input 
+                  type="text" 
+                  value={subFormData.nome} 
+                  onChange={(e) => setSubFormData({...subFormData, nome: e.target.value})} 
+                  placeholder="Ex: Restaurantes, Uber, Farmácia..."
+                  required 
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Categoria Pai *</label>
+                <select
+                  value={subFormData.categoria_id}
+                  onChange={(e) => setSubFormData({...subFormData, categoria_id: e.target.value})}
+                  required
+                  disabled={!editingItem && subFormData.categoria_id}
+                >
+                  <option value="">Selecione uma categoria</option>
+                  {categorias.map(cat => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.icone} {cat.nome} ({cat.tipo === 'receita' ? 'Receita' : 'Despesa'})
+                    </option>
+                  ))}
+                </select>
+                
+                {editingItem && subFormData.categoria_id !== editingItem.categoria_id && (
+                  <small style={{
+                    color: '#f59e0b', 
+                    marginTop: '8px', 
+                    display: 'block',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    padding: '8px 12px',
+                    background: '#fffbeb',
+                    borderRadius: '6px',
+                    border: '1px solid #fef3c7'
+                  }}>
+                    ⚠️ Você está movendo esta subcategoria para outra categoria
+                  </small>
+                )}
+              </div>
+              
+              <div className="modal-footer">
+                <button type="button" className="btn-secondary" onClick={fecharModalSub}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-primary">
+                  {editingItem ? '💾 Salvar Alterações' : 'Criar Subcategoria'}
+                </button>
+              </div>
             </form>
           </div>
         </div>
