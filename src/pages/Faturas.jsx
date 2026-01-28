@@ -556,6 +556,47 @@ export default function Faturas() {
     }).format(value || 0)
   }
 
+  // Agrupar lançamentos por data
+  const agruparPorData = (lancamentos) => {
+    const grupos = {}
+    
+    lancamentos.forEach(lanc => {
+      const data = lanc.data_compra
+      if (!grupos[data]) {
+        grupos[data] = []
+      }
+      grupos[data].push(lanc)
+    })
+    
+    // Ordenar datas em ordem decrescente
+    return Object.entries(grupos).sort((a, b) => new Date(b[0]) - new Date(a[0]))
+  }
+
+  // Formatar data para separador
+  const formatDataSeparador = (dataStr) => {
+    const data = new Date(dataStr + 'T00:00:00')
+    const hoje = new Date()
+    const ontem = new Date(hoje)
+    ontem.setDate(ontem.getDate() - 1)
+    
+    hoje.setHours(0, 0, 0, 0)
+    ontem.setHours(0, 0, 0, 0)
+    data.setHours(0, 0, 0, 0)
+    
+    if (data.getTime() === hoje.getTime()) {
+      return 'Hoje'
+    } else if (data.getTime() === ontem.getTime()) {
+      return 'Ontem'
+    } else {
+      return data.toLocaleDateString('pt-BR', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      })
+    }
+  }
+
   const getMesNome = (mes) => {
     const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
     return meses[mes - 1]
@@ -763,60 +804,69 @@ export default function Faturas() {
                     {lancamentos.length === 0 ? (
                       <p className="empty-lancamentos">Nenhum lançamento nesta fatura</p>
                     ) : (
-                      lancamentos.map(lanc => (
-                        <div 
-                          key={lanc.id} 
-                          className="lancamento-item"
-                          onDoubleClick={() => lanc.grupo_parcelamento_id && handleAbrirParcelas(lanc)}
-                          style={{ cursor: lanc.grupo_parcelamento_id ? 'pointer' : 'default' }}
-                          title={lanc.grupo_parcelamento_id ? 'Clique 2x para ver todas as parcelas' : ''}
-                        >
-                          <div className="lancamento-info">
-                            <div className="lancamento-descricao">
-                              <span className="descricao">{lanc.descricao}</span>
-                              {lanc.total_parcelas > 1 && (
-                                <span className="parcela-info">
-                                  {lanc.parcela_atual}/{lanc.total_parcelas}x
-                                </span>
-                              )}
-                            </div>
-                            <div className="lancamento-meta">
-                              <span className="data">
-                                {new Date(lanc.data_compra).toLocaleDateString('pt-BR')}
-                              </span>
-                              {lanc.categorias && (
-                                <span 
-                                  className="categoria-tag"
-                                  style={{ backgroundColor: lanc.categorias.cor }}
-                                >
-                                  {lanc.categorias.icone} {lanc.categorias.nome}
-                                  {lanc.subcategorias && ` > ${lanc.subcategorias.nome}`}
-                                </span>
-                              )}
-                            </div>
+                      agruparPorData(lancamentos).map(([data, lancamentosData]) => (
+                        <div key={data}>
+                          {/* Separador de Data */}
+                          <div className="data-separador">
+                            <span className="data-label">{formatDataSeparador(data)}</span>
+                            <div className="data-linha"></div>
                           </div>
-                          <div className="lancamento-valor-actions">
-                            <span className="valor">{valoresVisiveis ? formatCurrency(lanc.valor) : '••••••'}</span>
-                            {fatura.status === 'aberta' && (
-                              <div className="lancamento-btns">
-                                <button 
-                                  className="btn-icon btn-edit"
-                                  onClick={() => {
-                                    setEditandoLancamento(lanc.id)
-                                    setFormLancamento({
-                                      descricao: lanc.descricao,
-                                      valor: lanc.valor,
-                                      data_compra: lanc.data_compra,
-                                      categoria_id: lanc.categoria_id || '',
-                                      subcategoria_id: lanc.subcategoria_id || '',
-                                      parcelas: 1,
-                                      observacao: lanc.observacao || ''
-                                    })
-                                    setShowModalLancamento(true)
-                                  }}
-                                  title="Editar"
-                                >
-                                  <Edit2 size={16} />
+
+                          {/* Lançamentos daquela data */}
+                          {lancamentosData.map(lanc => (
+                            <div 
+                              key={lanc.id} 
+                              className="lancamento-item"
+                              onDoubleClick={() => lanc.grupo_parcelamento_id && handleAbrirParcelas(lanc)}
+                              style={{ cursor: lanc.grupo_parcelamento_id ? 'pointer' : 'default' }}
+                              title={lanc.grupo_parcelamento_id ? 'Clique 2x para ver todas as parcelas' : ''}
+                            >
+                              <div className="lancamento-info">
+                                <div className="lancamento-descricao">
+                                  <span className="descricao">{lanc.descricao}</span>
+                                  {lanc.total_parcelas > 1 && (
+                                    <span className="parcela-info">
+                                      {lanc.parcela_atual}/{lanc.total_parcelas}x
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="lancamento-meta">
+                                  <span className="data">
+                                    {new Date(lanc.data_compra).toLocaleDateString('pt-BR')}
+                                  </span>
+                                  {lanc.categorias && (
+                                    <span 
+                                      className="categoria-tag"
+                                      style={{ backgroundColor: lanc.categorias.cor }}
+                                    >
+                                      {lanc.categorias.icone} {lanc.categorias.nome}
+                                      {lanc.subcategorias && ` > ${lanc.subcategorias.nome}`}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="lancamento-valor-actions">
+                                <span className="valor">{valoresVisiveis ? formatCurrency(lanc.valor) : '••••••'}</span>
+                                {fatura.status === 'aberta' && (
+                                  <div className="lancamento-btns">
+                                    <button 
+                                      className="btn-icon btn-edit"
+                                      onClick={() => {
+                                        setEditandoLancamento(lanc.id)
+                                        setFormLancamento({
+                                          descricao: lanc.descricao,
+                                          valor: lanc.valor,
+                                          data_compra: lanc.data_compra,
+                                          categoria_id: lanc.categoria_id || '',
+                                          subcategoria_id: lanc.subcategoria_id || '',
+                                          parcelas: 1,
+                                          observacao: lanc.observacao || ''
+                                        })
+                                        setShowModalLancamento(true)
+                                      }}
+                                      title="Editar"
+                                    >
+                                      <Edit2 size={16} />
                                 </button>
                                 <button 
                                   className="btn-icon btn-delete"
@@ -828,6 +878,8 @@ export default function Faturas() {
                               </div>
                             )}
                           </div>
+                        </div>
+                          ))}
                         </div>
                       ))
                     )}
