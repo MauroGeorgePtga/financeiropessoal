@@ -651,3 +651,56 @@
     font-size: 11px;
   }
 }
+
+/* ===================================
+   SEPARADORES DE DATA
+   =================================== */
+
+.data-separador {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: 20px 0 15px 0;
+  padding: 0 20px;
+}
+
+.data-separador:first-child {
+  margin-top: 10px;
+}
+
+.data-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #667eea;
+  text-transform: capitalize;
+  white-space: nowrap;
+  padding: 4px 12px;
+  background: #eef2ff;
+  border-radius: 12px;
+  letter-spacing: 0.3px;
+}
+
+.data-linha {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, #e2e8f0, transparent);
+}
+
+/* Ajustar espaçamento dos cards após separador */
+.data-separador + .transacao-card {
+  margin-top: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .data-separador {
+    padding: 0 15px;
+    gap: 10px;
+    margin: 15px 0 12px 0;
+  }
+
+  .data-label {
+    font-size: 12px;
+    padding: 3px 10px;
+  }
+}
