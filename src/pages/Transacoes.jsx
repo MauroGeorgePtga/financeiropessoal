@@ -408,6 +408,48 @@ export default function Transacoes() {
     })
   }
 
+  // Agrupar transações por data
+  const agruparPorData = (transacoes) => {
+    const grupos = {}
+    
+    transacoes.forEach(trans => {
+      const data = trans.data_transacao
+      if (!grupos[data]) {
+        grupos[data] = []
+      }
+      grupos[data].push(trans)
+    })
+    
+    // Ordenar datas em ordem decrescente (mais recente primeiro)
+    return Object.entries(grupos).sort((a, b) => new Date(b[0]) - new Date(a[0]))
+  }
+
+  // Formatar data para exibição no separador
+  const formatDataSeparador = (dataStr) => {
+    const data = new Date(dataStr + 'T00:00:00')
+    const hoje = new Date()
+    const ontem = new Date(hoje)
+    ontem.setDate(ontem.getDate() - 1)
+    
+    // Resetar horas para comparação apenas de data
+    hoje.setHours(0, 0, 0, 0)
+    ontem.setHours(0, 0, 0, 0)
+    data.setHours(0, 0, 0, 0)
+    
+    if (data.getTime() === hoje.getTime()) {
+      return 'Hoje'
+    } else if (data.getTime() === ontem.getTime()) {
+      return 'Ontem'
+    } else {
+      return data.toLocaleDateString('pt-BR', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      })
+    }
+  }
+
   const toggleGrupo = (chave) => {
     setGruposExpandidos(prev => ({
       ...prev,
@@ -629,50 +671,59 @@ export default function Transacoes() {
 
                 {isExpanded && (
                   <div className="transacoes-list">
-                    {transacoesDaConta.map((trans) => (
-                      <div 
-                        key={trans.id} 
-                        className={`transacao-card ${trans.tipo} ${trans.pago ? 'pago' : 'pendente'}`}
-                      >
-                        <div className="transacao-left">
-                          <div 
-                            className="transacao-icone"
-                            style={{ backgroundColor: trans.categorias?.cor }}
-                          >
-                            {trans.categorias?.icone || '📦'}
-                          </div>
-
-                          <div className="transacao-info">
-                            <h3 className="transacao-titulo">{trans.descricao}</h3>
-                            
-                            <div className="transacao-detalhes">
-                              <span className="transacao-categoria">
-                                {trans.categorias?.nome}
-                                {trans.subcategorias && ` • ${trans.subcategorias.nome}`}
-                              </span>
-
-                              <span className="transacao-separador">•</span>
-
-                              <span className="transacao-data">
-                                <Calendar size={14} />
-                                {formatDate(trans.data_transacao)}
-                              </span>
-                            </div>
-                          </div>
+                    {agruparPorData(transacoesDaConta).map(([data, transacoesData]) => (
+                      <div key={data}>
+                        {/* Separador de Data */}
+                        <div className="data-separador">
+                          <span className="data-label">{formatDataSeparador(data)}</span>
+                          <div className="data-linha"></div>
                         </div>
 
-                        <div className="transacao-right">
-                          <div className="transacao-valor-container">
-                            <span className={`transacao-valor ${trans.tipo}`}>
-                              {trans.tipo === 'receita' ? '+' : '-'}
-                              {formatCurrency(trans.valor)}
-                            </span>
-                            <span className={`transacao-status ${trans.pago ? 'pago' : 'pendente'}`}>
-                              {trans.pago ? 'Pago' : 'Pendente'}
-                            </span>
-                          </div>
+                        {/* Transações daquela data */}
+                        {transacoesData.map((trans) => (
+                          <div 
+                            key={trans.id} 
+                            className={`transacao-card ${trans.tipo} ${trans.pago ? 'pago' : 'pendente'}`}
+                          >
+                            <div className="transacao-left">
+                              <div 
+                                className="transacao-icone"
+                                style={{ backgroundColor: trans.categorias?.cor }}
+                              >
+                                {trans.categorias?.icone || '📦'}
+                              </div>
 
-                          <div className="transacao-acoes">
+                              <div className="transacao-info">
+                                <h3 className="transacao-titulo">{trans.descricao}</h3>
+                                
+                                <div className="transacao-detalhes">
+                                  <span className="transacao-categoria">
+                                    {trans.categorias?.nome}
+                                    {trans.subcategorias && ` • ${trans.subcategorias.nome}`}
+                                  </span>
+
+                                  <span className="transacao-separador">•</span>
+
+                                  <span className="transacao-data">
+                                    <Calendar size={14} />
+                                    {formatDate(trans.data_transacao)}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="transacao-right">
+                              <div className="transacao-valor-container">
+                                <span className={`transacao-valor ${trans.tipo}`}>
+                                  {trans.tipo === 'receita' ? '+' : '-'}
+                                  {formatCurrency(trans.valor)}
+                                </span>
+                                <span className={`transacao-status ${trans.pago ? 'pago' : 'pendente'}`}>
+                                  {trans.pago ? 'Pago' : 'Pendente'}
+                                </span>
+                              </div>
+
+                              <div className="transacao-acoes">
                             {!trans.pago && (
                               <button
                                 className="btn-acao btn-check"
@@ -698,6 +749,8 @@ export default function Transacoes() {
                             </button>
                           </div>
                         </div>
+                      </div>
+                        ))}
                       </div>
                     ))}
                   </div>
