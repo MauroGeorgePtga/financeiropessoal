@@ -77,6 +77,8 @@ export default function Configuracoes() {
   const [usuarios, setUsuarios] = useState([])
   const [loadingUsuarios, setLoadingUsuarios] = useState(false)
   const [modalNovoUsuario, setModalNovoUsuario] = useState(false)
+  const [modalEditarUsuario, setModalEditarUsuario] = useState(false)
+  const [usuarioEditando, setUsuarioEditando] = useState(null)
   const [modalResetSenha, setModalResetSenha] = useState({ show: false, userId: null, email: '' })
   const [novoUsuario, setNovoUsuario] = useState({
     email: '',
@@ -594,6 +596,57 @@ export default function Configuracoes() {
     showMessage('error', 'Função de exclusão em desenvolvimento. Use o painel do Supabase para excluir usuários.')
   }
 
+  const handleEditarUsuario = (usuario) => {
+    setUsuarioEditando({
+      id: usuario.id,
+      nome: usuario.nome,
+      email: usuario.email,
+      telefone: usuario.telefone || '',
+      role: usuario.role
+    })
+    setModalEditarUsuario(true)
+  }
+
+  const handleSalvarEdicaoUsuario = async (e) => {
+    e.preventDefault()
+
+    try {
+      setSaving(true)
+
+      // Atualizar perfil
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .update({
+          name: usuarioEditando.nome,
+          phone: usuarioEditando.telefone
+        })
+        .eq('user_id', usuarioEditando.id)
+
+      if (profileError) throw profileError
+
+      // Atualizar role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .update({
+          role: usuarioEditando.role
+        })
+        .eq('user_id', usuarioEditando.id)
+
+      if (roleError) throw roleError
+
+      showMessage('success', 'Usuário atualizado com sucesso!')
+      setModalEditarUsuario(false)
+      setUsuarioEditando(null)
+      await carregarUsuarios()
+
+    } catch (error) {
+      console.error('Erro ao atualizar usuário:', error)
+      showMessage('error', 'Erro ao atualizar usuário')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleResetSenhaUsuario = async (senha) => {
     showMessage('error', 'Função de reset de senha em desenvolvimento. Use o painel do Supabase.')
     setModalResetSenha({ show: false, userId: null, email: '' })
@@ -616,44 +669,126 @@ export default function Configuracoes() {
     try {
       setSaving(true)
       
-      // SOLUÇÃO: Criar via função RPC do Supabase
-      // Esta função precisa ser criada no banco de dados
-      const { data, error } = await supabase.rpc('create_new_user', {
-        p_email: novoUsuario.email,
-        p_password: novoUsuario.senha,
-        p_name: novoUsuario.nome,
-        p_role: novoUsuario.role
+      // SOLUÇÃO SIMPLES: Criar direto nas tabelas
+      
+      // 1. Gerar UUID para o novo usuário
+      const novoUserId = crypto.randomUUID()
+      
+      // 2. Criar hash da senha (simplificado - o ideal é usar bcrypt mas isso funciona)
+      const senhaHash = btoa(novoUsuario.senha) // Base64 simples para teste
+      
+      // 3. Inserir diretamente no auth.users via SQL
+      const { error: authError } = await supabase.rpc('exec_sql', {
+        sql: `
+          INSERT INTO auth.users (
+            id, 
+            instance_id,
+            aud, 
+            role, 
+            email, 
+            encrypted_password,
+            email_confirmed_at,
+            raw_app_meta_data,
+            raw_user_meta_data,
+            created_at,
+            updated_at,
+            confirmation_token,
+            recovery_token
+          ) VALUES (
+            '${novoUserId}',
+            '00000000-0000-0000-0000-000000000000',
+            'authenticated',
+            'authenticated',
+            '${novoUsuario.email}',
+            crypt('${novoUsuario.senha}', gen_salt('bf')),
+            NOW(),
+            '{"provider":"email","providers":["email"]}'::jsonb,
+            '{"name":"${novoUsuario.nome}","role":"${novoUsuario.role}"}'::jsonb,
+            NOW(),
+            NOW(),
+            '',
+            ''
+          )
+        `
       })
 
-      if (error) {
-        console.error('Erro ao criar usuário:', error)
-        throw error
+      if (authError) {
+        console.error('Erro ao criar no auth:', authError)
+        throw new Error('Erro ao criar usuário no auth')
       }
+
+      // 4. Criar identidade
+      await supabase.rpc('exec_sql', {
+        sql: `
+          INSERT INTO auth.identities (
+            id,
+            user_id,
+            identity_data,
+            provider,
+            last_sign_in_at,
+            created_at,
+            updated_at
+          ) VALUES (
+            gen_random_uuid(),
+            '${novoUserId}',
+            '{"sub":"${novoUserId}","email":"${novoUsuario.email}"}'::jsonb,
+            'email',
+            NOW(),
+            NOW(),
+            NOW()
+          )
+        `
+      })
+
+      // 5. Criar perfil
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .insert({
+          user_id: novoUserId,
+          name: novoUsuario.nome,
+          phone: ''
+        })
+
+      if (profileError) {
+        console.error('Erro ao criar perfil:', profileError)
+        throw new Error('Erro ao criar perfil')
+      }
+
+      // 6. Criar role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: novoUserId,
+          role: novoUsuario.role,
+          is_active: true
+        })
+
+      if (roleError) {
+        console.error('Erro ao criar role:', roleError)
+        throw new Error('Erro ao criar role')
+      }
+
+      // 7. Criar preferências
+      await supabase
+        .from('user_preferences')
+        .insert({
+          user_id: novoUserId,
+          tema: 'padrao',
+          modo: 'claro'
+        })
 
       showMessage('success', `Usuário ${novoUsuario.nome} criado com sucesso!`)
       
-      // Limpar form e fechar modal
+      // Limpar e fechar
       setNovoUsuario({ email: '', senha: '', nome: '', role: 'user' })
       setModalNovoUsuario(false)
       
-      // Recarregar lista de usuários
+      // Recarregar lista
       await carregarUsuarios()
       
     } catch (error) {
       console.error('Erro ao criar usuário:', error)
-      
-      // Mensagens de erro mais amigáveis
-      let errorMessage = 'Erro ao criar usuário'
-      
-      if (error.message?.includes('already exists')) {
-        errorMessage = 'Este email já está cadastrado'
-      } else if (error.message?.includes('not allowed')) {
-        errorMessage = 'Erro: Cadastro não permitido. Verifique a função RPC no banco.'
-      } else if (error.message) {
-        errorMessage = error.message
-      }
-      
-      showMessage('error', errorMessage)
+      showMessage('error', error.message || 'Erro ao criar usuário')
     } finally {
       setSaving(false)
     }
@@ -961,6 +1096,13 @@ export default function Configuracoes() {
                         </td>
                         <td>
                           <div className="acoes-cell">
+                            <button
+                              className="btn-icon-table btn-edit"
+                              onClick={() => handleEditarUsuario(usuario)}
+                              title="Editar"
+                            >
+                              <Edit size={16} />
+                            </button>
                             <button
                               className="btn-icon-table btn-toggle"
                               onClick={() => handleToggleUsuario(usuario.id, usuario.is_active)}
@@ -1352,6 +1494,85 @@ export default function Configuracoes() {
                 >
                   <UserPlus size={18} />
                   {saving ? 'Criando...' : 'Criar Usuário'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Usuário */}
+      {modalEditarUsuario && usuarioEditando && (
+        <div className="modal-overlay" onClick={() => setModalEditarUsuario(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <Edit size={24} />
+                Editar Usuário
+              </h2>
+              <button className="btn-close" onClick={() => setModalEditarUsuario(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleSalvarEdicaoUsuario}>
+              <div className="form-group-config">
+                <label>Nome</label>
+                <input
+                  type="text"
+                  value={usuarioEditando.nome}
+                  onChange={(e) => setUsuarioEditando({ ...usuarioEditando, nome: e.target.value })}
+                  placeholder="Nome completo"
+                  required
+                />
+              </div>
+
+              <div className="form-group-config">
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={usuarioEditando.email}
+                  disabled
+                  className="input-disabled"
+                />
+                <small>O email não pode ser alterado</small>
+              </div>
+
+              <div className="form-group-config">
+                <label>Telefone</label>
+                <input
+                  type="text"
+                  value={usuarioEditando.telefone}
+                  onChange={(e) => setUsuarioEditando({ ...usuarioEditando, telefone: e.target.value })}
+                  placeholder="(00) 00000-0000"
+                />
+              </div>
+
+              <div className="form-group-config">
+                <label>Função</label>
+                <select
+                  value={usuarioEditando.role}
+                  onChange={(e) => setUsuarioEditando({ ...usuarioEditando, role: e.target.value })}
+                >
+                  <option value="user">Usuário</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn-secondary"
+                  onClick={() => setModalEditarUsuario(false)}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-primary"
+                  disabled={saving}
+                >
+                  <Save size={18} />
+                  {saving ? 'Salvando...' : 'Salvar Alterações'}
                 </button>
               </div>
             </form>
